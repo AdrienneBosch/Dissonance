@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Dissonance")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+d5c3deb2746553e06e3a964e6f67ec07ced559f3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+be7320d68ecb79bae8029fe223626ccffb43886e")]
 [assembly: System.Reflection.AssemblyProductAttribute("Dissonance")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Dissonance")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

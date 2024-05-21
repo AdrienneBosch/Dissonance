@@ -3,6 +3,18 @@
   "WorkspaceRootPath": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|c:\\users\\adrie\\onedrive\\work\\software development\\dissonance\\new dissonance\\dissonance---accessibility-tool\\dissonance\\dissonance\\appsettings\\interfaces\\idefaultsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|solutionrelative:dissonance\\appsettings\\interfaces\\idefaultsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|c:\\users\\adrie\\onedrive\\work\\software development\\dissonance\\new dissonance\\dissonance---accessibility-tool\\dissonance\\dissonance\\appsettings\\interfaces\\iappsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|solutionrelative:dissonance\\appsettings\\interfaces\\iappsettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|c:\\users\\adrie\\onedrive\\work\\software development\\dissonance\\new dissonance\\dissonance---accessibility-tool\\dissonance\\dissonance\\appsettings\\interfaces\\iusersettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|solutionrelative:dissonance\\appsettings\\interfaces\\iusersettings.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|c:\\users\\adrie\\onedrive\\work\\software development\\dissonance\\new dissonance\\dissonance---accessibility-tool\\dissonance\\dissonance\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}",
       "RelativeMoniker": "D:0:0:{FC37034E-DCB1-4901-B3CD-BA44B9CA9F60}|Dissonance\\Dissonance.csproj|solutionrelative:dissonance\\mainwindow.xaml||{F11ACC28-31D1-4C80-A34B-F4E09D3D753C}"
     },
@@ -31,18 +43,54 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "IDefaultSettings.cs",
+              "DocumentMoniker": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IDefaultSettings.cs",
+              "RelativeDocumentMoniker": "Dissonance\\AppSettings\\Interfaces\\IDefaultSettings.cs",
+              "ToolTip": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IDefaultSettings.cs",
+              "RelativeToolTip": "Dissonance\\AppSettings\\Interfaces\\IDefaultSettings.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAgAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-21T11:14:59.027Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "IUserSettings.cs",
+              "DocumentMoniker": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IUserSettings.cs",
+              "RelativeDocumentMoniker": "Dissonance\\AppSettings\\Interfaces\\IUserSettings.cs",
+              "ToolTip": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IUserSettings.cs",
+              "RelativeToolTip": "Dissonance\\AppSettings\\Interfaces\\IUserSettings.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAABAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-21T11:14:37.077Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "IAppSettings.cs",
+              "DocumentMoniker": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IAppSettings.cs",
+              "RelativeDocumentMoniker": "Dissonance\\AppSettings\\Interfaces\\IAppSettings.cs",
+              "ToolTip": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\AppSettings\\Interfaces\\IAppSettings.cs",
+              "RelativeToolTip": "Dissonance\\AppSettings\\Interfaces\\IAppSettings.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAoAAAAYAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-21T11:14:07.911Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "MainWindow.xaml",
               "DocumentMoniker": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\MainWindow.xaml",
               "RelativeDocumentMoniker": "Dissonance\\MainWindow.xaml",
               "ToolTip": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\MainWindow.xaml",
               "RelativeToolTip": "Dissonance\\MainWindow.xaml",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003549|",
-              "WhenOpened": "2024-05-21T10:16:39.158Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-05-21T10:16:39.158Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 4,
               "Title": "MainWindow.xaml.cs",
               "DocumentMoniker": "C:\\Users\\adrie\\OneDrive\\Work\\Software development\\Dissonance\\New Dissonance\\Dissonance---Accessibility-Tool\\Dissonance\\Dissonance\\MainWindow.xaml.cs",
               "RelativeDocumentMoniker": "Dissonance\\MainWindow.xaml.cs",

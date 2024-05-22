@@ -4,12 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Dissonance.AppSettings.Interfaces
+namespace Dissonance.Settings.Interfaces
 {
     public interface IUserSettings
     {
         int Volume { get; set; }
-        void Load();
+        void Load(IAppSettings _appSettings);
         void Save();
     }
 }

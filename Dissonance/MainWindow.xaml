@@ -7,7 +7,4 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
-    <Grid>
-        <TextBlock x:Name="DebugTextBlock" HorizontalAlignment="Left" Margin="96,134,0,0" TextWrapping="Wrap" Text="TextBlock" VerticalAlignment="Top" Height="141" Width="418"/>
-    </Grid>
 </Window>

@@ -14,13 +14,11 @@ namespace Dissonance.SetttingsManager
 	public class SettingsManager : ISettingsManager
 	{
 		private const string SettingsFilePath = "settings.json";
+		private const string DefaultSettingsFilePath = "defaultSettings.json";
 
 		public AppSettings LoadSettings ( )
 		{
-			if ( !File.Exists ( SettingsFilePath ) )
-			{
-				return new AppSettings ( ); // Return default settings if file doesn't exist
-			}
+			EnsureSettingsFileExists ( );
 
 			var json = File.ReadAllText(SettingsFilePath);
 			return JsonConvert.DeserializeObject<AppSettings> ( json );
@@ -30,6 +28,14 @@ namespace Dissonance.SetttingsManager
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
 			File.WriteAllText ( SettingsFilePath, json );
+		}
+
+		private void EnsureSettingsFileExists ( )
+		{
+			if ( !File.Exists ( SettingsFilePath ) )
+			{
+				File.Copy ( DefaultSettingsFilePath, SettingsFilePath );
+			}
 		}
 	}
 }

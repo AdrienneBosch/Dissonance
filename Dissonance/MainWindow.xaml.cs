@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Windows;
 
-using Dissonance.SetttingsManager;
+using Dissonance.SettingsManagers;
 
 namespace Dissonance
 {

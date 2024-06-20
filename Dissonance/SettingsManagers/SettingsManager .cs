@@ -9,7 +9,7 @@ using Newtonsoft.Json;
 
 using Formatting = Newtonsoft.Json.Formatting;
 
-namespace Dissonance.SetttingsManager
+namespace Dissonance.SettingsManagers
 {
 	public class SettingsManager : ISettingsManager
 	{

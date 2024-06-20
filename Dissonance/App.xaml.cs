@@ -1,4 +1,4 @@
-﻿using Dissonance.SetttingsManager;
+﻿using Dissonance.SettingsManagers;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +20,6 @@ namespace Dissonance
 			var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
 			mainWindow.Show ( );
 		}
-
 		private void ConfigureServices ( IServiceCollection services )
 		{
 			services.AddSingleton<ISettingsManager, SettingsManager> ( );

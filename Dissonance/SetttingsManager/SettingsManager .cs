@@ -34,7 +34,35 @@ namespace Dissonance.SetttingsManager
 		{
 			if ( !File.Exists ( SettingsFilePath ) )
 			{
-				File.Copy ( DefaultSettingsFilePath, SettingsFilePath );
+				CreateDefaultSettingsFile ( );
+			}
+		}
+
+		private void CreateDefaultSettingsFile ( )
+		{
+			try
+			{
+				var defaultSettings = new AppSettings
+				{
+					ScreenReader = new ScreenReaderSettings
+					{
+						Volume = 80,
+						VoiceRate = 5
+					},
+					Magnifier = new MagnifierSettings
+					{
+						ZoomLevel = 3,
+						InvertColors = true
+					}
+				};
+
+				var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
+				File.WriteAllText ( SettingsFilePath, json );
+			}
+			catch ( Exception ex )
+			{
+				Console.WriteLine ( $"Error creating default settings file: {ex.Message}" );
+				throw;
 			}
 		}
 	}

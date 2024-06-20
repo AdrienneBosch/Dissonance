@@ -1,32 +1,22 @@
 ﻿using System.Text;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 using Dissonance.SetttingsManager;
 
 namespace Dissonance
 {
-	/// <summary>
-	/// Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : Window
 	{
 		private readonly ISettingsManager _settingsManager;
 		private AppSettings _appSettings;
 
-		public MainWindow ( )
+		public MainWindow ( ISettingsManager settingsManager )
 		{
 			InitializeComponent ( );
-			_settingsManager = new SettingsManager ( );
+			_settingsManager = settingsManager;
 			_appSettings = _settingsManager.LoadSettings ( );
 			InitializeSettings ( );
+			DisplaySettingsForDebugging ( );
 		}
 
 		private void InitializeSettings ( )
@@ -34,7 +24,6 @@ namespace Dissonance
 			// Example of accessing settings
 			var volume = _appSettings.ScreenReader.Volume;
 			var voiceRate = _appSettings.ScreenReader.VoiceRate;
-
 			var zoomLevel = _appSettings.Magnifier.ZoomLevel;
 			var invertColors = _appSettings.Magnifier.InvertColors;
 
@@ -46,6 +35,19 @@ namespace Dissonance
 			// Modify _appSettings as needed
 			_settingsManager.SaveSettings ( _appSettings );
 		}
-	}
 
+		private void DisplaySettingsForDebugging ( )
+		{
+			var settingsInfo = new StringBuilder();
+			settingsInfo.AppendLine ( "Screen Reader Settings:" );
+			settingsInfo.AppendLine ( $"Volume: {_appSettings.ScreenReader.Volume}" );
+			settingsInfo.AppendLine ( $"Voice Rate: {_appSettings.ScreenReader.VoiceRate}" );
+			settingsInfo.AppendLine ( );
+			settingsInfo.AppendLine ( "Magnifier Settings:" );
+			settingsInfo.AppendLine ( $"Zoom Level: {_appSettings.Magnifier.ZoomLevel}" );
+			settingsInfo.AppendLine ( $"Invert Colors: {_appSettings.Magnifier.InvertColors}" );
+
+			DebugTextBlock.Text = settingsInfo.ToString ( );
+		}
+	}
 }

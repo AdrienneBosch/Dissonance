@@ -6,5 +6,8 @@
   "Magnifier": {
     "ZoomLevel": 2,
     "InvertColors": false
+  },
+  "Theme": {
+    "IsDarkMode": true
   }
 }

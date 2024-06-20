@@ -7,4 +7,12 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
+    <Grid Background="{DynamicResource BackgroundBrush}">
+        <ToggleButton x:Name="ThemeToggleButton" Content="Toggle Theme" 
+                      VerticalAlignment="Top" HorizontalAlignment="Right"
+                      Margin="10"
+                      Checked="ThemeToggleButton_Checked" 
+                      Unchecked="ThemeToggleButton_Unchecked"/>
+        <!-- Other UI elements can be added here -->
+    </Grid>
 </Window>

@@ -10,11 +10,13 @@ namespace Dissonance
 	{
 		public ScreenReaderSettings ScreenReader { get; set; }
 		public MagnifierSettings Magnifier { get; set; }
+		public ThemeSettings Theme { get; set; }
 
 		public AppSettings ( )
 		{
 			ScreenReader = new ScreenReaderSettings ( );
 			Magnifier = new MagnifierSettings ( );
+			Theme = new ThemeSettings ( );
 		}
 	}
 
@@ -22,14 +24,16 @@ namespace Dissonance
 	{
 		public int Volume { get; set; }
 		public int VoiceRate { get; set; }
-		// Add other screen reader settings as needed
 	}
 
 	public class MagnifierSettings
 	{
 		public int ZoomLevel { get; set; }
 		public bool InvertColors { get; set; }
-		// Add other magnifier settings as needed
 	}
 
+	public class ThemeSettings
+	{
+		public bool IsDarkMode { get; set; }
+	}
 }

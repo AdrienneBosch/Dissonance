@@ -13,13 +13,21 @@ namespace Dissonance
 
 		protected override void OnStartup ( StartupEventArgs e )
 		{
+			base.OnStartup ( e );
+
 			var serviceCollection = new ServiceCollection();
 			ConfigureServices ( serviceCollection );
 			ServiceProvider = serviceCollection.BuildServiceProvider ( );
 
+			// Retrieve settings and set the theme
+			var settingsManager = ServiceProvider.GetRequiredService<ISettingsManager>();
+			var appSettings = settingsManager.LoadSettings();
+			ThemeManager.SetTheme ( appSettings.Theme.IsDarkMode );
+
 			var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
 			mainWindow.Show ( );
 		}
+
 		private void ConfigureServices ( IServiceCollection services )
 		{
 			services.AddSingleton<ISettingsManager, SettingsManager> ( );

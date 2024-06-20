@@ -1,0 +1,10 @@
+{
+  "ScreenReader": {
+    "Volume": 50,
+    "VoiceRate": 3
+  },
+  "Magnifier": {
+    "ZoomLevel": 2,
+    "InvertColors": false
+  }
+}

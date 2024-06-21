@@ -3,6 +3,5 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:Dissonance">
     <Application.Resources>
-        <!-- No default theme here -->
     </Application.Resources>
 </Application>

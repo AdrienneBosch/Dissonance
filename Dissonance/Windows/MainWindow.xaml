@@ -6,10 +6,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dissonance.UserControls.Title_Bar"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800"
+        Title="MainWindow" Height="570" Width="956"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{DynamicResource BackgroundBrush}">
-        <local:CustomTitleBar HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
+        <!-- <local:CustomTitleBar HorizontalAlignment="Stretch" VerticalAlignment="Top"/>-->
         <ToggleButton x:Name="ThemeToggleButton" Content="Toggle Theme" 
                       VerticalAlignment="Top" HorizontalAlignment="Right"
                       Margin="10"

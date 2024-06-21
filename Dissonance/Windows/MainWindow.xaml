@@ -1,13 +1,15 @@
-﻿<Window x:Class="Dissonance.MainWindow"
+﻿<!-- MainWindow.xaml -->
+<Window x:Class="Dissonance.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Dissonance"
+        xmlns:local="clr-namespace:Dissonance.UserControls.Title_Bar"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800"
         WindowStartupLocation="CenterScreen">
     <Grid Background="{DynamicResource BackgroundBrush}">
+        <local:CustomTitleBar HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
         <ToggleButton x:Name="ThemeToggleButton" Content="Toggle Theme" 
                       VerticalAlignment="Top" HorizontalAlignment="Right"
                       Margin="10"

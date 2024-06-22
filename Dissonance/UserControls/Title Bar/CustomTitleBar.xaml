@@ -1,5 +1,4 @@
-﻿<!-- CustomTitleBar.xaml -->
-<UserControl
+﻿<UserControl
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:av="http://schemas.microsoft.com/expression/blend/2008" 
@@ -14,14 +13,16 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Border x:Name="HighlightBackground" Background="{DynamicResource TertiaryBrush}"/>
-                            <Border Background="{TemplateBinding Background}">
-                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource TertiaryBrush}" BorderThickness="1">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
                             </Border>
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource CloseButtonHighlightBrush}" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -39,7 +40,6 @@
             <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="879,0,0,0" VerticalAlignment="Center" Height="24">
                 <Button x:Name="MinimizeButton" Background="{DynamicResource MinimizeButtonBrush}" Click="MinimizeButton_Click" Margin="5,0" Width="20" Height="21"/>
                 <Button x:Name="MaximizeButton" Background="{DynamicResource MaximizeButtonBrush}" Click="MaximieButton_Click" Width="20" Height="21"/>
-
                 <Button x:Name="CloseButton" Style="{StaticResource CloseButtonStyle}" Click="CloseButton_Click" Width="20" Margin="5,0" Height="21"/>
             </StackPanel>
         </Grid>

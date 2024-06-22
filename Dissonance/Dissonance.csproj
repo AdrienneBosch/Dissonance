@@ -11,6 +11,12 @@
   <ItemGroup>
     <None Remove="Assets\Images\BackgroundImages\DarkBackground.png" />
     <None Remove="Assets\Images\BackgroundImages\LightBackground.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteCloseButtonSmaller.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMaximizeButtonSmaller.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMinimizeButtonSmaller.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackCloseButton.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMaximizeButton.png" />
+    <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMinimizeButton.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -21,6 +27,12 @@
   <ItemGroup>
     <Resource Include="Assets\Images\BackgroundImages\DarkBackground.png" />
     <Resource Include="Assets\Images\BackgroundImages\LightBackground.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteCloseButtonSmaller.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMaximizeButtonSmaller.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMinimizeButtonSmaller.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackCloseButton.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMaximizeButton.png" />
+    <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMinimizeButton.png" />
   </ItemGroup>
 
   <ItemGroup>

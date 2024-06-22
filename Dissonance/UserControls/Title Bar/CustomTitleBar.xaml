@@ -2,9 +2,9 @@
 <UserControl x:Class="Dissonance.UserControls.Title_Bar.CustomTitleBar"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             Height="50" Width="958">
-    <Border Background="{DynamicResource TitleBarPrimaryBrush}" BorderBrush="#FFB14444" BorderThickness="1">
-        <Grid Background="{DynamicResource TitleBarPrimaryBrush}" Width="956">
+             Height="50" Width="956">
+    <Border Background="{DynamicResource TitleBarPrimaryBrush}" BorderBrush="{DynamicResource TitleBarSecondaryBrush}" BorderThickness="1">
+        <Grid Background="{DynamicResource TitleBarPrimaryBrush}">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="Auto" />

@@ -2,11 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <SolidColorBrush x:Key="PrimaryBrush" Color="#0c0c0c"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="#FF3A3A3A"/>
-    <SolidColorBrush x:Key="TertiaryBrush" Color="#111111"/>
-    
+
     <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#0c0c0c"/>
     <SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#080808"/>
-
+    <SolidColorBrush x:Key="TitleBarButtonBrush" Color="#1d1d1d"/>
+    
+    
     <SolidColorBrush x:Key="CloseButtonHighlightBrush" Color="#ba0000"/>
 
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/DarkBackground.png"/>

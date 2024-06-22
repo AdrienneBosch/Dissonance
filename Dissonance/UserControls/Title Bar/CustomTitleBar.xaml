@@ -14,7 +14,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Grid>
-                            <Border x:Name="HighlightBackground" Background="Transparent"/>
+                            <Border x:Name="HighlightBackground" Background="{DynamicResource TertiaryBrush}"/>
                             <Border Background="{TemplateBinding Background}">
                                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                             </Border>
@@ -39,6 +39,7 @@
             <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="879,0,0,0" VerticalAlignment="Center" Height="24">
                 <Button x:Name="MinimizeButton" Background="{DynamicResource MinimizeButtonBrush}" Click="MinimizeButton_Click" Margin="5,0" Width="20" Height="21"/>
                 <Button x:Name="MaximizeButton" Background="{DynamicResource MaximizeButtonBrush}" Click="MaximieButton_Click" Width="20" Height="21"/>
+
                 <Button x:Name="CloseButton" Style="{StaticResource CloseButtonStyle}" Click="CloseButton_Click" Width="20" Margin="5,0" Height="21"/>
             </StackPanel>
         </Grid>

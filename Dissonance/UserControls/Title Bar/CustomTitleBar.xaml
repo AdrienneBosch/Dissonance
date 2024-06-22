@@ -1,7 +1,8 @@
 ﻿<!-- CustomTitleBar.xaml -->
-<UserControl x:Class="Dissonance.UserControls.Title_Bar.CustomTitleBar"
+<UserControl
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:av="http://schemas.microsoft.com/expression/blend/2008" xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" mc:Ignorable="av" x:Class="Dissonance.UserControls.Title_Bar.CustomTitleBar"
              Height="34" Width="960">
     <Border Background="{DynamicResource TitleBarPrimaryBrush}" BorderBrush="{DynamicResource TitleBarSecondaryBrush}" BorderThickness="1">
         <Grid Background="{DynamicResource TitleBarPrimaryBrush}">
@@ -10,9 +11,10 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="WindowTitle" Grid.Column="0" VerticalAlignment="Center" Margin="10,0" Foreground="White" FontSize="16" Text="Dissonance"/>
-            <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="850,0,0,0">
-                <Button Background="{DynamicResource MinimizeButtonBrush}" Click="MinimizeButton_Click" Width="24" Margin="5,0" Height="24"/>
-                <Button Background="{DynamicResource ExitButtonBrush}" Click="CloseButton_Click" Width="24" Margin="5,0" Height="24"/>
+            <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="879,0,0,0" VerticalAlignment="Center" Height="20">
+                <Button x:Name="MinimizeButton" Background="{DynamicResource MinimizeButtonBrush}" Click="MinimizeButton_Click" Margin="5,0" Width="20"/>
+                <Button x:Name="MaximizeButton" Background="{DynamicResource MinimizeButtonBrush}" Click="MinimizeButton_Click" Width="20"/>
+                <Button x:Name="CloseButton" Background="{DynamicResource ExitButtonBrush}" Click="CloseButton_Click" Width="20" Margin="5,0"/>
             </StackPanel>
         </Grid>
     </Border>

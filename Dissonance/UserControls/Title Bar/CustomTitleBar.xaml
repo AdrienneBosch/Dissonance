@@ -10,9 +10,9 @@
                 <ColumnDefinition Width="Auto" />
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="WindowTitle" Grid.Column="0" VerticalAlignment="Center" Margin="10,0" Foreground="White" FontSize="16" Text="Dissonance"/>
-            <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="842,0,0,0">
+            <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="850,0,0,0">
                 <Button Content="Minimize" Click="MinimizeButton_Click" Width="55" Margin="5,0"/>
-                <Button Content="Close" Click="CloseButton_Click" Width="38" Margin="5,0"/>
+                <Button Background="{DynamicResource ExitButtonBrush}" Click="CloseButton_Click" Width="24" Margin="5,0" Height="24"/>
             </StackPanel>
         </Grid>
     </Border>

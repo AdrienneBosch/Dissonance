@@ -5,4 +5,6 @@
     <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#0c0c0c"/>
     <SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#080808"/>
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/DarkBackground.png"/>
+
+    <ImageBrush x:Key="ExitButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/DarkMode/WhiteCloseButtonSmaller.png"/>
 </ResourceDictionary>

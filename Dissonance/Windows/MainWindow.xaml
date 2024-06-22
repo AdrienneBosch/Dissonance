@@ -12,16 +12,20 @@
         Background="Transparent">
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="77*"/>
-            <RowDefinition Height="113*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <local:CustomTitleBar VerticalAlignment="Top" HorizontalAlignment="Center" Width="956" Height="35"/>
-        <Grid x:Name="BodyGrid" Margin="0,35,0,0" Background="{DynamicResource BackgroundBrush}" Grid.RowSpan="2" HorizontalAlignment="Left" Width="960">
+        <local:CustomTitleBar VerticalAlignment="Center" Margin="0,0,-1,0"/>
+        <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="131*"/>
+                <ColumnDefinition Width="349*"/>
+            </Grid.ColumnDefinitions>
             <ToggleButton x:Name="ThemeToggleButton" Content="Toggle Theme" 
-                      VerticalAlignment="Top" HorizontalAlignment="Right"
-                      Margin="0,10,10,0"
-                      Checked="ThemeToggleButton_Checked" 
-                      Unchecked="ThemeToggleButton_Unchecked"/>
+                          VerticalAlignment="Top" HorizontalAlignment="Right"
+                          Margin="0,10,10,0"
+                          Checked="ThemeToggleButton_Checked" 
+                          Unchecked="ThemeToggleButton_Unchecked" Grid.Column="1"/>
         </Grid>
     </Grid>
 </Window>

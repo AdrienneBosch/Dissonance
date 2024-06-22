@@ -9,13 +9,13 @@
         WindowStartupLocation="CenterScreen"
         WindowStyle="None" 
         AllowsTransparency="True" 
-        Background="Transparent" BorderBrush="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
+        Background="White" BorderBrush="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <local:CustomTitleBar VerticalAlignment="Center" Margin="0,0,-1,0" Width="958"/>
+        <local:CustomTitleBar VerticalAlignment="Center"/>
         <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="131*"/>

@@ -34,5 +34,10 @@ namespace Dissonance.UserControls.Title_Bar
 		{
 			Window.GetWindow ( this ).Close ( );
 		}
+
+		private void MaximieButton_Click ( object sender, RoutedEventArgs e )
+		{
+			Window.GetWindow ( this ).Close ( );
+		}
 	}
 }

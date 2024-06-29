@@ -14,7 +14,7 @@
     <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#0c0c0c"/>
     <SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#080808"/>
     <SolidColorBrush x:Key="TitleBarButtonBrush" Color="#1d1d1d"/>
-
+    
     <!-- Close BButton Brushes -->
     <SolidColorBrush x:Key="CloseButtonHighlightBrush" Color="#a70000"/>
     <ImageBrush x:Key="CloseButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/DarkMode/WhiteCloseButtonSmaller.png"/>

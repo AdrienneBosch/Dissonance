@@ -9,6 +9,7 @@
     
     <SolidColorBrush x:Key="CloseButtonHighlightBrush" Color="#ba0000"/>
     <SolidColorBrush x:Key="MinimizeButtonHighlightBrush" Color="#323232"/>
+    <SolidColorBrush x:Key="MaximizeButtonHighlightBrush" Color="#323232"/>
 
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/LightBackground.png"/>
 

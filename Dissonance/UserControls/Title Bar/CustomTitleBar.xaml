@@ -58,6 +58,31 @@
         </Style>
 
 
+        <Style x:Key="MaximizeButtonStyle" TargetType="Button">
+            <Setter Property="Background" Value="{DynamicResource MaximizeButtonBrush}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Grid>
+                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource TitleBarButtonBrush}" BorderThickness="1">
+                                <Border Background="{TemplateBinding Background}">
+                                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                </Border>
+                            </Border>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource MaximizeButtonHighlightBrush}" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+
+
 
 
 
@@ -71,7 +96,7 @@
             <TextBlock x:Name="WindowTitle" Grid.Column="0" VerticalAlignment="Center" Margin="10,0,79,0" Foreground="White" FontSize="16" Text="Dissonance" Height="22"/>
             <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="879,0,0,0" VerticalAlignment="Center" Height="24">
                 <Button x:Name="MinimizeButton" Style="{StaticResource MinimizeButtonStyle}"  Click="MinimizeButton_Click" Margin="5,0" Width="20" Height="21"/>
-                <Button x:Name="MaximizeButton" Background="{DynamicResource MaximizeButtonBrush}" Click="MaximieButton_Click" Width="20" Height="21"/>
+                <Button x:Name="MaximizeButton" Style="{StaticResource MaximizeButtonStyle}"  Click="MaximieButton_Click" Width="20" Height="21"/>
                 <Button x:Name="CloseButton" Style="{StaticResource CloseButtonStyle}" Click="CloseButton_Click" Width="20" Margin="5,0" Height="21"/>
             </StackPanel>
         </Grid>

@@ -39,5 +39,12 @@ namespace Dissonance.UserControls.Title_Bar
 		{
 			Window.GetWindow ( this ).Close ( );
 		}
+		private void TitleBar_MouseDown ( object sender, MouseButtonEventArgs e )
+		{
+			if ( e.ChangedButton == MouseButton.Left )
+			{
+				Window.GetWindow ( this )?.DragMove ( );
+			}
+		}
 	}
 }

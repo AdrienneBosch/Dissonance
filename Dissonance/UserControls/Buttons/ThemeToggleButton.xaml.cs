@@ -2,6 +2,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 
 namespace Dissonance.UserControls.Buttons
 {
@@ -53,9 +54,5 @@ namespace Dissonance.UserControls.Buttons
 			}
 		}
 
-		private void SaveSettings ( )
-		{
-			_settingsManager.SaveSettings ( _appSettings );
-		}
 	}
 }

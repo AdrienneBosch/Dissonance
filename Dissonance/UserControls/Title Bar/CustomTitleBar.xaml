@@ -5,7 +5,9 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     mc:Ignorable="av" 
     x:Class="Dissonance.UserControls.Title_Bar.CustomTitleBar"
-    Height="31" Width="960">
+    Height="31" Width="960"
+    MouseDown="TitleBar_MouseDown">
+
     <UserControl.Resources>
         <Style x:Key="CloseButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource CloseButtonBrush}" />

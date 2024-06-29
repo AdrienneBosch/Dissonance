@@ -3,7 +3,8 @@
     <!-- Primary Brushes -->
     <SolidColorBrush x:Key="PrimaryBrush" Color="#FF007ACC"/>
     <SolidColorBrush x:Key="SecondaryBrush" Color="#FF5A9BD5"/>
-
+    <SolidColorBrush x:Key="ForgroundBrush" Color="Black"/>
+    
     <!-- Boarder Brushes -->
     <SolidColorBrush x:Key="PrimaryBorderBrush" Color="#FF007ACC"/>
     <SolidColorBrush x:Key="SecondaryBorderBrush" Color="#FF5A9BD5"/>

@@ -22,11 +22,6 @@
                 <ColumnDefinition Width="131*"/>
                 <ColumnDefinition Width="349*"/>
             </Grid.ColumnDefinitions>
-            <ToggleButton x:Name="ThemeToggleButton" Content="Toggle Theme" 
-                          VerticalAlignment="Top" HorizontalAlignment="Right"
-                          Margin="0,10,10,0"
-                          Checked="ThemeToggleButton_Checked" 
-                          Unchecked="ThemeToggleButton_Unchecked" Grid.Column="1"/>
             <Grid x:Name="ThemeToggleButtonContainer" Margin="629,54,29,432" Width="40" Height="40" Grid.Column="1"/>
         </Grid>
     </Grid>

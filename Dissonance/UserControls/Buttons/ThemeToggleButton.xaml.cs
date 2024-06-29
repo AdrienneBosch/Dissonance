@@ -39,8 +39,8 @@ namespace Dissonance.UserControls.Buttons
 		{
 			if ( _appSettings != null )
 			{
-				_appSettings.Theme.IsDarkMode = true; // Modify the in-memory settings object
-				ThemeManager.SetTheme ( true ); // Apply theme changes
+				_appSettings.Theme.IsDarkMode = true;
+				ThemeManager.SetTheme ( true );
 			}
 		}
 
@@ -48,14 +48,14 @@ namespace Dissonance.UserControls.Buttons
 		{
 			if ( _appSettings != null )
 			{
-				_appSettings.Theme.IsDarkMode = false; // Modify the in-memory settings object
-				ThemeManager.SetTheme ( false ); // Apply theme changes
+				_appSettings.Theme.IsDarkMode = false;
+				ThemeManager.SetTheme ( false );
 			}
 		}
 
 		private void SaveSettings ( )
 		{
-			_settingsManager.SaveSettings ( _appSettings ); // Use the settings manager to save changes
+			_settingsManager.SaveSettings ( _appSettings );
 		}
 	}
 }

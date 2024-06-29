@@ -1,4 +1,6 @@
 ﻿using Dissonance.SettingsManagers;
+
+using System.Windows;
 using System.Windows.Controls;
 
 namespace Dissonance.UserControls.Buttons
@@ -19,21 +21,32 @@ namespace Dissonance.UserControls.Buttons
 		public ISettingsManager SettingsManager
 		{
 			get { return _settingsManager; }
-			set
-			{
-				_settingsManager = value;
-				// Additional initialization if needed
-			}
+			set { _settingsManager = value; }
 		}
 
 		public AppSettings AppSettings
 		{
 			get { return _appSettings; }
-			set
-			{
-				_appSettings = value;
-				// Additional initialization if needed
-			}
+			set { _appSettings = value; }
+		}
+
+		private void ThemeToggleButton_Checked ( object sender, RoutedEventArgs e )
+		{
+			_appSettings.Theme.IsDarkMode = true;
+			ThemeManager.SetTheme ( true );
+			SaveSettings ( );
+		}
+
+		private void ThemeToggleButton_Unchecked ( object sender, RoutedEventArgs e )
+		{
+			_appSettings.Theme.IsDarkMode = false;
+			ThemeManager.SetTheme ( false );
+			SaveSettings ( );
+		}
+
+		private void SaveSettings ( )
+		{
+			_settingsManager.SaveSettings ( _appSettings );
 		}
 	}
 }

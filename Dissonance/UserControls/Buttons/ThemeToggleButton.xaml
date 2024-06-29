@@ -7,11 +7,11 @@
              mc:Ignorable="d" 
              d:DesignHeight="25" d:DesignWidth="25" Width="40" Height="40">
     <UserControl.Resources>
-        <Style x:Key="ThemeToggleButtonStyle" TargetType="Button">
+        <Style x:Key="ThemeToggleButtonStyle" TargetType="ToggleButton">
             <Setter Property="Background" Value="{DynamicResource ToggleThemeButtonBrush}" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="Button">
+                    <ControlTemplate TargetType="ToggleButton">
                         <Grid>
                             <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource TitleBarButtonBrush}" BorderThickness="1">
                                 <Border Background="{TemplateBinding Background}">
@@ -31,9 +31,7 @@
         </Style>
     </UserControl.Resources>
 
-
-    <Grid x:Name="ThemeToggleButtonGird">
-        <Button x:Name="ThemeToggleButton1" Style="{StaticResource ThemeToggleButtonStyle}"/>
-
+    <Grid x:Name="ThemeToggleButtonGrid">
+        <ToggleButton x:Name="ThemeToggleButton1" Style="{StaticResource ThemeToggleButtonStyle}" Checked="ThemeToggleButton_Checked" Unchecked="ThemeToggleButton_Unchecked"/>
     </Grid>
 </UserControl>

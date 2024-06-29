@@ -22,7 +22,7 @@
                 <ColumnDefinition Width="131*"/>
                 <ColumnDefinition Width="349*"/>
             </Grid.ColumnDefinitions>
-            <Grid x:Name="ThemeToggleButtonContainer" Margin="629,54,29,432" Width="40" Height="40" Grid.Column="1"/>
+            <Grid x:Name="ThemeToggleButtonContainer" Margin="648,0,0,476" Width="40" Height="40" Grid.Column="1" HorizontalAlignment="Left" VerticalAlignment="Bottom"/>
         </Grid>
     </Grid>
 </Window>

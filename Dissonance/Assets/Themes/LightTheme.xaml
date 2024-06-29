@@ -9,8 +9,8 @@
     <SolidColorBrush x:Key="PrimaryBorderBrush" Color="#FF007ACC"/>
     <SolidColorBrush x:Key="SecondaryBorderBrush" Color="#FF5A9BD5"/>
 
-    <!-- Titlebar Brushes -->
-    <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#FF3A3A3A"/>
+    <!-- Title bar Brushes -->
+    <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#d2d2d2"/>
 	<SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#ffffff"/>
     <SolidColorBrush x:Key="TitleBarButtonBrush" Color="#1d1d1d"/>
 

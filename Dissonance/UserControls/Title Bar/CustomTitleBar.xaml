@@ -22,7 +22,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource CloseButtonHighlightBrush}" />
-                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="{DynamicResource PrimaryBorderBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -44,7 +44,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource MinimizeButtonHighlightBrush}" />
-                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="{DynamicResource PrimaryBorderBrush}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -66,7 +66,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource MaximizeButtonHighlightBrush}" />
-                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="{DynamicResource PrimaryBorderBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

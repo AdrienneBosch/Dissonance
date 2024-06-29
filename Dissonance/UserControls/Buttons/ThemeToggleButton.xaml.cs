@@ -2,13 +2,9 @@
 
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Controls.Primitives;
 
 namespace Dissonance.UserControls.Buttons
 {
-	/// <summary>
-	/// Interaction logic for ThemeToggleButton.xaml
-	/// </summary>
 	public partial class ThemeToggleButton : UserControl
 	{
 		private ISettingsManager _settingsManager;
@@ -41,21 +37,25 @@ namespace Dissonance.UserControls.Buttons
 
 		private void ThemeToggleButton_Checked ( object sender, RoutedEventArgs e )
 		{
-			_appSettings.Theme.IsDarkMode = true;
-			ThemeManager.SetTheme ( true );
-			SaveSettings ( );
+			if ( _appSettings != null )
+			{
+				_appSettings.Theme.IsDarkMode = true; // Modify the in-memory settings object
+				ThemeManager.SetTheme ( true ); // Apply theme changes
+			}
 		}
 
 		private void ThemeToggleButton_Unchecked ( object sender, RoutedEventArgs e )
 		{
-			_appSettings.Theme.IsDarkMode = false;
-			ThemeManager.SetTheme ( false );
-			SaveSettings ( );
+			if ( _appSettings != null )
+			{
+				_appSettings.Theme.IsDarkMode = false; // Modify the in-memory settings object
+				ThemeManager.SetTheme ( false ); // Apply theme changes
+			}
 		}
 
 		private void SaveSettings ( )
 		{
-			_settingsManager.SaveSettings ( _appSettings );
+			_settingsManager.SaveSettings ( _appSettings ); // Use the settings manager to save changes
 		}
 	}
 }

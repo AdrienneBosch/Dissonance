@@ -21,7 +21,7 @@
                         </Grid>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource CloseButtonHighlightBrush}" />
+                                <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource ToggleThemeButtonHighlightingBrush}" />
                                 <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>

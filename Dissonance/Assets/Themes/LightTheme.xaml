@@ -28,7 +28,8 @@
     <!-- Theme Toggle Button Brushes -->
     <ImageBrush x:Key="ToggleThemeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/ToggleThemeButtons/LightThemeChangerImage.png"/>
     <SolidColorBrush x:Key="ToggleThemeButtonHighlightingBrush" Color="#FF5A9BD5"/>
-
+    <SolidColorBrush x:Key="ToggleThemeButtonBoarderHighlightingBrush" Color="#1d1d1d"/>
+    
     <!-- Background Brushes -->
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/LightBackground.png"/>
     

@@ -5,7 +5,7 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Dissonance.UserControls.Buttons"
              mc:Ignorable="d" 
-             d:DesignHeight="25" d:DesignWidth="25" Width="25" Height="25">
+             d:DesignHeight="25" d:DesignWidth="25" Width="40" Height="40">
     <UserControl.Resources>
         <Style x:Key="ThemeToggleButtonStyle" TargetType="Button">
             <Setter Property="Background" Value="{DynamicResource ToggleThemeButtonBrush}" />
@@ -32,8 +32,8 @@
     </UserControl.Resources>
 
 
-    <Grid x:Name="ThemeToggleButtonGird" Width="25" Height="25">
-        <Button x:Name="ThemeToggleButton1" Style="{StaticResource ThemeToggleButtonStyle}" HorizontalAlignment="Center" VerticalAlignment="Center"  Width="25" Height="24"/>
+    <Grid x:Name="ThemeToggleButtonGird">
+        <Button x:Name="ThemeToggleButton1" Style="{StaticResource ThemeToggleButtonStyle}"/>
 
     </Grid>
 </UserControl>

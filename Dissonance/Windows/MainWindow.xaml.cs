@@ -16,6 +16,16 @@ namespace Dissonance
 			_settingsManager = settingsManager;
 			_appSettings = _settingsManager.LoadSettings ( );
 			InitializeSettings ( );
+
+			// Create instance of ThemeToggleButton
+			var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton
+			{
+				SettingsManager = _settingsManager,
+				AppSettings = _appSettings
+			};
+
+			// Add ThemeToggleButton to the container
+			ThemeToggleButtonContainer.Children.Add ( themeToggleButton );
 		}
 
 		private void InitializeSettings ( )
@@ -45,9 +55,9 @@ namespace Dissonance
 
 		private void ThemeToggleButton_Unchecked ( object sender, RoutedEventArgs e )
 		{
-			_appSettings.Theme.IsDarkMode = true; 
-			ThemeManager.SetTheme ( false ); 
-			SaveSettings ( ); 
+			_appSettings.Theme.IsDarkMode = true;
+			ThemeManager.SetTheme ( false );
+			SaveSettings ( );
 		}
 	}
 }

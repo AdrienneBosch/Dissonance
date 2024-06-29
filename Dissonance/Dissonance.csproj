@@ -11,12 +11,16 @@
   <ItemGroup>
     <None Remove="Assets\Images\BackgroundImages\DarkBackground.png" />
     <None Remove="Assets\Images\BackgroundImages\LightBackground.png" />
+    <None Remove="Assets\Images\Buttons\ThemeToggleButtons\DarkThemeChangerImage.png" />
+    <None Remove="Assets\Images\Buttons\ThemeToggleButtons\LightThemeChangerImage.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteCloseButtonSmaller.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMaximizeButtonSmaller.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\DarkMode\WhiteMinimizeButtonSmaller.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackCloseButton.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMaximizeButton.png" />
     <None Remove="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMinimizeButton.png" />
+    <None Remove="Assets\Images\Buttons\ToggleThemeButtons\DarkThemeChangerImage.png" />
+    <None Remove="Assets\Images\Buttons\ToggleThemeButtons\LightThemeChangerImage.png" />
   </ItemGroup>
 
   <ItemGroup>
@@ -33,6 +37,8 @@
     <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackCloseButton.png" />
     <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMaximizeButton.png" />
     <Resource Include="Assets\Images\Buttons\TitleBarButtons\LightMode\BlackMinimizeButton.png" />
+    <Resource Include="Assets\Images\Buttons\ToggleThemeButtons\DarkThemeChangerImage.png" />
+    <Resource Include="Assets\Images\Buttons\ToggleThemeButtons\LightThemeChangerImage.png" />
   </ItemGroup>
 
   <ItemGroup>

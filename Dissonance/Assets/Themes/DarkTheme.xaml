@@ -23,7 +23,7 @@
     <ImageBrush x:Key="MaximizeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/DarkMode/WhiteMaximizeButtonSmaller.png"/>
     
     <!-- Theme Toggle Button Brushes -->
-    
+    <ImageBrush x:Key="ToggleThemeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/ToggleThemeButtons/DarkThemeChangerImage.png"/>
     
     <!-- Background Brushes -->
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/DarkBackground.png"/>

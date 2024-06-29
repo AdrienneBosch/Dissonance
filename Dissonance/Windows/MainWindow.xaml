@@ -1,9 +1,10 @@
-﻿<Window x:Class="Dissonance.MainWindow"
+﻿<Window
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dissonance.UserControls.Title_Bar"
+        xmlns:Buttons="clr-namespace:Dissonance.UserControls.Buttons" x:Class="Dissonance.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="557" Width="960"
         WindowStartupLocation="CenterScreen"
@@ -26,6 +27,7 @@
                           Margin="0,10,10,0"
                           Checked="ThemeToggleButton_Checked" 
                           Unchecked="ThemeToggleButton_Unchecked" Grid.Column="1"/>
+            <Buttons:ThemeToggleButton Grid.Column="1" HorizontalAlignment="Left" Margin="531,54,0,0" VerticalAlignment="Top"/>
         </Grid>
     </Grid>
 </Window>

@@ -13,7 +13,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid>
-                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource TitleBarButtonBrush}" BorderThickness="1">
+                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource PrimaryBorderBrush}" BorderThickness="1">
                                 <Border Background="{TemplateBinding Background}">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>
@@ -22,7 +22,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="HighlightBackground" Property="Background" Value="{DynamicResource CloseButtonHighlightBrush}" />
-                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="LightGray" />
+                                <Setter TargetName="HighlightBackground" Property="BorderBrush" Value="{DynamicResource SecondaryBorderBrush}"/>
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>

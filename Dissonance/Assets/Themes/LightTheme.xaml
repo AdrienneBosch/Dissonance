@@ -13,7 +13,7 @@
 
     <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/LightBackground.png"/>
 
-	<ImageBrush x:Key="ExitButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackCloseButton.png"/>
+	<ImageBrush x:Key="CloseButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackCloseButton.png"/>
 	<ImageBrush x:Key="MinimizeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackMinimizeButton.png"/>
 	<ImageBrush x:Key="MaximizeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackMaximizeButton.png"/>
 </ResourceDictionary>

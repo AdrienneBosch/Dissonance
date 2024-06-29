@@ -13,7 +13,7 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="ToggleButton">
                         <Grid>
-                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource PrimaryBorderBrush}" BorderThickness="1">
+                            <Border x:Name="HighlightBackground" Background="Transparent" BorderBrush="{DynamicResource TitleBarPrimaryBrush}" BorderThickness="1">
                                 <Border Background="{TemplateBinding Background}">
                                     <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
                                 </Border>

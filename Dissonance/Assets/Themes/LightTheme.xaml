@@ -11,7 +11,7 @@
 
     <!-- Title bar Brushes -->
     <SolidColorBrush x:Key="TitleBarPrimaryBrush" Color="#d2d2d2"/>
-	<SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#ffffff"/>
+    <SolidColorBrush x:Key="TitleBarSecondaryBrush" Color="#bdbdbd"/>
     <SolidColorBrush x:Key="TitleBarButtonBrush" Color="#1d1d1d"/>
 
     <!-- Close BButton Brushes -->

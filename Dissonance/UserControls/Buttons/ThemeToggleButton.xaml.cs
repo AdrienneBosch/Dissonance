@@ -2,6 +2,7 @@
 
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
 
 namespace Dissonance.UserControls.Buttons
 {
@@ -21,13 +22,21 @@ namespace Dissonance.UserControls.Buttons
 		public ISettingsManager SettingsManager
 		{
 			get { return _settingsManager; }
-			set { _settingsManager = value; }
+			set { _settingsManager = value; InitializeSettings ( ); }
 		}
 
 		public AppSettings AppSettings
 		{
 			get { return _appSettings; }
-			set { _appSettings = value; }
+			set { _appSettings = value; InitializeSettings ( ); }
+		}
+
+		private void InitializeSettings ( )
+		{
+			if ( _appSettings != null )
+			{
+				ThemeToggleButton1.IsChecked = _appSettings.Theme.IsDarkMode;
+			}
 		}
 
 		private void ThemeToggleButton_Checked ( object sender, RoutedEventArgs e )

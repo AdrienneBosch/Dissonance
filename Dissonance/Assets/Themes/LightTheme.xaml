@@ -8,9 +8,9 @@
     <SolidColorBrush x:Key="TitleBarButtonBrush" Color="#1d1d1d"/>
     
     <SolidColorBrush x:Key="CloseButtonHighlightBrush" Color="#ba0000"/>
+    <SolidColorBrush x:Key="MinimizeButtonHighlightBrush" Color="#323232"/>
 
-
-	<ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/LightBackground.png"/>
+    <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/LightBackground.png"/>
 
 	<ImageBrush x:Key="ExitButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackCloseButton.png"/>
 	<ImageBrush x:Key="MinimizeButtonBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/Buttons/TitleBarButtons/LightMode/BlackMinimizeButton.png"/>

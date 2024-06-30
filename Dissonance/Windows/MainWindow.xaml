@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dissonance.UserControls.Title_Bar"
-        xmlns:Buttons="clr-namespace:Dissonance.UserControls.Buttons" x:Class="Dissonance.MainWindow"
+        xmlns:Buttons="clr-namespace:Dissonance.UserControls.Buttons" xmlns:SettingsMenu="clr-namespace:Dissonance.UserControls.SettingsMenu" x:Class="Dissonance.MainWindow"
         mc:Ignorable="d"
         Title="MainWindow" Height="557" Width="960"
         WindowStartupLocation="CenterScreen"
@@ -17,9 +17,10 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
         <local:CustomTitleBar VerticalAlignment="Center"/>
-        <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" Grid.Row="1" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+        <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" Grid.Row="1" Height="526" VerticalAlignment="Center" HorizontalAlignment="Left" Width="960">
 
-            <Grid x:Name="ThemeToggleButtonContainer" Margin="910,10,0,476" Width="40" HorizontalAlignment="Left"/>
+            <Grid x:Name="ThemeToggleButtonContainer" Margin="910,10,10,476"/>
+            <SettingsMenu:SettingsMennu HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
         </Grid>
     </Grid>
 </Window>

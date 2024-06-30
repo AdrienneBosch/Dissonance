@@ -1,0 +1,25 @@
+﻿<UserControl x:Class="Dissonance.UserControls.SettingsMenu.SettingsMennu"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Dissonance.UserControls.SettingsMenu"
+             mc:Ignorable="d" 
+             d:DesignHeight="30" d:DesignWidth="110">
+    <Menu VerticalAlignment="Top" HorizontalAlignment="Left">
+        <MenuItem Header="Settings">
+            <MenuItem Header="General">
+                <MenuItem Header="Option 1"/>
+                <MenuItem Header="Option 2"/>
+            </MenuItem>
+            <MenuItem Header="Advanced">
+                <MenuItem Header="Option A"/>
+                <MenuItem Header="Option B"/>
+            </MenuItem>
+            <MenuItem Header="Custom Submenu">
+                <MenuItem Header="Sub-option 1"/>
+                <MenuItem Header="Sub-option 2"/>
+            </MenuItem>
+        </MenuItem>
+    </Menu>
+</UserControl>

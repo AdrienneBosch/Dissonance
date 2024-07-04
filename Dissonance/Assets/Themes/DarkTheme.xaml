@@ -33,8 +33,10 @@
     <SolidColorBrush x:Key="ToggleThemeButtonBoarderHighlightingBrush" Color="#585858"/>
 
     <!-- Background Brushes -->
-    <ImageBrush x:Key="BackgroundBrush" ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/DarkBackground.png"/>
+    <ImageBrush x:Key="BackgroundBrush" 
+            ImageSource="pack://application:,,,/Dissonance;component/Assets/Images/BackgroundImages/DarkBackground.png"
+            Stretch="UniformToFill"/>
 
-    
-    
+
+
 </ResourceDictionary>

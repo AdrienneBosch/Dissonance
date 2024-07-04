@@ -5,7 +5,6 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
     mc:Ignorable="av" 
     x:Class="Dissonance.UserControls.Title_Bar.CustomTitleBar"
-    Height="31" Width="960"
     MouseDown="TitleBar_MouseDown">
 
     <UserControl.Resources>
@@ -76,17 +75,17 @@
             </Setter>
         </Style>
     </UserControl.Resources>
-    
+
     <Border Background="{DynamicResource TitleBarPrimaryBrush}" BorderBrush="{DynamicResource TitleBarSecondaryBrush}" BorderThickness="1">
-        <Grid Background="{DynamicResource TitleBarPrimaryBrush}">
+        <Grid Background="{DynamicResource TitleBarPrimaryBrush}" HorizontalAlignment="Stretch">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" MinWidth="0" />
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="WindowTitle" Grid.Column="0" VerticalAlignment="Center" Margin="10,0,79,0" Foreground="{DynamicResource ForgroundBrush}" FontSize="16" Text="Dissonance" Height="22"/>
-            <StackPanel x:Name="ButtonPannel" Orientation="Horizontal" Margin="879,0,0,0" VerticalAlignment="Center" Height="24">
-                <Button x:Name="MinimizeButton" Style="{StaticResource MinimizeButtonStyle}"  Click="MinimizeButton_Click" Margin="5,0" Width="20" Height="21"/>
-                <Button x:Name="MaximizeButton" Style="{StaticResource MaximizeButtonStyle}"  Click="MaximizeButton_Click" Width="20" Height="21"/>
+            <TextBlock x:Name="WindowTitle" Grid.Column="0" VerticalAlignment="Center" Margin="10,0,0,0" Foreground="{DynamicResource ForgroundBrush}" FontSize="16" Text="Dissonance" Height="22"/>
+            <StackPanel x:Name="ButtonPannel" Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center" Height="24">
+                <Button x:Name="MinimizeButton" Style="{StaticResource MinimizeButtonStyle}" Click="MinimizeButton_Click" Margin="5,0" Width="20" Height="21"/>
+                <Button x:Name="MaximizeButton" Style="{StaticResource MaximizeButtonStyle}" Click="MaximizeButton_Click" Width="20" Height="21"/>
                 <Button x:Name="CloseButton" Style="{StaticResource CloseButtonStyle}" Click="CloseButton_Click" Width="20" Margin="5,0" Height="21"/>
             </StackPanel>
         </Grid>

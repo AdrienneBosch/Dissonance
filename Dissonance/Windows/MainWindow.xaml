@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <local:CustomTitleBar HorizontalAlignment="Stretch" Height="31" VerticalAlignment="Top"/>
+        <local:CustomTitleBar HorizontalAlignment="Stretch" VerticalAlignment="Top"/>
         <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" Grid.Row="1" VerticalAlignment="Stretch" HorizontalAlignment="Stretch">
             <Grid x:Name="ThemeToggleButtonContainer" Margin="910,10,10,476"/>
             <SettingsMenu:SettingsMennu HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>

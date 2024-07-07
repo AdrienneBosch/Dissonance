@@ -6,7 +6,7 @@
              xmlns:local="clr-namespace:Dissonance.UserControls.SettingsMenu"
              mc:Ignorable="d" 
              d:DesignHeight="30" d:DesignWidth="110">
-    <Menu HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
+    <Menu x:Name="SettingsMenu" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Background="#FFF0F0F0" Padding="1,1,1,0" FontSize="15" Margin="1,1,1,1">
         <MenuItem Header="Settings">
             <MenuItem Header="Configuration">
                 <MenuItem Header="Save">

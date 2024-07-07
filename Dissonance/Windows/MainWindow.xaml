@@ -37,12 +37,18 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
-                    <Lables:HeadingLable x:Name="ClipboardReaderHeadingLable" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
-                    <Grid x:Name="ClipboardReaderVoiceLableGrid" Background="#FFF7A3A3" Margin="0,69,0,223">
-                        <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Left" Margin="10,-1,0,0" VerticalAlignment="Top" StandardText="Voice Rate" RenderTransformOrigin="1.207,0.51"/>
-                        <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Selection" Margin="0,-1,0,0" RenderTransformOrigin="0.498,0.376"/>
-                        <Lables:StandardLable x:Name="VoiceVolumeLable" HorizontalAlignment="Left" VerticalAlignment="Top" StandardText="Volume" Margin="371,-1,0,0" RenderTransformOrigin="0.989,0.558"/>
-                    </Grid>
+                    <Lables:HeadingLable x:Name="ClipboardReaderHeadingLable" HorizontalAlignment="Center" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
+                    <StackPanel x:Name="ClipboardReaderVoiceLableGrid" Background="#FFF7A3A3" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,59,0,0" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="True">
+                        <Grid x:Name="VoiceRateGrid" HorizontalAlignment="Right">
+                            <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Left" Margin="10,0,0,0" VerticalAlignment="Top" StandardText="Voice Rate" RenderTransformOrigin="1.207,0.51"/>
+                        </Grid>
+                        <Grid x:Name="VoiceSelectionGrid" HorizontalAlignment="Center">
+                            <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Selection" Margin="10,0,0,0" RenderTransformOrigin="0.498,0.376"/>
+                        </Grid>
+                        <Grid x:Name="VoiceVolumeGrid" HorizontalAlignment="Left">
+                            <Lables:StandardLable x:Name="VoiceVolumeLable" StandardText="Volume" Margin="10,0,0,0" RenderTransformOrigin="0.989,0.558"/>
+                        </Grid>
+                    </StackPanel>
                 </Grid>
                 <Grid Background="Transparent" Grid.Column="1" Margin="10">
                 </Grid>

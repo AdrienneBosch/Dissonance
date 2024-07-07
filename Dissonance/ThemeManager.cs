@@ -31,23 +31,16 @@ namespace Dissonance
 		{
 			try
 			{
-				ResourceDictionary themeDictionary = new ResourceDictionary();
-				if ( isDarkMode )
-				{
-					themeDictionary.Source = new Uri ( "pack://application:,,,/Dissonance;component/Assets/Themes/DarkTheme.xaml" );
-				}
-				else
-				{
-					themeDictionary.Source = new Uri ( "pack://application:,,,/Dissonance;component/Assets/Themes/LightTheme.xaml" );
-				}
+				_logger.LogInformation ( "Attempting to set theme to {Theme}.", isDarkMode ? "Dark" : "Light" );
 
-				// Clear existing merged dictionaries
+				ResourceDictionary themeDictionary = new ResourceDictionary
+				{
+					Source = new Uri($"pack://application:,,,/Dissonance;component/Assets/Themes/{(isDarkMode ? "DarkTheme.xaml" : "LightTheme.xaml")}")
+				};
+
 				Application.Current.Resources.MergedDictionaries.Clear ( );
-
-				// Apply the selected theme
 				Application.Current.Resources.MergedDictionaries.Add ( themeDictionary );
 
-				// Update AppSettings
 				if ( _appSettings != null )
 				{
 					_appSettings.Theme.IsDarkMode = isDarkMode;
@@ -59,6 +52,25 @@ namespace Dissonance
 			{
 				_logger.LogError ( ex, "Error occurred while setting the theme." );
 				MessageBox.Show ( "An error occurred while changing the theme. Please see the logs for more details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
+
+				// Attempt to revert to the last known good state
+				try
+				{
+					bool revertToDarkMode = !_appSettings.Theme.IsDarkMode;
+					ResourceDictionary revertThemeDictionary = new ResourceDictionary
+					{
+						Source = new Uri($"pack://application:,,,/Dissonance;component/Assets/Themes/{(revertToDarkMode ? "DarkTheme.xaml" : "LightTheme.xaml")}")
+					};
+
+					Application.Current.Resources.MergedDictionaries.Clear ( );
+					Application.Current.Resources.MergedDictionaries.Add ( revertThemeDictionary );
+
+					_logger.LogInformation ( "Reverted theme to {Theme}.", revertToDarkMode ? "Dark" : "Light" );
+				}
+				catch ( Exception revertEx )
+				{
+					_logger.LogError ( revertEx, "Error occurred while reverting the theme." );
+				}
 			}
 		}
 	}

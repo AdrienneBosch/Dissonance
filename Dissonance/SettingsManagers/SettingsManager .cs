@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
+
 using Newtonsoft.Json;
 
 using Formatting = Newtonsoft.Json.Formatting;
@@ -16,29 +12,53 @@ namespace Dissonance.SettingsManagers
 		private const string SettingsFilePath = "settings.json";
 		private const string DefaultSettingsFilePath = "defaultSettings.json";
 
-		public AppSettings LoadSettings ( )
+		public AppSettings LoadSettings ( string customFilePath = null )
 		{
 			EnsureSettingsFileExists ( );
 
-			var json = File.ReadAllText(SettingsFilePath);
+			string path = customFilePath ?? SettingsFilePath;
+			if ( !File.Exists ( path ) )
+			{
+				throw new FileNotFoundException ( $"The specified settings file does not exist: {path}" );
+			}
+
+			var json = File.ReadAllText(path);
 			return JsonConvert.DeserializeObject<AppSettings> ( json );
 		}
 
-		public void SaveSettings ( AppSettings settings )
+		public void SaveSettings ( AppSettings settings, string customFilePath = null )
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-			File.WriteAllText ( SettingsFilePath, json );
+			string path = customFilePath ?? SettingsFilePath;
+			File.WriteAllText ( path, json );
+		}
+
+		public void SaveAsDefaultConfiguration ( AppSettings settings )
+		{
+			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+			File.WriteAllText ( DefaultSettingsFilePath, json );
+		}
+
+		public AppSettings LoadFactoryDefault ( )
+		{
+			if ( !File.Exists ( DefaultSettingsFilePath ) )
+			{
+				CreateDefaultSettingsFile ( DefaultSettingsFilePath );
+			}
+
+			var json = File.ReadAllText(DefaultSettingsFilePath);
+			return JsonConvert.DeserializeObject<AppSettings> ( json );
 		}
 
 		private void EnsureSettingsFileExists ( )
 		{
 			if ( !File.Exists ( SettingsFilePath ) )
 			{
-				CreateDefaultSettingsFile ( );
+				CreateDefaultSettingsFile ( SettingsFilePath );
 			}
 		}
 
-		private void CreateDefaultSettingsFile ( )
+		private void CreateDefaultSettingsFile ( string filePath )
 		{
 			try
 			{
@@ -57,7 +77,7 @@ namespace Dissonance.SettingsManagers
 				};
 
 				var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
-				File.WriteAllText ( SettingsFilePath, json );
+				File.WriteAllText ( filePath, json );
 			}
 			catch ( Exception ex )
 			{

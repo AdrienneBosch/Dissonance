@@ -10,12 +10,12 @@
         <MenuItem Header="Settings">
             <MenuItem Header="Configuration">
                 <MenuItem Header="Save">
-                    <MenuItem Header="Set as Default Configuration"/>
-                    <MenuItem Header="Save Configuration"/>
+                    <MenuItem Header="Set as Default Configuration" Click="SetAsDefaultConfiguration_Click"/>
+                    <MenuItem Header="Save Configuration" Click="SaveConfiguration_Click"/>
                 </MenuItem>
                 <MenuItem Header="Load">
-                    <MenuItem Header="Load Configuration"/>
-                    <MenuItem Header="Restore Factory Default"/>
+                    <MenuItem Header="Load Configuration" Click="LoadConfiguration_Click"/>
+                    <MenuItem Header="Restore Factory Default" Click="RestoreFactoryDefault_Click"/>
                 </MenuItem>
             </MenuItem>
             <MenuItem Header="Hotkeys">

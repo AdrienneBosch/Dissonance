@@ -8,8 +8,9 @@ namespace Dissonance.SettingsManagers
 {
 	public interface ISettingsManager
 	{
-		AppSettings LoadSettings ( );
-		void SaveSettings ( AppSettings settings );
+		AppSettings LoadSettings ( string customFilePath = null );
+		void SaveSettings ( AppSettings settings, string customFilePath = null );
+		void SaveAsDefaultConfiguration ( AppSettings settings );
+		AppSettings LoadFactoryDefault ( );
 	}
-
 }

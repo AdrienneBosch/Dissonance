@@ -18,7 +18,7 @@
     BorderBrush="{DynamicResource {x:Static SystemColors.ControlBrushKey}}">
 
     <DockPanel>
-        <local:CustomTitleBar DockPanel.Dock="Top" Height="29"/>
+        <local:CustomTitleBar DockPanel.Dock="Top" Height="40"/>
         <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
             <Grid x:Name="ThemeToggleButtonContainer" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="10"/>
             <SettingsMenu:SettingsMennu HorizontalAlignment="Left" VerticalAlignment="Top" Margin="10"/>

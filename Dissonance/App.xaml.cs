@@ -23,7 +23,7 @@ namespace Dissonance
 			ServiceProvider = serviceCollection.BuildServiceProvider ( );
 			_logger = ServiceProvider.GetRequiredService<ILogger<App>> ( );
 
-			_logger.LogInformation ( "Test log entry: Application has started." );
+			_logger.LogInformation ( "Application has started." );
 		}
 
 		protected override async void OnStartup ( StartupEventArgs e )
@@ -47,24 +47,44 @@ namespace Dissonance
 		{
 			services.AddSingleton<ISettingsManager, SettingsManager> ( );
 			services.AddSingleton<MainWindow> ( );
-			services.AddSingleton<AppSettings> ( ); // Register AppSettings as a singleton
+			services.AddSingleton<AppSettings> ( );
 			services.AddLogging ( loggingBuilder => loggingBuilder.ConfigureLogging ( ) );
 		}
 
 		private async Task InitializeSettingsAsync ( )
 		{
-			var settingsManager = ServiceProvider.GetRequiredService<ISettingsManager>();
-			var appSettings = await settingsManager.LoadSettingsAsync();
-			var appSettingsInstance = ServiceProvider.GetRequiredService<AppSettings>();
-			appSettingsInstance.CopyFrom ( appSettings );
-			ThemeManager.Initialize ( appSettingsInstance ); // Initialize ThemeManager with AppSettings
-			ThemeManager.SetTheme ( appSettings.Theme.IsDarkMode );
+			try
+			{
+				var settingsManager = ServiceProvider.GetRequiredService<ISettingsManager>();
+				var appSettings = await settingsManager.LoadSettingsAsync();
+				var appSettingsInstance = ServiceProvider.GetRequiredService<AppSettings>();
+				appSettingsInstance.CopyFrom ( appSettings );
+				ThemeManager.Initialize ( appSettingsInstance );
+				ThemeManager.SetTheme ( appSettings.Theme.IsDarkMode );
+
+				_logger.LogInformation ( "Settings initialized successfully." );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred during settings initialization." );
+				throw;
+			}
 		}
 
 		private void InitializeMainWindow ( )
 		{
-			var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
-			mainWindow.Show ( );
+			try
+			{
+				var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
+				mainWindow.Show ( );
+
+				_logger.LogInformation ( "Main window initialized and displayed successfully." );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred while initializing the main window." );
+				throw;
+			}
 		}
 	}
 }

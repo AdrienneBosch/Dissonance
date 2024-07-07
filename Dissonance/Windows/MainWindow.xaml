@@ -37,8 +37,10 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
                 <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
-                    <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
-                    <Lables:StandardLable HorizontalAlignment="Left" Margin="23,68,0,0" VerticalAlignment="Top" StandardText="Voice Selection"/>
+                    <Lables:HeadingLable x:Name="ClipboardReaderHeadingLable" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
+                    <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Left" Margin="10,73,0,0" VerticalAlignment="Top" StandardText="Voice Rate"/>
+                    <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Selection" Margin="0,73,0,0"/>
+                    <Lables:StandardLable x:Name="VoiceVolumeLable" HorizontalAlignment="Left" VerticalAlignment="Top" StandardText="Volume" Margin="371,73,0,0" RenderTransformOrigin="0.989,0.558"/>
                 </Grid>
                 <Grid Background="Transparent" Grid.Column="1" Margin="10">
                 </Grid>

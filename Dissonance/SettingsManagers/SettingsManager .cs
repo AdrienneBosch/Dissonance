@@ -36,7 +36,7 @@ namespace Dissonance.SettingsManagers
 		public void SaveAsDefaultConfiguration ( AppSettings settings )
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-			File.WriteAllText ( DefaultSettingsFilePath, json );
+			File.WriteAllText ( SettingsFilePath, json );
 		}
 
 		public AppSettings LoadFactoryDefault ( )

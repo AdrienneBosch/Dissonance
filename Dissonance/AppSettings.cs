@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dissonance
+﻿namespace Dissonance
 {
 	public class AppSettings
 	{
@@ -17,6 +11,17 @@ namespace Dissonance
 			ScreenReader = new ScreenReaderSettings ( );
 			Magnifier = new MagnifierSettings ( );
 			Theme = new ThemeSettings ( );
+		}
+
+		public void CopyFrom ( AppSettings other )
+		{
+			if ( other == null ) throw new ArgumentNullException ( nameof ( other ) );
+
+			ScreenReader.Volume = other.ScreenReader.Volume;
+			ScreenReader.VoiceRate = other.ScreenReader.VoiceRate;
+			Magnifier.ZoomLevel = other.Magnifier.ZoomLevel;
+			Magnifier.InvertColors = other.Magnifier.InvertColors;
+			Theme.IsDarkMode = other.Theme.IsDarkMode;
 		}
 	}
 

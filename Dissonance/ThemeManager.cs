@@ -5,6 +5,13 @@ namespace Dissonance
 {
 	public static class ThemeManager
 	{
+		private static AppSettings _appSettings;
+
+		public static void Initialize ( AppSettings appSettings )
+		{
+			_appSettings = appSettings;
+		}
+
 		public static void SetTheme ( bool isDarkMode )
 		{
 			ResourceDictionary themeDictionary = new ResourceDictionary();
@@ -22,6 +29,12 @@ namespace Dissonance
 
 			// Apply the selected theme
 			Application.Current.Resources.MergedDictionaries.Add ( themeDictionary );
+
+			// Update AppSettings
+			if ( _appSettings != null )
+			{
+				_appSettings.Theme.IsDarkMode = isDarkMode;
+			}
 		}
 	}
 }

@@ -22,6 +22,9 @@ namespace Dissonance
 			// Retrieve settings and set the theme
 			var settingsManager = ServiceProvider.GetRequiredService<ISettingsManager>();
 			var appSettings = settingsManager.LoadSettings();
+			var appSettingsInstance = ServiceProvider.GetRequiredService<AppSettings>();
+			appSettingsInstance.CopyFrom ( appSettings );
+			ThemeManager.Initialize ( appSettingsInstance ); // Initialize ThemeManager with AppSettings
 			ThemeManager.SetTheme ( appSettings.Theme.IsDarkMode );
 
 			var mainWindow = ServiceProvider.GetRequiredService<MainWindow>();
@@ -32,6 +35,7 @@ namespace Dissonance
 		{
 			services.AddSingleton<ISettingsManager, SettingsManager> ( );
 			services.AddSingleton<MainWindow> ( );
+			services.AddSingleton<AppSettings> ( ); // Register AppSettings as a singleton
 		}
 	}
 }

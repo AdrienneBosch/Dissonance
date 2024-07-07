@@ -1,28 +1,35 @@
-﻿using System;
+﻿using Dissonance.SettingsManagers;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Win32;
+
 using System.Windows;
 using System.Windows.Controls;
-
-using Dissonance.SettingsManagers;
-
-using Microsoft.Win32;
 
 namespace Dissonance.UserControls.SettingsMenu
 {
 	public partial class SettingsMennu : UserControl
 	{
-		private readonly SettingsManager _settingsManager;
+		private readonly ISettingsManager _settingsManager;
+		private readonly AppSettings _appSettings;
 
 		public SettingsMennu ( )
 		{
 			InitializeComponent ( );
-			_settingsManager = new SettingsManager ( );
+			_settingsManager = App.ServiceProvider.GetRequiredService<ISettingsManager> ( );
+			_appSettings = App.ServiceProvider.GetRequiredService<AppSettings> ( );
+		}
+
+		private AppSettings GetCurrentAppSettings ( )
+		{
+			return _appSettings;
 		}
 
 		private void SetAsDefaultConfiguration_Click ( object sender, RoutedEventArgs e )
 		{
 			try
 			{
-				var settings = _settingsManager.LoadSettings();
+				var settings = GetCurrentAppSettings();
 				_settingsManager.SaveAsDefaultConfiguration ( settings );
 				MessageBox.Show ( "Current settings have been saved as the default configuration.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 			}
@@ -44,7 +51,7 @@ namespace Dissonance.UserControls.SettingsMenu
 
 				if ( saveFileDialog.ShowDialog ( ) == true )
 				{
-					var settings = _settingsManager.LoadSettings();
+					var settings = GetCurrentAppSettings();
 					_settingsManager.SaveSettings ( settings, saveFileDialog.FileName );
 					MessageBox.Show ( "Configuration saved successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 				}
@@ -68,7 +75,7 @@ namespace Dissonance.UserControls.SettingsMenu
 				if ( openFileDialog.ShowDialog ( ) == true )
 				{
 					var settings = _settingsManager.LoadSettings(openFileDialog.FileName);
-					_settingsManager.SaveSettings ( settings ); // Optionally save the loaded settings to the default path
+					_appSettings.CopyFrom ( settings );
 					MessageBox.Show ( "Configuration loaded successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 				}
 			}
@@ -83,7 +90,7 @@ namespace Dissonance.UserControls.SettingsMenu
 			try
 			{
 				var settings = _settingsManager.LoadFactoryDefault();
-				_settingsManager.SaveSettings ( settings ); // Optionally save the factory default settings to the default path
+				_appSettings.CopyFrom ( settings );
 				MessageBox.Show ( "Factory default settings have been restored.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 			}
 			catch ( Exception ex )

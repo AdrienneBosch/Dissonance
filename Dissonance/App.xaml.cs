@@ -45,8 +45,8 @@ namespace Dissonance
 
 		private void ConfigureServices ( IServiceCollection services )
 		{
-			services.AddSingleton<ISettingsManager, SettingsManager> ( );
-			services.AddSingleton<MainWindow> ( );
+			services.AddTransient<ISettingsManager, SettingsManager> ( );
+			services.AddTransient<MainWindow> ( );
 			services.AddSingleton<AppSettings> ( );
 			services.AddLogging ( loggingBuilder => loggingBuilder.ConfigureLogging ( ) );
 		}

@@ -2,6 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using Formatting = Newtonsoft.Json.Formatting;
@@ -12,43 +14,83 @@ namespace Dissonance.SettingsManagers
 	{
 		private const string SettingsFilePath = "settings.json";
 		private const string DefaultSettingsFilePath = "defaultSettings.json";
+		private readonly ILogger<SettingsManager> _logger;
+
+		public SettingsManager ( ILogger<SettingsManager> logger )
+		{
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+		}
 
 		public async Task<AppSettings> LoadSettingsAsync ( string customFilePath = null )
 		{
-			await EnsureSettingsFileExistsAsync ( );
-
-			string path = customFilePath ?? SettingsFilePath;
-			if ( !File.Exists ( path ) )
+			try
 			{
-				throw new FileNotFoundException ( $"The specified settings file does not exist: {path}" );
-			}
+				await EnsureSettingsFileExistsAsync ( );
 
-			var json = await File.ReadAllTextAsync(path);
-			return JsonConvert.DeserializeObject<AppSettings> ( json );
+				string path = customFilePath ?? SettingsFilePath;
+				if ( !File.Exists ( path ) )
+				{
+					throw new FileNotFoundException ( $"The specified settings file does not exist: {path}" );
+				}
+
+				var json = await File.ReadAllTextAsync(path);
+				return JsonConvert.DeserializeObject<AppSettings> ( json );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred while loading settings from {Path}", customFilePath ?? SettingsFilePath );
+				throw;
+			}
 		}
 
 		public async Task SaveSettingsAsync ( AppSettings settings, string customFilePath = null )
 		{
-			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-			string path = customFilePath ?? SettingsFilePath;
-			await File.WriteAllTextAsync ( path, json );
+			try
+			{
+				var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+				string path = customFilePath ?? SettingsFilePath;
+				await File.WriteAllTextAsync ( path, json );
+				_logger.LogInformation ( "Settings saved successfully to {Path}", path );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred while saving settings to {Path}", customFilePath ?? SettingsFilePath );
+				throw;
+			}
 		}
 
 		public async Task SaveAsDefaultConfigurationAsync ( AppSettings settings )
 		{
-			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-			await File.WriteAllTextAsync ( SettingsFilePath, json );
+			try
+			{
+				var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
+				await File.WriteAllTextAsync ( DefaultSettingsFilePath, json );
+				_logger.LogInformation ( "Default settings configuration saved successfully." );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred while saving the default configuration." );
+				throw;
+			}
 		}
 
 		public async Task<AppSettings> LoadFactoryDefaultAsync ( )
 		{
-			if ( !File.Exists ( DefaultSettingsFilePath ) )
+			try
 			{
-				await CreateDefaultSettingsFileAsync ( DefaultSettingsFilePath );
-			}
+				if ( !File.Exists ( DefaultSettingsFilePath ) )
+				{
+					await CreateDefaultSettingsFileAsync ( DefaultSettingsFilePath );
+				}
 
-			var json = await File.ReadAllTextAsync(DefaultSettingsFilePath);
-			return JsonConvert.DeserializeObject<AppSettings> ( json );
+				var json = await File.ReadAllTextAsync(DefaultSettingsFilePath);
+				return JsonConvert.DeserializeObject<AppSettings> ( json );
+			}
+			catch ( Exception ex )
+			{
+				_logger.LogError ( ex, "An error occurred while loading the factory default settings." );
+				throw;
+			}
 		}
 
 		private async Task EnsureSettingsFileExistsAsync ( )
@@ -79,12 +121,11 @@ namespace Dissonance.SettingsManagers
 
 				var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
 				await File.WriteAllTextAsync ( filePath, json );
+				_logger.LogInformation ( "Default settings file created at {Path}", filePath );
 			}
 			catch ( Exception ex )
 			{
-				// Log the exception using a logging framework
-				// Log.Error(ex, $"Error creating default settings file: {ex.Message}");
-				Console.WriteLine ( $"Error creating default settings file: {ex.Message}" );
+				_logger.LogError ( ex, "Error creating default settings file: {Message}", ex.Message );
 				throw;
 			}
 		}

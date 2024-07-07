@@ -8,17 +8,17 @@
              d:DesignHeight="30" d:DesignWidth="110">
     <Menu HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <MenuItem Header="Settings">
-            <MenuItem Header="General">
-                <MenuItem Header="Option 1"/>
-                <MenuItem Header="Option 2"/>
+            <MenuItem Header="Configuration">
+                <MenuItem Header="Save">
+                    <MenuItem Header="Set as Default Configuration"/>
+                    <MenuItem Header="Save Configuration"/>
+                </MenuItem>
+                <MenuItem Header="Load">
+                    <MenuItem Header="Load Configuration"/>
+                    <MenuItem Header="Restore Factory Default"/>
+                </MenuItem>
             </MenuItem>
-            <MenuItem Header="Advanced">
-                <MenuItem Header="Option A"/>
-                <MenuItem Header="Option B"/>
-            </MenuItem>
-            <MenuItem Header="Custom Submenu">
-                <MenuItem Header="Sub-option 1"/>
-                <MenuItem Header="Sub-option 2"/>
+            <MenuItem Header="Hotkeys">
             </MenuItem>
         </MenuItem>
     </Menu>

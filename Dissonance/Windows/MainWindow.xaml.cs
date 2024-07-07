@@ -14,13 +14,15 @@ namespace Dissonance
 		private readonly ILogger<MainWindow> _logger;
 		private readonly ThemeManager _themeManager;
 		private AppSettings _appSettings;
+		private readonly ILogger<Dissonance.UserControls.Buttons.ThemeToggleButton> _themeToggleButtonLogger;
 
-		public MainWindow ( ISettingsManager settingsManager, ILogger<MainWindow> logger, ThemeManager themeManager )
+		public MainWindow ( ISettingsManager settingsManager, ILogger<MainWindow> logger, ThemeManager themeManager, ILogger<Dissonance.UserControls.Buttons.ThemeToggleButton> themeToggleButtonLogger )
 		{
 			InitializeComponent ( );
 			_settingsManager = settingsManager;
 			_logger = logger;
 			_themeManager = themeManager;
+			_themeToggleButtonLogger = themeToggleButtonLogger;
 			Loaded += MainWindow_Loaded;
 		}
 
@@ -36,7 +38,7 @@ namespace Dissonance
 				_appSettings = await _settingsManager.LoadSettingsAsync ( );
 				InitializeSettings ( );
 
-				var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton(_settingsManager, _appSettings, _themeManager);
+				var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton(_settingsManager, _appSettings, _themeManager, _themeToggleButtonLogger);
 				ThemeToggleButtonContainer.Children.Add ( themeToggleButton );
 
 				_logger.LogInformation ( "Settings initialized successfully." );

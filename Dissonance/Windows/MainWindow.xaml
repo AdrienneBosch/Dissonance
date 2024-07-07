@@ -31,20 +31,36 @@
             </Grid.RowDefinitions>
 
             <!-- Header body grid placed in the first row -->
-            <Grid x:Name="HeaderBodyGrid" Grid.Row="0" HorizontalAlignment="Center" Width="960" VerticalAlignment="Top" Background="#FF22BD96">
+            <Grid x:Name="HeaderBodyGrid" Grid.Row="0" Background="#FF22BD96">
                 <Grid x:Name="SettingsMenuGrid" HorizontalAlignment="Left" Width="81" Margin="10,10,0,0">
                     <SettingsMenu:SettingsMennu HorizontalAlignment="Left" VerticalAlignment="Top"/>
                 </Grid>
                 <Grid x:Name="ThemeToggleButtonContainer" HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,10,10,0"/>
             </Grid>
 
-            <!-- Placeholder for the second row content -->
-            <Grid Grid.Row="1" Background="LightGray">
-                <!-- Add content for the main body here -->
+            <!-- Middle body grid with two columns -->
+            <Grid x:Name="MiddleBodyGrid" Grid.Row="1" Background="#FFB14613">
+                <!-- Define column definitions for the middle body grid -->
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <!-- Left column -->
+                    <ColumnDefinition Width="*" />
+                    <!-- Right column -->
+                </Grid.ColumnDefinitions>
+
+                <!-- Green grid placed in the left column -->
+                <Grid Background="#FF97EF42" Grid.Column="0" Margin="10">
+                    <!-- Add content for the green grid here -->
+                </Grid>
+
+                <!-- Placeholder for the right column content -->
+                <Grid Background="Transparent" Grid.Column="1" Margin="10">
+                    <!-- Add content for the right column here -->
+                </Grid>
             </Grid>
 
             <!-- Placeholder for the third row content -->
-            <Grid Grid.Row="2" Background="LightBlue">
+            <Grid x:Name="BottomBodyGrid" Grid.Row="2" Background="LightBlue">
                 <!-- Add content for the footer or additional content here -->
             </Grid>
         </Grid>

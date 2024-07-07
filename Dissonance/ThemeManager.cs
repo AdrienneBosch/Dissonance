@@ -10,6 +10,15 @@ namespace Dissonance
 		public static void Initialize ( AppSettings appSettings )
 		{
 			_appSettings = appSettings;
+			_appSettings.PropertyChanged += AppSettings_PropertyChanged;
+		}
+
+		private static void AppSettings_PropertyChanged ( object sender, System.ComponentModel.PropertyChangedEventArgs e )
+		{
+			if ( e.PropertyName == nameof ( AppSettings.Theme ) )
+			{
+				SetTheme ( _appSettings.Theme.IsDarkMode );
+			}
 		}
 
 		public static void SetTheme ( bool isDarkMode )

@@ -1,27 +1,57 @@
-﻿namespace Dissonance
-{
-	public class AppSettings
-	{
-		public ScreenReaderSettings ScreenReader { get; set; }
-		public MagnifierSettings Magnifier { get; set; }
-		public ThemeSettings Theme { get; set; }
+﻿using System.ComponentModel;
 
-		public AppSettings ( )
+namespace Dissonance
+{
+	public class AppSettings : INotifyPropertyChanged
+	{
+		private ScreenReaderSettings _screenReader;
+		private MagnifierSettings _magnifier;
+		private ThemeSettings _theme;
+
+		public ScreenReaderSettings ScreenReader
 		{
-			ScreenReader = new ScreenReaderSettings ( );
-			Magnifier = new MagnifierSettings ( );
-			Theme = new ThemeSettings ( );
+			get => _screenReader;
+			set
+			{
+				_screenReader = value;
+				OnPropertyChanged ( nameof ( ScreenReader ) );
+			}
+		}
+
+		public MagnifierSettings Magnifier
+		{
+			get => _magnifier;
+			set
+			{
+				_magnifier = value;
+				OnPropertyChanged ( nameof ( Magnifier ) );
+			}
+		}
+
+		public ThemeSettings Theme
+		{
+			get => _theme;
+			set
+			{
+				_theme = value;
+				OnPropertyChanged ( nameof ( Theme ) );
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		protected virtual void OnPropertyChanged ( string propertyName )
+		{
+			PropertyChanged?.Invoke ( this, new PropertyChangedEventArgs ( propertyName ) );
 		}
 
 		public void CopyFrom ( AppSettings other )
 		{
 			if ( other == null ) throw new ArgumentNullException ( nameof ( other ) );
 
-			ScreenReader.Volume = other.ScreenReader.Volume;
-			ScreenReader.VoiceRate = other.ScreenReader.VoiceRate;
-			Magnifier.ZoomLevel = other.Magnifier.ZoomLevel;
-			Magnifier.InvertColors = other.Magnifier.InvertColors;
-			Theme.IsDarkMode = other.Theme.IsDarkMode;
+			ScreenReader = other.ScreenReader;
+			Magnifier = other.Magnifier;
+			Theme = other.Theme;
 		}
 	}
 
@@ -39,6 +69,23 @@
 
 	public class ThemeSettings
 	{
-		public bool IsDarkMode { get; set; }
+		private bool _isDarkMode;
+
+		public bool IsDarkMode
+		{
+			get => _isDarkMode;
+			set
+			{
+				_isDarkMode = value;
+				OnPropertyChanged ( nameof ( IsDarkMode ) );
+			}
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		protected virtual void OnPropertyChanged ( string propertyName )
+		{
+			PropertyChanged?.Invoke ( this, new PropertyChangedEventArgs ( propertyName ) );
+		}
 	}
 }

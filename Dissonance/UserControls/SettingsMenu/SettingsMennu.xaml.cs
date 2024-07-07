@@ -76,6 +76,7 @@ namespace Dissonance.UserControls.SettingsMenu
 				{
 					var settings = _settingsManager.LoadSettings(openFileDialog.FileName);
 					_appSettings.CopyFrom ( settings );
+					ThemeManager.SetTheme ( _appSettings.Theme.IsDarkMode ); // Ensure the theme is updated
 					MessageBox.Show ( "Configuration loaded successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 				}
 			}
@@ -91,6 +92,7 @@ namespace Dissonance.UserControls.SettingsMenu
 			{
 				var settings = _settingsManager.LoadFactoryDefault();
 				_appSettings.CopyFrom ( settings );
+				ThemeManager.SetTheme ( _appSettings.Theme.IsDarkMode ); // Ensure the theme is updated
 				MessageBox.Show ( "Factory default settings have been restored.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 			}
 			catch ( Exception ex )

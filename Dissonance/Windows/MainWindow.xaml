@@ -51,7 +51,7 @@
 
                 <!-- Green grid placed in the left column -->
                 <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
-                    <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Custom Heading 1"/>
+                    <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
                     <!-- Add content for the green grid here -->
                 </Grid>
 

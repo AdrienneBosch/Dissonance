@@ -7,6 +7,7 @@
     xmlns:Buttons="clr-namespace:Dissonance.UserControls.Buttons" 
     xmlns:SettingsMenu="clr-namespace:Dissonance.UserControls.SettingsMenu" 
     xmlns:Lables="clr-namespace:Dissonance.UserControls.Lables" 
+    xmlns:Volume_Bar="clr-namespace:Dissonance.UserControls.Volume_Bar" 
     x:Class="Dissonance.MainWindow"
     mc:Ignorable="d"
     Title="MainWindow" 
@@ -44,22 +45,21 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Grid x:Name="VoiceVolumeGrid" Grid.Column="0" HorizontalAlignment="Left">
+                        <Grid x:Name="VoiceVolumeGrid" Grid.Column="0" HorizontalAlignment="Left" Margin="0,0,0,-32" Width="144">
                             <Lables:StandardLable x:Name="VoiceVolumeLable" StandardText="Volume" Margin="10,0,0,0" RenderTransformOrigin="0.989,0.558"/>
+                            <Volume_Bar:VolumeBar Margin="10,0,0,0" VerticalAlignment="Bottom"/>
                         </Grid>
                         <Grid x:Name="VoiceSelectionGrid" Grid.Column="1" HorizontalAlignment="Center">
                             <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Selection" Margin="10,0,0,0" RenderTransformOrigin="0.498,0.376"/>
                         </Grid>
-                        <Grid x:Name="VoiceRateGrid" Grid.Column="2" HorizontalAlignment="Right">
+                        <Grid x:Name="VoiceRateGrid" Grid.Column="2" HorizontalAlignment="Left" Margin="10,0,0,0" Width="143">
                             <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Left" VerticalAlignment="Top" StandardText="Voice Rate" Margin="10,0,0,0" RenderTransformOrigin="1.207,0.51"/>
                         </Grid>
                     </Grid>
                 </Grid>
-                <Grid Background="Transparent" Grid.Column="1" Margin="10">
-                </Grid>
+                <Grid Background="Transparent" Grid.Column="1" Margin="10"/>
             </Grid>
-            <Grid x:Name="BottomBodyGrid" Grid.Row="2">
-            </Grid>
+            <Grid x:Name="BottomBodyGrid" Grid.Row="2"/>
         </Grid>
     </DockPanel>
 </Window>

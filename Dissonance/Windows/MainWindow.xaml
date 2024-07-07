@@ -20,7 +20,7 @@
 
     <DockPanel>
         <local:CustomTitleBar DockPanel.Dock="Top" Height="40"/>
-        <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Disabled" ShowGridLines="True" UseLayoutRounding="True">
+        <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="True">
             <!-- Define the row definitions for the body grid with specific sizes -->
             <Grid.RowDefinitions>
                 <RowDefinition Height="60" />
@@ -32,7 +32,7 @@
             </Grid.RowDefinitions>
 
             <!-- Header body grid placed in the first row -->
-            <Grid x:Name="HeaderBodyGrid" Grid.Row="0" Background="#FF22BD96">
+            <Grid x:Name="HeaderBodyGrid" Grid.Row="0">
                 <Grid x:Name="SettingsMenuGrid" HorizontalAlignment="Left" Width="81" Margin="10,10,0,0">
                     <SettingsMenu:SettingsMennu HorizontalAlignment="Left" VerticalAlignment="Top"/>
                 </Grid>
@@ -40,7 +40,7 @@
             </Grid>
 
             <!-- Middle body grid with two columns -->
-            <Grid x:Name="MiddleBodyGrid" Grid.Row="1" Background="#FFB14613">
+            <Grid x:Name="MiddleBodyGrid" Grid.Row="1">
                 <!-- Define column definitions for the middle body grid -->
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*" />
@@ -50,7 +50,7 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Green grid placed in the left column -->
-                <Grid x:Name="ReaderGrid" Background="#FF97EF42" Grid.Column="0" Margin="10">
+                <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
                     <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Custom Heading 1"/>
                     <!-- Add content for the green grid here -->
                 </Grid>
@@ -62,7 +62,7 @@
             </Grid>
 
             <!-- Placeholder for the third row content -->
-            <Grid x:Name="BottomBodyGrid" Grid.Row="2" Background="LightBlue">
+            <Grid x:Name="BottomBodyGrid" Grid.Row="2">
                 <!-- Add content for the footer or additional content here -->
             </Grid>
         </Grid>

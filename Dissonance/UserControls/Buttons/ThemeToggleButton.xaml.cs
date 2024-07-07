@@ -1,31 +1,24 @@
-﻿using Dissonance.SettingsManagers;
-
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Input;
+
+using Dissonance.SettingsManagers;
 
 namespace Dissonance.UserControls.Buttons
 {
 	public partial class ThemeToggleButton : UserControl
 	{
-		private ISettingsManager _settingsManager;
-		private AppSettings _appSettings;
+		private readonly ISettingsManager _settingsManager;
+		private readonly AppSettings _appSettings;
+		private readonly ThemeManager _themeManager;
 
-		public ThemeToggleButton ( )
+		public ThemeToggleButton ( ISettingsManager settingsManager, AppSettings appSettings, ThemeManager themeManager )
 		{
 			InitializeComponent ( );
-		}
+			_settingsManager = settingsManager;
+			_appSettings = appSettings;
+			_themeManager = themeManager;
 
-		public ISettingsManager SettingsManager
-		{
-			get { return _settingsManager; }
-			set { _settingsManager = value; InitializeSettings ( ); }
-		}
-
-		public AppSettings AppSettings
-		{
-			get { return _appSettings; }
-			set { _appSettings = value; InitializeSettings ( ); }
+			InitializeSettings ( );
 		}
 
 		private void InitializeSettings ( )
@@ -41,7 +34,7 @@ namespace Dissonance.UserControls.Buttons
 			if ( _appSettings != null )
 			{
 				_appSettings.Theme.IsDarkMode = true;
-				ThemeManager.SetTheme ( true );
+				_themeManager.SetTheme ( true );
 			}
 		}
 
@@ -50,9 +43,8 @@ namespace Dissonance.UserControls.Buttons
 			if ( _appSettings != null )
 			{
 				_appSettings.Theme.IsDarkMode = false;
-				ThemeManager.SetTheme ( false );
+				_themeManager.SetTheme ( false );
 			}
 		}
-
 	}
 }

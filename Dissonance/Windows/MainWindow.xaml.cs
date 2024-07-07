@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -13,13 +12,15 @@ namespace Dissonance
 	{
 		private readonly ISettingsManager _settingsManager;
 		private readonly ILogger<MainWindow> _logger;
+		private readonly ThemeManager _themeManager;
 		private AppSettings _appSettings;
 
-		public MainWindow ( ISettingsManager settingsManager, ILogger<MainWindow> logger )
+		public MainWindow ( ISettingsManager settingsManager, ILogger<MainWindow> logger, ThemeManager themeManager )
 		{
 			InitializeComponent ( );
 			_settingsManager = settingsManager;
 			_logger = logger;
+			_themeManager = themeManager;
 			Loaded += MainWindow_Loaded;
 		}
 
@@ -35,12 +36,7 @@ namespace Dissonance
 				_appSettings = await _settingsManager.LoadSettingsAsync ( );
 				InitializeSettings ( );
 
-				var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton
-				{
-					SettingsManager = _settingsManager,
-					AppSettings = _appSettings
-				};
-
+				var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton(_settingsManager, _appSettings, _themeManager);
 				ThemeToggleButtonContainer.Children.Add ( themeToggleButton );
 
 				_logger.LogInformation ( "Settings initialized successfully." );
@@ -60,7 +56,7 @@ namespace Dissonance
 			var invertColors = _appSettings.Magnifier.InvertColors;
 
 			bool isDarkMode = _appSettings.Theme.IsDarkMode;
-			ThemeManager.SetTheme ( isDarkMode );
+			_themeManager.SetTheme ( isDarkMode );
 
 			_logger.LogInformation ( "UI components initialized with settings." );
 		}

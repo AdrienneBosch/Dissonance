@@ -48,6 +48,7 @@ namespace Dissonance
 			services.AddTransient<ISettingsManager, SettingsManager> ( );
 			services.AddTransient<MainWindow> ( );
 			services.AddSingleton<AppSettings> ( );
+			services.AddSingleton<ThemeManager> ( );
 			services.AddLogging ( loggingBuilder => loggingBuilder.ConfigureLogging ( ) );
 		}
 
@@ -59,8 +60,8 @@ namespace Dissonance
 				var appSettings = await settingsManager.LoadSettingsAsync();
 				var appSettingsInstance = ServiceProvider.GetRequiredService<AppSettings>();
 				appSettingsInstance.CopyFrom ( appSettings );
-				ThemeManager.Initialize ( appSettingsInstance );
-				ThemeManager.SetTheme ( appSettings.Theme.IsDarkMode );
+				var themeManager = ServiceProvider.GetRequiredService<ThemeManager>();
+				themeManager.SetTheme ( appSettings.Theme.IsDarkMode );
 
 				_logger.LogInformation ( "Settings initialized successfully." );
 			}

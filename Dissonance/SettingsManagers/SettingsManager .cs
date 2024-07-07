@@ -2,6 +2,8 @@
 using System.IO;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using Formatting = Newtonsoft.Json.Formatting;
@@ -12,6 +14,12 @@ namespace Dissonance.SettingsManagers
 	{
 		private const string SettingsFilePath = "settings.json";
 		private const string DefaultSettingsFilePath = "defaultSettings.json";
+		private readonly ILogger<SettingsManager> _logger;
+
+		public SettingsManager ( ILogger<SettingsManager> logger )
+		{
+			_logger = logger;
+		}
 
 		public async Task<AppSettings> LoadSettingsAsync ( string customFilePath = null )
 		{
@@ -20,6 +28,7 @@ namespace Dissonance.SettingsManagers
 			string path = customFilePath ?? SettingsFilePath;
 			if ( !File.Exists ( path ) )
 			{
+				_logger.LogError ( $"The specified settings file does not exist: {path}" );
 				throw new FileNotFoundException ( $"The specified settings file does not exist: {path}" );
 			}
 
@@ -32,12 +41,14 @@ namespace Dissonance.SettingsManagers
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
 			string path = customFilePath ?? SettingsFilePath;
 			await File.WriteAllTextAsync ( path, json );
+			_logger.LogInformation ( "Settings saved successfully to {path}.", path );
 		}
 
 		public async Task SaveAsDefaultConfigurationAsync ( AppSettings settings )
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
 			await File.WriteAllTextAsync ( SettingsFilePath, json );
+			_logger.LogInformation ( "Default settings configuration saved." );
 		}
 
 		public async Task<AppSettings> LoadFactoryDefaultAsync ( )
@@ -79,12 +90,11 @@ namespace Dissonance.SettingsManagers
 
 				var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
 				await File.WriteAllTextAsync ( filePath, json );
+				_logger.LogInformation ( "Default settings file created at {filePath}.", filePath );
 			}
 			catch ( Exception ex )
 			{
-				// Log the exception using a logging framework
-				// Log.Error(ex, $"Error creating default settings file: {ex.Message}");
-				Console.WriteLine ( $"Error creating default settings file: {ex.Message}" );
+				_logger.LogError ( ex, "Error creating default settings file." );
 				throw;
 			}
 		}

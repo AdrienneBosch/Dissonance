@@ -23,7 +23,7 @@
         <Grid x:Name="BodyGrid" Background="{DynamicResource BackgroundBrush}" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="True">
             <!-- Define the row definitions for the body grid with specific sizes -->
             <Grid.RowDefinitions>
-                <RowDefinition Height="60" />
+                <RowDefinition Height="40" />
                 <!-- First row with fixed height of 60 pixels -->
                 <RowDefinition Height="*" />
                 <!-- Second row takes up the remaining space -->

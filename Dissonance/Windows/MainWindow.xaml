@@ -6,6 +6,7 @@
     xmlns:local="clr-namespace:Dissonance.UserControls.Title_Bar"
     xmlns:Buttons="clr-namespace:Dissonance.UserControls.Buttons" 
     xmlns:SettingsMenu="clr-namespace:Dissonance.UserControls.SettingsMenu" 
+    xmlns:Lables="clr-namespace:Dissonance.UserControls.Lables" 
     x:Class="Dissonance.MainWindow"
     mc:Ignorable="d"
     Title="MainWindow" 
@@ -49,7 +50,8 @@
                 </Grid.ColumnDefinitions>
 
                 <!-- Green grid placed in the left column -->
-                <Grid Background="#FF97EF42" Grid.Column="0" Margin="10">
+                <Grid x:Name="ReaderGrid" Background="#FF97EF42" Grid.Column="0" Margin="10">
+                    <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Custom Heading 1"/>
                     <!-- Add content for the green grid here -->
                 </Grid>
 

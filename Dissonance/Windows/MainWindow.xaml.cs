@@ -74,5 +74,10 @@ namespace Dissonance
 				MessageBox.Show ( "An error occurred while saving settings. Please see the logs for more details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
 			}
 		}
-	}
+
+		private void HeadingLable_Loaded ( object sender, RoutedEventArgs e )
+		{
+
+        }
+    }
 }

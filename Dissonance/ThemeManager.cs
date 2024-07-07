@@ -1,7 +1,4 @@
-﻿using System;
-using System.Windows;
-
-using Dissonance.SettingsManagers;
+﻿using System.Windows;
 
 using Microsoft.Extensions.Logging;
 

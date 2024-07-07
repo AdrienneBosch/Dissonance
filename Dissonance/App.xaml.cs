@@ -1,13 +1,9 @@
-﻿using Dissonance.SettingsManagers;
+﻿using System.Windows;
+
+using Dissonance.SettingsManagers;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using Serilog;
-
-using System;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace Dissonance
 {

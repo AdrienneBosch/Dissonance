@@ -1,6 +1,4 @@
-﻿using System.Threading.Tasks;
-
-namespace Dissonance.SettingsManagers
+﻿namespace Dissonance.SettingsManagers
 {
 	public interface ISettingsManager
 	{

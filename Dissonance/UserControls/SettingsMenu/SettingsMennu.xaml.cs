@@ -1,13 +1,11 @@
-﻿using Dissonance.SettingsManagers;
+﻿using System.Windows;
+using System.Windows.Controls;
+
+using Dissonance.SettingsManagers;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
-
-using System;
-using System.Threading.Tasks;
-using System.Windows;
-using System.Windows.Controls;
 
 namespace Dissonance.UserControls.SettingsMenu
 {

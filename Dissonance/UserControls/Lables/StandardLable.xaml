@@ -4,7 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Dissonance.UserControls.Lables"
-             mc:Ignorable="d">
+             mc:Ignorable="d" VerticalAlignment="Top">
     <Grid x:Name="StandardLableGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled">
         <Label x:Name="StandardLableLabel" 
                Content="{Binding StandardText, RelativeSource={RelativeSource AncestorType=UserControl}}" 

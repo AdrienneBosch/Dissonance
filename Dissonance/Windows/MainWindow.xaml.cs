@@ -1,7 +1,7 @@
 ﻿using System.Text;
 using System.Windows;
-
 using Dissonance.SettingsManagers;
+using System.Threading.Tasks;
 
 namespace Dissonance
 {
@@ -14,7 +14,12 @@ namespace Dissonance
 		{
 			InitializeComponent ( );
 			_settingsManager = settingsManager;
-			_appSettings = _settingsManager.LoadSettings ( );
+			InitializeSettingsAsync ( ).ConfigureAwait ( false );
+		}
+
+		private async Task InitializeSettingsAsync ( )
+		{
+			_appSettings = await _settingsManager.LoadSettingsAsync ( );
 			InitializeSettings ( );
 
 			var themeToggleButton = new Dissonance.UserControls.Buttons.ThemeToggleButton
@@ -37,9 +42,9 @@ namespace Dissonance
 			ThemeManager.SetTheme ( isDarkMode );
 		}
 
-		private void SaveSettings ( )
+		private async void SaveSettings ( )
 		{
-			_settingsManager.SaveSettings ( _appSettings );
+			await _settingsManager.SaveSettingsAsync ( _appSettings );
 		}
 	}
 }

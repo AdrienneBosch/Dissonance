@@ -3,6 +3,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Win32;
 
+using System;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,12 +27,12 @@ namespace Dissonance.UserControls.SettingsMenu
 			return _appSettings;
 		}
 
-		private void SetAsDefaultConfiguration_Click ( object sender, RoutedEventArgs e )
+		private async void SetAsDefaultConfiguration_Click ( object sender, RoutedEventArgs e )
 		{
 			try
 			{
 				var settings = GetCurrentAppSettings();
-				_settingsManager.SaveAsDefaultConfiguration ( settings );
+				await _settingsManager.SaveAsDefaultConfigurationAsync ( settings );
 				MessageBox.Show ( "Current settings have been saved as the default configuration.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 			}
 			catch ( Exception ex )
@@ -39,7 +41,7 @@ namespace Dissonance.UserControls.SettingsMenu
 			}
 		}
 
-		private void SaveConfiguration_Click ( object sender, RoutedEventArgs e )
+		private async void SaveConfiguration_Click ( object sender, RoutedEventArgs e )
 		{
 			try
 			{
@@ -52,7 +54,7 @@ namespace Dissonance.UserControls.SettingsMenu
 				if ( saveFileDialog.ShowDialog ( ) == true )
 				{
 					var settings = GetCurrentAppSettings();
-					_settingsManager.SaveSettings ( settings, saveFileDialog.FileName );
+					await _settingsManager.SaveSettingsAsync ( settings, saveFileDialog.FileName );
 					MessageBox.Show ( "Configuration saved successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
 				}
 			}
@@ -62,7 +64,7 @@ namespace Dissonance.UserControls.SettingsMenu
 			}
 		}
 
-		private void LoadConfiguration_Click ( object sender, RoutedEventArgs e )
+		private async void LoadConfiguration_Click ( object sender, RoutedEventArgs e )
 		{
 			try
 			{
@@ -74,7 +76,7 @@ namespace Dissonance.UserControls.SettingsMenu
 
 				if ( openFileDialog.ShowDialog ( ) == true )
 				{
-					var settings = _settingsManager.LoadSettings(openFileDialog.FileName);
+					var settings = await _settingsManager.LoadSettingsAsync(openFileDialog.FileName);
 					_appSettings.CopyFrom ( settings );
 					ThemeManager.SetTheme ( _appSettings.Theme.IsDarkMode ); // Ensure the theme is updated
 					MessageBox.Show ( "Configuration loaded successfully.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );
@@ -86,11 +88,11 @@ namespace Dissonance.UserControls.SettingsMenu
 			}
 		}
 
-		private void RestoreFactoryDefault_Click ( object sender, RoutedEventArgs e )
+		private async void RestoreFactoryDefault_Click ( object sender, RoutedEventArgs e )
 		{
 			try
 			{
-				var settings = _settingsManager.LoadFactoryDefault();
+				var settings = await _settingsManager.LoadFactoryDefaultAsync();
 				_appSettings.CopyFrom ( settings );
 				ThemeManager.SetTheme ( _appSettings.Theme.IsDarkMode ); // Ensure the theme is updated
 				MessageBox.Show ( "Factory default settings have been restored.", "Success", MessageBoxButton.OK, MessageBoxImage.Information );

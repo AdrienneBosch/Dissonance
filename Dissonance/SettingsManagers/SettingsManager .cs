@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
@@ -12,9 +13,9 @@ namespace Dissonance.SettingsManagers
 		private const string SettingsFilePath = "settings.json";
 		private const string DefaultSettingsFilePath = "defaultSettings.json";
 
-		public AppSettings LoadSettings ( string customFilePath = null )
+		public async Task<AppSettings> LoadSettingsAsync ( string customFilePath = null )
 		{
-			EnsureSettingsFileExists ( );
+			await EnsureSettingsFileExistsAsync ( );
 
 			string path = customFilePath ?? SettingsFilePath;
 			if ( !File.Exists ( path ) )
@@ -22,43 +23,43 @@ namespace Dissonance.SettingsManagers
 				throw new FileNotFoundException ( $"The specified settings file does not exist: {path}" );
 			}
 
-			var json = File.ReadAllText(path);
+			var json = await File.ReadAllTextAsync(path);
 			return JsonConvert.DeserializeObject<AppSettings> ( json );
 		}
 
-		public void SaveSettings ( AppSettings settings, string customFilePath = null )
+		public async Task SaveSettingsAsync ( AppSettings settings, string customFilePath = null )
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
 			string path = customFilePath ?? SettingsFilePath;
-			File.WriteAllText ( path, json );
+			await File.WriteAllTextAsync ( path, json );
 		}
 
-		public void SaveAsDefaultConfiguration ( AppSettings settings )
+		public async Task SaveAsDefaultConfigurationAsync ( AppSettings settings )
 		{
 			var json = JsonConvert.SerializeObject(settings, Formatting.Indented);
-			File.WriteAllText ( SettingsFilePath, json );
+			await File.WriteAllTextAsync ( SettingsFilePath, json );
 		}
 
-		public AppSettings LoadFactoryDefault ( )
+		public async Task<AppSettings> LoadFactoryDefaultAsync ( )
 		{
 			if ( !File.Exists ( DefaultSettingsFilePath ) )
 			{
-				CreateDefaultSettingsFile ( DefaultSettingsFilePath );
+				await CreateDefaultSettingsFileAsync ( DefaultSettingsFilePath );
 			}
 
-			var json = File.ReadAllText(DefaultSettingsFilePath);
+			var json = await File.ReadAllTextAsync(DefaultSettingsFilePath);
 			return JsonConvert.DeserializeObject<AppSettings> ( json );
 		}
 
-		private void EnsureSettingsFileExists ( )
+		private async Task EnsureSettingsFileExistsAsync ( )
 		{
 			if ( !File.Exists ( SettingsFilePath ) )
 			{
-				CreateDefaultSettingsFile ( SettingsFilePath );
+				await CreateDefaultSettingsFileAsync ( SettingsFilePath );
 			}
 		}
 
-		private void CreateDefaultSettingsFile ( string filePath )
+		private async Task CreateDefaultSettingsFileAsync ( string filePath )
 		{
 			try
 			{
@@ -77,10 +78,12 @@ namespace Dissonance.SettingsManagers
 				};
 
 				var json = JsonConvert.SerializeObject(defaultSettings, Formatting.Indented);
-				File.WriteAllText ( filePath, json );
+				await File.WriteAllTextAsync ( filePath, json );
 			}
 			catch ( Exception ex )
 			{
+				// Log the exception using a logging framework
+				// Log.Error(ex, $"Error creating default settings file: {ex.Message}");
 				Console.WriteLine ( $"Error creating default settings file: {ex.Message}" );
 				throw;
 			}

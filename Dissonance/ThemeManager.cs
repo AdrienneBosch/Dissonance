@@ -14,8 +14,8 @@ namespace Dissonance
 
 		public ThemeManager ( AppSettings appSettings, ILogger<ThemeManager> logger )
 		{
-			_appSettings = appSettings;
-			_logger = logger;
+			_appSettings = appSettings ?? throw new ArgumentNullException ( nameof ( appSettings ) );
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
 			_appSettings.PropertyChanged += AppSettings_PropertyChanged;
 		}
 
@@ -33,7 +33,7 @@ namespace Dissonance
 			{
 				_logger.LogInformation ( "Attempting to set theme to {Theme}.", isDarkMode ? "Dark" : "Light" );
 
-				ResourceDictionary themeDictionary = new ResourceDictionary
+				var themeDictionary = new ResourceDictionary
 				{
 					Source = new Uri($"pack://application:,,,/Dissonance;component/Assets/Themes/{(isDarkMode ? "DarkTheme.xaml" : "LightTheme.xaml")}")
 				};
@@ -41,36 +41,34 @@ namespace Dissonance
 				Application.Current.Resources.MergedDictionaries.Clear ( );
 				Application.Current.Resources.MergedDictionaries.Add ( themeDictionary );
 
-				if ( _appSettings != null )
-				{
-					_appSettings.Theme.IsDarkMode = isDarkMode;
-				}
-
 				_logger.LogInformation ( "Theme changed to {Theme}.", isDarkMode ? "Dark" : "Light" );
 			}
 			catch ( Exception ex )
 			{
 				_logger.LogError ( ex, "Error occurred while setting the theme." );
 				MessageBox.Show ( "An error occurred while changing the theme. Please see the logs for more details.", "Error", MessageBoxButton.OK, MessageBoxImage.Error );
+				RevertTheme ( );
+			}
+		}
 
-				// Attempt to revert to the last known good state
-				try
+		private void RevertTheme ( )
+		{
+			try
+			{
+				var revertToDarkMode = !_appSettings.Theme.IsDarkMode;
+				var revertThemeDictionary = new ResourceDictionary
 				{
-					bool revertToDarkMode = !_appSettings.Theme.IsDarkMode;
-					ResourceDictionary revertThemeDictionary = new ResourceDictionary
-					{
-						Source = new Uri($"pack://application:,,,/Dissonance;component/Assets/Themes/{(revertToDarkMode ? "DarkTheme.xaml" : "LightTheme.xaml")}")
-					};
+					Source = new Uri($"pack://application:,,,/Dissonance;component/Assets/Themes/{(revertToDarkMode ? "DarkTheme.xaml" : "LightTheme.xaml")}")
+				};
 
-					Application.Current.Resources.MergedDictionaries.Clear ( );
-					Application.Current.Resources.MergedDictionaries.Add ( revertThemeDictionary );
+				Application.Current.Resources.MergedDictionaries.Clear ( );
+				Application.Current.Resources.MergedDictionaries.Add ( revertThemeDictionary );
 
-					_logger.LogInformation ( "Reverted theme to {Theme}.", revertToDarkMode ? "Dark" : "Light" );
-				}
-				catch ( Exception revertEx )
-				{
-					_logger.LogError ( revertEx, "Error occurred while reverting the theme." );
-				}
+				_logger.LogInformation ( "Reverted theme to {Theme}.", revertToDarkMode ? "Dark" : "Light" );
+			}
+			catch ( Exception revertEx )
+			{
+				_logger.LogError ( revertEx, "Error occurred while reverting the theme." );
 			}
 		}
 	}

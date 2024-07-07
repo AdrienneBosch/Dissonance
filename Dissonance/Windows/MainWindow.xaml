@@ -38,6 +38,7 @@
                 </Grid.ColumnDefinitions>
                 <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
                     <Lables:HeadingLable HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
+                    <Lables:StandardLable HorizontalAlignment="Left" Margin="23,68,0,0" VerticalAlignment="Top" StandardText="Voice Selection"/>
                 </Grid>
                 <Grid Background="Transparent" Grid.Column="1" Margin="10">
                 </Grid>

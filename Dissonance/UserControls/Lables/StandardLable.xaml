@@ -1,0 +1,20 @@
+﻿<UserControl x:Class="Dissonance.UserControls.Lables.StandardLable"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:Dissonance.UserControls.Lables"
+             mc:Ignorable="d">
+    <Grid x:Name="StandardLableGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled">
+        <Label x:Name="StandardLableLabel" 
+               Content="{Binding StandardText, RelativeSource={RelativeSource AncestorType=UserControl}}" 
+               HorizontalAlignment="Center" 
+               Margin="10,10,10,10" 
+               VerticalAlignment="Center" 
+               Background="Transparent" 
+               FontSize="20" 
+               Foreground="{DynamicResource ForgroundBrush}" 
+               BorderBrush="{DynamicResource PrimaryBrush}"
+               BorderThickness="1"/>
+    </Grid>
+</UserControl>

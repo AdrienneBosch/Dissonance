@@ -79,5 +79,10 @@ namespace Dissonance
 		{
 
         }
-    }
+
+		private void VoiceVolumeLable1_Loaded ( object sender, RoutedEventArgs e )
+		{
+
+		}
+	}
 }

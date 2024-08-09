@@ -8,6 +8,7 @@
     xmlns:SettingsMenu="clr-namespace:Dissonance.UserControls.SettingsMenu" 
     xmlns:Lables="clr-namespace:Dissonance.UserControls.Lables" 
     xmlns:Volume_Bar="clr-namespace:Dissonance.UserControls.Volume_Bar" 
+    xmlns:Texbox="clr-namespace:Dissonance.UserControls.Texbox" 
     x:Class="Dissonance.MainWindow"
     mc:Ignorable="d"
     Title="MainWindow" 
@@ -53,6 +54,7 @@
                         </Grid>
                         <Grid x:Name="VoiceRateGrid" HorizontalAlignment="Center" Width="210">
                             <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Rate" RenderTransformOrigin="1.207,0.51" Width="123" Height="50"/>
+                            <Texbox:CustomeTextbox Margin="44,41,44,0" VerticalAlignment="Top" Height="31"/>
                         </Grid>
                     </Grid>
                     <Grid x:Name="ClipboardReaderVoiceGrid1" Margin="0,165,0,57">

@@ -61,10 +61,10 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Grid x:Name="VoiceVolumeGrid" HorizontalAlignment="Center" Margin="0,10,0,10" Width="440">
+                        <Grid x:Name="VoiceVolumeGrid" HorizontalAlignment="Center" Margin="0,10,0,0" Width="440">
                             <Lables:StandardLable
-                            StandardText="Volume" RenderTransformOrigin="0.989,0.558" x:Name="VoiceVolumeLable" Margin="5,10,10,37"/>
-                            <Volume_Bar:VolumeBar HorizontalAlignment="Center" Margin="0,62,0,9" Width="368"/>
+                            StandardText="Volume" RenderTransformOrigin="0.989,0.558" x:Name="VoiceVolumeLable" Margin="5,0,10,62"/>
+                            <Volume_Bar:VolumeBar HorizontalAlignment="Center" Margin="0,58,0,17" Width="368"/>
                         </Grid>
                     </Grid>
                 </Grid>

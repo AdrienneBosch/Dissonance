@@ -5,8 +5,22 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:Dissonance.UserControls.Volume_Bar"
              mc:Ignorable="d" Height="28" Width="268">
-    <Grid x:Name="VolumeBarGrid">
-        <Slider x:Name="VolumeBar1" Background="#FFAB3B3B" Foreground="#FF20B560"/>
+    <Grid x:Name="VolumeBarGrid" Background="#FF333333" VerticalAlignment="Center">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
 
+        <!-- Speaker Icon -->
+        <TextBlock Grid.Column="0" Text="🔊" FontSize="18" VerticalAlignment="Center" Margin="5,0"/>
+
+        <!-- Volume Slider -->
+        <Slider x:Name="VolumeBar1" Grid.Column="1" VerticalAlignment="Center"
+                Minimum="0" Maximum="100" Value="30" Background="#FF555555" Foreground="#FFFFFFFF"
+                BorderThickness="0" Height="6" Margin="0,10" 
+                ValueChanged="VolumeBar1_ValueChanged"/>
+
+        <!-- Volume Level Text -->
     </Grid>
 </UserControl>

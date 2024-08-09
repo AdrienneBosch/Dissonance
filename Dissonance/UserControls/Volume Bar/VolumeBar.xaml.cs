@@ -24,5 +24,10 @@ namespace Dissonance.UserControls.Volume_Bar
         {
             InitializeComponent();
         }
-    }
+
+		private void VolumeBar1_ValueChanged ( object sender, RoutedPropertyChangedEventArgs<double> e )
+		{
+
+		}
+	}
 }

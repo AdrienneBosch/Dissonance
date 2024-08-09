@@ -1,6 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 
-using Serilog;
+using NLog;
+using NLog.Extensions.Logging;
 
 namespace Dissonance
 {
@@ -8,12 +9,13 @@ namespace Dissonance
 	{
 		public static void ConfigureLogging ( this ILoggingBuilder loggingBuilder )
 		{
-			var logger = new LoggerConfiguration()
-				.WriteTo.Console()
-				//.WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day)
-				.CreateLogger();
+			var logger = LogManager.Setup()
+				.LoadConfigurationFromFile("nlog.config", optional: false)
+				.GetCurrentClassLogger();
 
-			loggingBuilder.AddSerilog ( logger );
+			loggingBuilder.ClearProviders ( );
+			loggingBuilder.SetMinimumLevel ( Microsoft.Extensions.Logging.LogLevel.Trace );
+			loggingBuilder.AddNLog ( );
 		}
 	}
 }

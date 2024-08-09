@@ -10,7 +10,7 @@ namespace Dissonance
 		{
 			var logger = new LoggerConfiguration()
 				.WriteTo.Console()
-				.WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day)
+				//.WriteTo.File("Logs/app-.txt", rollingInterval: RollingInterval.Day)
 				.CreateLogger();
 
 			loggingBuilder.AddSerilog ( logger );

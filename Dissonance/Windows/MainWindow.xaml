@@ -39,30 +39,30 @@
                 </Grid.ColumnDefinitions>
                 <Grid x:Name="ReaderGrid" Grid.Column="0" Margin="10">
                     <Lables:HeadingLable x:Name="ClipboardReaderHeadingLable" HorizontalAlignment="Center" Margin="10,10,10,10" VerticalAlignment="Top" HeadingText="Clipboard Reader"/>
-                    <Grid x:Name="ClipboardReaderVoiceGrid" Margin="0,69,0,223">
+                    <Grid x:Name="ClipboardReaderVoiceGrid" Margin="0,69,0,196">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Grid x:Name="VoiceSelectionGrid" Grid.Column="1" HorizontalAlignment="Center">
+                        <Grid x:Name="VoiceSelectionGrid" Grid.Column="1" HorizontalAlignment="Center" Width="210">
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="23*"/>
                                 <RowDefinition Height="32*"/>
                             </Grid.RowDefinitions>
-                            <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Left" VerticalAlignment="Top" StandardText="Voice Selection" Margin="10,0,0,0" RenderTransformOrigin="0.498,0.376" Grid.RowSpan="2"/>
+                            <Lables:StandardLable x:Name="VoiceSelectionLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Selection" Margin="0,3,0,0" RenderTransformOrigin="0.498,0.376" Grid.RowSpan="2"/>
                         </Grid>
-                        <Grid x:Name="VoiceRateGrid" HorizontalAlignment="Left" Margin="20,0,0,0" Width="143" Grid.ColumnSpan="2">
-                            <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Left" VerticalAlignment="Top" StandardText="Voice Rate" Margin="10,0,0,0" RenderTransformOrigin="1.207,0.51"/>
+                        <Grid x:Name="VoiceRateGrid" HorizontalAlignment="Center" Width="210">
+                            <Lables:StandardLable x:Name="VoiceRateLable" HorizontalAlignment="Center" VerticalAlignment="Top" StandardText="Voice Rate" RenderTransformOrigin="1.207,0.51" Width="123" Height="50"/>
                         </Grid>
                     </Grid>
-                    <Grid x:Name="ClipboardReaderVoiceGrid1" Margin="0,129,0,45">
+                    <Grid x:Name="ClipboardReaderVoiceGrid1" Margin="0,165,0,57">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
-                        <Grid x:Name="VoiceVolumeGrid" HorizontalAlignment="Center" Margin="0,64,0,10" Width="440">
+                        <Grid x:Name="VoiceVolumeGrid" HorizontalAlignment="Center" Margin="0,10,0,10" Width="440">
                             <Lables:StandardLable
-                            StandardText="Volume" RenderTransformOrigin="0.989,0.558" x:Name="VoiceVolumeLable" Margin="5,10,5,37"/>
-                            <Volume_Bar:VolumeBar HorizontalAlignment="Center" Margin="0,62,0,0" Width="420" Height="26" VerticalAlignment="Top"/>
+                            StandardText="Volume" RenderTransformOrigin="0.989,0.558" x:Name="VoiceVolumeLable" Margin="5,10,10,37"/>
+                            <Volume_Bar:VolumeBar HorizontalAlignment="Center" Margin="0,62,0,9" Width="368"/>
                         </Grid>
                     </Grid>
                 </Grid>

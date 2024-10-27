@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using System;
 using System.Speech.Synthesis;  // For TTS functionality
+
 using NLog;
 
 namespace Dissonance.Services.TTSService
@@ -18,7 +14,12 @@ namespace Dissonance.Services.TTSService
 		public TTSService ( )
 		{
 			_synthesizer = new SpeechSynthesizer ( );
-			// Set default parameters if needed, can be updated via SetTTSParameters
+
+			// Log all available voices
+			foreach ( var voice in _synthesizer.GetInstalledVoices ( ) )
+			{
+				Logger.Info ( $"Installed voice: {voice.VoiceInfo.Name}" );
+			}
 		}
 
 		/// <summary>
@@ -48,10 +49,23 @@ namespace Dissonance.Services.TTSService
 		{
 			try
 			{
-				_synthesizer.SelectVoice ( voice );
+				var installedVoices = _synthesizer.GetInstalledVoices();
+				bool voiceAvailable = installedVoices.Any(v => v.VoiceInfo.Name.Equals(voice, StringComparison.OrdinalIgnoreCase));
+
+				if ( voiceAvailable )
+				{
+					_synthesizer.SelectVoice ( voice );
+					Logger.Info ( $"Selected voice: {voice}" );
+				}
+				else
+				{
+					Logger.Warn ( $"Voice '{voice}' not available. Using default voice." );
+					_synthesizer.SelectVoice ( installedVoices.First ( ).VoiceInfo.Name );  // Use default if not found
+				}
+
 				_synthesizer.Rate = ( int ) rate;
 				_synthesizer.Volume = volume;
-				Logger.Info ( $"TTS parameters updated: Voice = {voice}, Rate = {rate}, Volume = {volume}" );
+				Logger.Info ( $"TTS parameters set: Voice = {_synthesizer.Voice.Name}, Rate = {rate}, Volume = {volume}" );
 			}
 			catch ( Exception ex )
 			{

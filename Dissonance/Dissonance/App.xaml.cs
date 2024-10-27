@@ -60,14 +60,16 @@ namespace Dissonance
 			var ttsService = _serviceProvider.GetRequiredService<ITTSService>();
 			var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 
-			// Hook into the MainWindow's Loaded event to initialize the HotkeyService when the window is fully loaded.
 			mainWindow.Loaded += ( s, ev ) =>
 			{
 				( ( HotkeyService ) hotkeyService ).Initialize ( mainWindow );
 
-				// Register the hotkey using the settings from SettingsService
+				// Get settings and register hotkey
 				var settings = settingsService.GetCurrentSettings();
 				hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, settings.Hotkey.Key );
+
+				// Update TTS parameters based on settings
+				ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
 				hotkeyService.HotkeyPressed += ( ) =>
 				{
@@ -75,6 +77,9 @@ namespace Dissonance
 					if ( !string.IsNullOrEmpty ( clipboardText ) )
 					{
 						logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
+
+						// Ensure TTS parameters are updated before speaking
+						ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 						ttsService.Speak ( clipboardText );
 					}
 					else

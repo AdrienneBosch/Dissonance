@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dissonance.Services.HotkeyService
 {
-	internal interface IHotkeyService
+	public interface IHotkeyService
 	{
 		/// <summary>
 		/// Event that gets triggered when the hotkey is pressed.

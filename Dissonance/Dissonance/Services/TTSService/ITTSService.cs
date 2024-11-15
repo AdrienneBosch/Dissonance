@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Dissonance.Services.TTSService
 {
-	internal interface ITTSService
+	public interface ITTSService
 	{
 		/// <summary>
 		/// Speaks the provided text using the current TTS settings.

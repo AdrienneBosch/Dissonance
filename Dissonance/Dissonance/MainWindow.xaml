@@ -12,7 +12,7 @@
                  HorizontalAlignment="Left" 
                  Margin="156,187,0,0" 
                  TextWrapping="Wrap" 
-                 Text="{Binding VoiceRate, Mode=TwoWay}" 
+                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                  VerticalAlignment="Top" 
                  Width="120" />
 
@@ -21,7 +21,7 @@
                  HorizontalAlignment="Left" 
                  Margin="106,85,0,0" 
                  TextWrapping="Wrap" 
-                 Text="{Binding Hotkey.Key, Mode=TwoWay}" 
+                 Text="{Binding Hotkey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                  VerticalAlignment="Top" 
                  Width="120" />
 
@@ -33,7 +33,7 @@
                 Width="120" 
                 Minimum="0" 
                 Maximum="100" 
-                Value="{Binding Volume, Mode=TwoWay}" />
+                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <!-- Voice Selection ComboBox -->
         <ComboBox x:Name="VoiceSelectionComboBox" 
@@ -42,6 +42,6 @@
                   VerticalAlignment="Top" 
                   Width="200" 
                   ItemsSource="{Binding AvailableVoices}"
-                  SelectedItem="{Binding Voice, Mode=TwoWay}" />
+                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </Grid>
 </Window>

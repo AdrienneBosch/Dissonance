@@ -40,9 +40,8 @@
                   HorizontalAlignment="Left" 
                   Margin="259,42,0,0" 
                   VerticalAlignment="Top" 
-                  Width="120" 
-                  SelectedItem="{Binding Voice, Mode=TwoWay}">
-            <!-- Assuming list of voices are set in the ViewModel or manually added here -->
-        </ComboBox>
+                  Width="200" 
+                  ItemsSource="{Binding AvailableVoices}"
+                  SelectedItem="{Binding Voice, Mode=TwoWay}" />
     </Grid>
 </Window>

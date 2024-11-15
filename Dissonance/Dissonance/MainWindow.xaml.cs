@@ -10,8 +10,8 @@ namespace Dissonance
 
 		public MainWindow ( MainWindowViewModel viewModel )
 		{
+			_viewModel = viewModel ?? throw new ArgumentNullException ( nameof ( viewModel ) );
 			InitializeComponent ( );
-			_viewModel = viewModel;
 			DataContext = _viewModel;
 		}
 	}

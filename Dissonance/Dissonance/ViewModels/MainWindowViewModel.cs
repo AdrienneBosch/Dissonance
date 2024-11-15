@@ -1,7 +1,60 @@
-﻿namespace Dissonance.ViewModels
+﻿using System.ComponentModel;
+
+using Dissonance.Services.SettingsService;
+
+namespace Dissonance.ViewModels
 {
-	public class MainWindowViewModel
+	public class MainWindowViewModel : INotifyPropertyChanged
 	{
-		// Define properties, commands, and methods for the ViewModel here
+		private readonly ISettingsService _settingsService;
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public MainWindowViewModel ( ISettingsService settingsService )
+		{
+			_settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
+		}
+
+
+		public double VoiceRate
+		{
+			get => _settingsService.GetCurrentSettings ( ).VoiceRate;
+			set
+			{
+				var settings = _settingsService.GetCurrentSettings();
+				settings.VoiceRate = value;
+				_settingsService.SaveSettings ( settings );
+				OnPropertyChanged ( nameof ( VoiceRate ) );
+			}
+		}
+
+		public int Volume
+		{
+			get => _settingsService.GetCurrentSettings ( ).Volume;
+			set
+			{
+				var settings = _settingsService.GetCurrentSettings();
+				settings.Volume = value;
+				_settingsService.SaveSettings ( settings );
+				OnPropertyChanged ( nameof ( Volume ) );
+			}
+		}
+
+		public string Voice
+		{
+			get => _settingsService.GetCurrentSettings ( ).Voice;
+			set
+			{
+				var settings = _settingsService.GetCurrentSettings();
+				settings.Voice = value;
+				_settingsService.SaveSettings ( settings );
+				OnPropertyChanged ( nameof ( Voice ) );
+			}
+		}
+
+		protected void OnPropertyChanged ( string propertyName )
+		{
+			PropertyChanged?.Invoke ( this, new PropertyChangedEventArgs ( propertyName ) );
+		}
 	}
 }

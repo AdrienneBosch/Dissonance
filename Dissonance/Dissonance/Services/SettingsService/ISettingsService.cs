@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Dissonance.Services.SettingsService
+﻿namespace Dissonance.Services.SettingsService
 {
-    internal interface ISettingsService
+	public interface ISettingsService
 	{
 		AppSettings LoadSettings ( );
 		void SaveSettings ( AppSettings settings );

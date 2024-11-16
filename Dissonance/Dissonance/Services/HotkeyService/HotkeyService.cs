@@ -44,7 +44,7 @@ namespace Dissonance.Services.HotkeyService
 			try
 			{
 				uint mod = ParseModifiers(modifiers);
-				uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key));
+				uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true)); // Ensure case-insensitive parsing
 
 				if ( _currentHotkeyId.HasValue )
 				{

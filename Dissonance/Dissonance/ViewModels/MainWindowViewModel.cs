@@ -25,7 +25,6 @@ namespace Dissonance.ViewModels
 			_ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
 			_hotkeyService = hotkeyService ?? throw new ArgumentNullException ( nameof ( hotkeyService ) );
 
-
 			var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer().GetInstalledVoices();
 			foreach ( var voice in installedVoices )
 			{
@@ -33,16 +32,19 @@ namespace Dissonance.ViewModels
 			}
 		}
 
-
 		public double VoiceRate
 		{
 			get => _settingsService.GetCurrentSettings ( ).VoiceRate;
 			set
 			{
 				var settings = _settingsService.GetCurrentSettings();
-				settings.VoiceRate = value;
-				_settingsService.SaveSettings ( settings );
-				OnPropertyChanged ( nameof ( VoiceRate ) );
+				if ( settings.VoiceRate != value )
+				{
+					settings.VoiceRate = value;
+					_settingsService.SaveSettings ( settings );
+					_ttsService.SetTTSParameters ( settings.Voice, value, settings.Volume ); // Live update
+					OnPropertyChanged ( nameof ( VoiceRate ) );
+				}
 			}
 		}
 
@@ -51,12 +53,17 @@ namespace Dissonance.ViewModels
 			get => _settingsService.GetCurrentSettings ( ).Volume;
 			set
 			{
-				var settings = _settingsService.GetCurrentSettings();
-				settings.Volume = value;
-				_settingsService.SaveSettings ( settings );
-				OnPropertyChanged ( nameof ( Volume ) );
+				if ( value < 0 || value > 100 ) // Ensure volume is within acceptable range
+					throw new ArgumentOutOfRangeException ( nameof ( Volume ), "Volume must be between 0 and 100." );
 
-				_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+				var settings = _settingsService.GetCurrentSettings();
+				if ( settings.Volume != value )
+				{
+					settings.Volume = value;
+					_settingsService.SaveSettings ( settings );
+					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); // Live update
+					OnPropertyChanged ( nameof ( Volume ) );
+				}
 			}
 		}
 
@@ -65,28 +72,52 @@ namespace Dissonance.ViewModels
 			get => _settingsService.GetCurrentSettings ( ).Voice;
 			set
 			{
+				if ( string.IsNullOrWhiteSpace ( value ) || !AvailableVoices.Contains ( value ) ) // Validate voice
+					throw new ArgumentException ( $"Invalid voice: {value}" );
+
 				var settings = _settingsService.GetCurrentSettings();
-				settings.Voice = value;
-				_settingsService.SaveSettings ( settings );
-				OnPropertyChanged ( nameof ( Voice ) );
+				if ( settings.Voice != value )
+				{
+					settings.Voice = value;
+					_settingsService.SaveSettings ( settings );
+					_ttsService.SetTTSParameters ( value, settings.VoiceRate, settings.Volume ); // Live update
+					OnPropertyChanged ( nameof ( Voice ) );
+				}
 			}
 		}
 
 		public string Hotkey
 		{
-			get => _settingsService.GetCurrentSettings ( ).Hotkey.Key; // Return the string representation
+			get => _settingsService.GetCurrentSettings ( ).Hotkey.Key;
 			set
 			{
-				if ( Enum.TryParse ( value, true, out Key newKey ) ) // Parse input to Key enum
+				if ( string.IsNullOrWhiteSpace ( value ) )
+				{
+					throw new ArgumentException ( "Hotkey value cannot be null, empty, or whitespace." );
+				}
+
+				if ( Enum.TryParse ( value, true, out Key newKey ) )
 				{
 					var settings = _settingsService.GetCurrentSettings();
-					settings.Hotkey.Key = newKey.ToString ( ); // Convert Key enum to string for assignment
-					_settingsService.SaveSettings ( settings );
-					OnPropertyChanged ( nameof ( Hotkey ) );
+					if ( settings.Hotkey.Key != newKey.ToString ( ) )
+					{
+						try
+						{
+							var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
+							_hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, newKey.ToString ( ) ); // Use newKey.ToString() instead of virtualKey
 
-					// Convert Key to virtual key code for HotkeyService
-					var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
-					_hotkeyService?.RegisterHotkey ( settings.Hotkey.Modifiers, virtualKey.ToString ( ) );
+							settings.Hotkey.Key = newKey.ToString ( );
+							_settingsService.SaveSettings ( settings );
+							OnPropertyChanged ( nameof ( Hotkey ) );
+						}
+						catch ( Exception ex )
+						{
+							throw new InvalidOperationException ( $"Failed to register hotkey: {value}.", ex );
+						}
+
+						var ttsSettings = _settingsService.GetCurrentSettings();
+						_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
+					}
 				}
 				else
 				{
@@ -94,7 +125,6 @@ namespace Dissonance.ViewModels
 				}
 			}
 		}
-
 
 
 		protected void OnPropertyChanged ( string propertyName )

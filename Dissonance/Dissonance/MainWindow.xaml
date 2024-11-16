@@ -21,9 +21,9 @@
                  HorizontalAlignment="Left" 
                  Margin="106,85,0,0" 
                  TextWrapping="Wrap" 
-                 Text="{Binding Hotkey, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
+                 Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
                  VerticalAlignment="Top" 
-                 Width="120" />
+                 Width="200" />
 
         <!-- Voice Volume Slider -->
         <Slider x:Name="VoiceVolumeSlider" 

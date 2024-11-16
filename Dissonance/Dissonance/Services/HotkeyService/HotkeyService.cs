@@ -12,24 +12,24 @@ namespace Dissonance.Services.HotkeyService
 	{
 		private const int WM_HOTKEY = 0x0312;
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-		private IntPtr _windowHandle;
 		private HwndSource _source;
 
 		public event Action HotkeyPressed;
-
-		[DllImport ( "user32.dll", SetLastError = true )]
-		private static extern bool RegisterHotKey ( IntPtr hWnd, int id, uint fsModifiers, uint vk );
-
-		[DllImport ( "user32.dll", SetLastError = true )]
-		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
 
 		private const uint MOD_ALT = 0x0001;
 		private const uint MOD_CONTROL = 0x0002;
 		private const uint MOD_SHIFT = 0x0004;
 		private const uint MOD_WIN = 0x0008;
 
-		private int _nextHotkeyId = 1;
+		private IntPtr _windowHandle;
 		private int? _currentHotkeyId;
+		private int _nextHotkeyId = 0;
+
+		[DllImport ( "user32.dll" )]
+		private static extern bool RegisterHotKey ( IntPtr hWnd, int id, uint fsModifiers, uint vk );
+
+		[DllImport ( "user32.dll" )]
+		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
 
 		public void Initialize ( Window mainWindow )
 		{
@@ -44,7 +44,7 @@ namespace Dissonance.Services.HotkeyService
 			try
 			{
 				uint mod = ParseModifiers(modifiers);
-				uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true)); // Ensure case-insensitive parsing
+				uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true));
 
 				if ( _currentHotkeyId.HasValue )
 				{
@@ -60,32 +60,14 @@ namespace Dissonance.Services.HotkeyService
 				}
 				else
 				{
-					Logger.Error ( "Failed to register hotkey. It might already be in use by another application." );
+					MessageBox.Show ($"Failed to register hotkey:{modifiers} + {key}. It might already be in use by another application.", "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					Logger.Warn ( $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application." );
 				}
 			}
 			catch ( Exception ex )
 			{
 				Logger.Error ( ex, "Failed to register hotkey." );
-			}
-		}
-
-		public void UnregisterHotkey ( )
-		{
-			try
-			{
-				if ( _currentHotkeyId.HasValue && UnregisterHotKey ( _windowHandle, _currentHotkeyId.Value ) )
-				{
-					Logger.Info ( "Hotkey unregistered." );
-					_currentHotkeyId = null;
-				}
-				else
-				{
-					Logger.Error ( "Failed to unregister hotkey." );
-				}
-			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Failed to unregister hotkey." );
+				throw;
 			}
 		}
 
@@ -96,7 +78,23 @@ namespace Dissonance.Services.HotkeyService
 			if ( modifiers.Contains ( "Ctrl" ) ) mod |= MOD_CONTROL;
 			if ( modifiers.Contains ( "Shift" ) ) mod |= MOD_SHIFT;
 			if ( modifiers.Contains ( "Win" ) ) mod |= MOD_WIN;
+
+			if ( mod == 0 )
+			{
+				throw new ArgumentException ( "Hotkey must include at least one modifier." );
+			}
+
 			return mod;
+		}
+
+		public void UnregisterHotkey ( )
+		{
+			if ( _currentHotkeyId.HasValue )
+			{
+				UnregisterHotKey ( _windowHandle, _currentHotkeyId.Value );
+				_currentHotkeyId = null;
+				Logger.Info ( "Hotkey unregistered." );
+			}
 		}
 
 		private IntPtr WndProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )

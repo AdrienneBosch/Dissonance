@@ -1,19 +1,23 @@
 ﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Windows;
 using System.Windows.Input;
 
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 
+using NLog;
+
 namespace Dissonance.ViewModels
 {
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
 		private readonly ISettingsService _settingsService;
-
 		public event PropertyChangedEventHandler PropertyChanged;
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
+		private string _hotkeyCombination;
 
 		private readonly ITTSService _ttsService;
 
@@ -30,6 +34,9 @@ namespace Dissonance.ViewModels
 			{
 				AvailableVoices.Add ( voice.VoiceInfo.Name );
 			}
+
+			var settings = _settingsService.GetCurrentSettings();
+			HotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
 		}
 
 		public double VoiceRate
@@ -86,46 +93,67 @@ namespace Dissonance.ViewModels
 			}
 		}
 
-		public string Hotkey
+		public string HotkeyCombination
 		{
-			get => _settingsService.GetCurrentSettings ( ).Hotkey.Key;
+			get => _hotkeyCombination;
 			set
 			{
-				if ( string.IsNullOrWhiteSpace ( value ) )
+				if ( _hotkeyCombination != value )
 				{
-					throw new ArgumentException ( "Hotkey value cannot be null, empty, or whitespace." );
-				}
-
-				if ( Enum.TryParse ( value, true, out Key newKey ) )
-				{
-					var settings = _settingsService.GetCurrentSettings();
-					if ( settings.Hotkey.Key != newKey.ToString ( ) )
-					{
-						try
-						{
-							var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
-							_hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, newKey.ToString ( ) ); // Use newKey.ToString() instead of virtualKey
-
-							settings.Hotkey.Key = newKey.ToString ( );
-							_settingsService.SaveSettings ( settings );
-							OnPropertyChanged ( nameof ( Hotkey ) );
-						}
-						catch ( Exception ex )
-						{
-							throw new InvalidOperationException ( $"Failed to register hotkey: {value}.", ex );
-						}
-
-						var ttsSettings = _settingsService.GetCurrentSettings();
-						_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
-					}
-				}
-				else
-				{
-					throw new ArgumentException ( $"Invalid key value: {value}" );
+					_hotkeyCombination = value;
+					OnPropertyChanged ( nameof ( HotkeyCombination ) );
+					UpdateHotkey ( value );
 				}
 			}
 		}
 
+		private void UpdateHotkey ( string hotkeyCombination )
+		{
+			if ( string.IsNullOrWhiteSpace ( hotkeyCombination ) )
+			{
+				throw new ArgumentException ( "Hotkey combination cannot be null, empty, or whitespace." );
+			}
+
+			var parts = hotkeyCombination.Split('+');
+			if ( parts.Length < 2 )
+			{
+				throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key." );
+			}
+
+			var modifiers = parts.Take(parts.Length - 1).ToArray();
+			var key = parts.Last();
+
+			if ( !Enum.TryParse ( key, true, out Key newKey ) )
+			{
+				throw new ArgumentException ( $"Invalid key value: {key}" );
+			}
+
+			var settings = _settingsService.GetCurrentSettings();
+			var newHotkey = string.Join("+", modifiers) + "+" + newKey;
+
+			if ( settings.Hotkey.Key != newHotkey )
+			{
+				try
+				{
+					_hotkeyService.UnregisterHotkey ( ); // Unregister previous hotkey
+					var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
+					_hotkeyService.RegisterHotkey ( string.Join ( "+", modifiers ), newKey.ToString ( ) );
+
+					settings.Hotkey.Modifiers = string.Join ( "+", modifiers );
+					settings.Hotkey.Key = newKey.ToString ( );
+					_settingsService.SaveSettings ( settings );
+					OnPropertyChanged ( nameof ( HotkeyCombination ) );
+				}
+				catch ( Exception ex )
+				{
+					MessageBox.Show ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.", "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					Logger.Warn ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application." );
+				}
+
+				var ttsSettings = _settingsService.GetCurrentSettings();
+				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
+			}
+		}
 
 		protected void OnPropertyChanged ( string propertyName )
 		{

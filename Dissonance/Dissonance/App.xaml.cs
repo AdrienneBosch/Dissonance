@@ -1,12 +1,14 @@
-﻿using System;
-using System.Windows;
+﻿using System.Windows;
+
 using Dissonance.Services.ClipboardService;
+using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
-using Dissonance.Services.HotkeyService;
 using Dissonance.ViewModels;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
 using NLog;
 using NLog.Extensions.Logging;
 
@@ -48,6 +50,15 @@ namespace Dissonance
 			services.AddSingleton<IHotkeyService, HotkeyService> ( );  // Register HotkeyService
 			services.AddSingleton<MainWindowViewModel> ( );
 			services.AddSingleton<MainWindow> ( );
+		}
+
+		protected override void OnExit ( ExitEventArgs e )
+		{
+			var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>() as IDisposable;
+			hotkeyService?.Dispose ( );
+
+			LogManager.Shutdown ( );
+			base.OnExit ( e );
 		}
 
 		protected override void OnStartup ( StartupEventArgs e )
@@ -93,15 +104,6 @@ namespace Dissonance
 
 			logger.LogInformation ( "Application startup." );
 			mainWindow.Show ( );
-		}
-
-		protected override void OnExit ( ExitEventArgs e )
-		{
-			var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>() as IDisposable;
-			hotkeyService?.Dispose ( );
-
-			LogManager.Shutdown ( );
-			base.OnExit ( e );
 		}
 	}
 }

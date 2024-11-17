@@ -13,15 +13,15 @@ namespace Dissonance.ViewModels
 {
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
+
+		private readonly IHotkeyService _hotkeyService;
+
 		private readonly ISettingsService _settingsService;
-		public event PropertyChangedEventHandler PropertyChanged;
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
-		private string _hotkeyCombination;
 
 		private readonly ITTSService _ttsService;
 
-		private readonly IHotkeyService _hotkeyService;
+		private string _hotkeyCombination;
 
 		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService )
 		{
@@ -37,6 +37,43 @@ namespace Dissonance.ViewModels
 
 			var settings = _settingsService.GetCurrentSettings();
 			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
+		}
+
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
+
+		public string HotkeyCombination
+		{
+			get => _hotkeyCombination;
+			set
+			{
+				if ( _hotkeyCombination != value )
+				{
+					_hotkeyCombination = value;
+					OnPropertyChanged ( nameof ( HotkeyCombination ) );
+					UpdateHotkey ( value );
+				}
+			}
+		}
+
+		public string Voice
+		{
+			get => _settingsService.GetCurrentSettings ( ).Voice;
+			set
+			{
+				if ( string.IsNullOrWhiteSpace ( value ) || !AvailableVoices.Contains ( value ) ) // Validate voice
+					throw new ArgumentException ( $"Invalid voice: {value}" );
+
+				var settings = _settingsService.GetCurrentSettings();
+				if ( settings.Voice != value )
+				{
+					settings.Voice = value;
+					_settingsService.SaveSettings ( settings );
+					_ttsService.SetTTSParameters ( value, settings.VoiceRate, settings.Volume ); // Live update
+					OnPropertyChanged ( nameof ( Voice ) );
+				}
+			}
 		}
 
 		public double VoiceRate
@@ -70,39 +107,6 @@ namespace Dissonance.ViewModels
 					_settingsService.SaveSettings ( settings );
 					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); // Live update
 					OnPropertyChanged ( nameof ( Volume ) );
-				}
-			}
-		}
-
-		public string Voice
-		{
-			get => _settingsService.GetCurrentSettings ( ).Voice;
-			set
-			{
-				if ( string.IsNullOrWhiteSpace ( value ) || !AvailableVoices.Contains ( value ) ) // Validate voice
-					throw new ArgumentException ( $"Invalid voice: {value}" );
-
-				var settings = _settingsService.GetCurrentSettings();
-				if ( settings.Voice != value )
-				{
-					settings.Voice = value;
-					_settingsService.SaveSettings ( settings );
-					_ttsService.SetTTSParameters ( value, settings.VoiceRate, settings.Volume ); // Live update
-					OnPropertyChanged ( nameof ( Voice ) );
-				}
-			}
-		}
-
-		public string HotkeyCombination
-		{
-			get => _hotkeyCombination;
-			set
-			{
-				if ( _hotkeyCombination != value )
-				{
-					_hotkeyCombination = value;
-					OnPropertyChanged ( nameof ( HotkeyCombination ) );
-					UpdateHotkey ( value );
 				}
 			}
 		}

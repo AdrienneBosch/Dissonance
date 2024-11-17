@@ -8,39 +8,39 @@
         Title="MainWindow" Height="450" Width="800">
     <Grid>
         <!-- Voice Rate TextBox -->
-        <TextBox x:Name="VoiceRateTextBox" 
-                 HorizontalAlignment="Left" 
-                 Margin="156,187,0,0" 
-                 TextWrapping="Wrap" 
-                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 VerticalAlignment="Top" 
+        <TextBox x:Name="VoiceRateTextBox"
+                 HorizontalAlignment="Left"
+                 Margin="156,187,0,0"
+                 TextWrapping="Wrap"
+                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 VerticalAlignment="Top"
                  Width="120" />
 
         <!-- Hotkey TextBox for reading clipboard -->
-        <TextBox x:Name="ReadClipboardHotkeyTextBox" 
-                 HorizontalAlignment="Left" 
-                 Margin="106,85,0,0" 
-                 TextWrapping="Wrap" 
-                 Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" 
-                 VerticalAlignment="Top" 
+        <TextBox x:Name="ReadClipboardHotkeyTextBox"
+                 HorizontalAlignment="Left"
+                 Margin="106,85,0,0"
+                 TextWrapping="Wrap"
+                 Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 VerticalAlignment="Top"
                  Width="200" />
 
         <!-- Voice Volume Slider -->
-        <Slider x:Name="VoiceVolumeSlider" 
-                HorizontalAlignment="Left" 
-                Margin="472,124,0,0" 
-                VerticalAlignment="Top" 
-                Width="120" 
-                Minimum="0" 
-                Maximum="100" 
+        <Slider x:Name="VoiceVolumeSlider"
+                HorizontalAlignment="Left"
+                Margin="472,124,0,0"
+                VerticalAlignment="Top"
+                Width="120"
+                Minimum="0"
+                Maximum="100"
                 Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <!-- Voice Selection ComboBox -->
-        <ComboBox x:Name="VoiceSelectionComboBox" 
-                  HorizontalAlignment="Left" 
-                  Margin="259,42,0,0" 
-                  VerticalAlignment="Top" 
-                  Width="200" 
+        <ComboBox x:Name="VoiceSelectionComboBox"
+                  HorizontalAlignment="Left"
+                  Margin="259,42,0,0"
+                  VerticalAlignment="Top"
+                  Width="200"
                   ItemsSource="{Binding AvailableVoices}"
                   SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
     </Grid>

@@ -16,8 +16,12 @@ namespace Dissonance.Services.HotkeyService
 		/// <summary>
 		/// Registers the hotkey using modifiers and a key.
 		/// </summary>
-		/// <param name="modifiers">Modifier keys like Ctrl, Alt, Shift.</param>
-		/// <param name="key">Main key to trigger the hotkey.</param>
+		/// <param name="modifiers">
+		/// Modifier keys like Ctrl, Alt, Shift.
+		/// </param>
+		/// <param name="key">
+		/// Main key to trigger the hotkey.
+		/// </param>
 		void RegisterHotkey ( string modifiers, string key );
 
 		/// <summary>
@@ -26,4 +30,3 @@ namespace Dissonance.Services.HotkeyService
 		void UnregisterHotkey ( );
 	}
 }
-

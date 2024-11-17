@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Speech.Synthesis;  // For TTS functionality
+﻿using System.Speech.Synthesis;  // For TTS functionality
 
 using NLog;
 
@@ -8,8 +6,9 @@ namespace Dissonance.Services.TTSService
 {
 	internal class TTSService : ITTSService
 	{
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
+
 		private readonly SpeechSynthesizer _synthesizer;
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
 		public TTSService ( )
 		{
@@ -23,28 +22,17 @@ namespace Dissonance.Services.TTSService
 		}
 
 		/// <summary>
-		/// Speaks the given text using the configured TTS settings.
-		/// </summary>
-		/// <param name="text">The text to convert to speech.</param>
-		public void Speak ( string text )
-		{
-			try
-			{
-				_synthesizer.SpeakAsync ( text );
-				Logger.Info ( "Speaking text: " + text );
-			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Failed to speak text." );
-			}
-		}
-
-		/// <summary>
 		/// Updates the TTS parameters (voice, rate, volume).
 		/// </summary>
-		/// <param name="voice">Voice to use.</param>
-		/// <param name="rate">Speed of speech.</param>
-		/// <param name="volume">Volume level.</param>
+		/// <param name="voice">
+		/// Voice to use.
+		/// </param>
+		/// <param name="rate">
+		/// Speed of speech.
+		/// </param>
+		/// <param name="volume">
+		/// Volume level.
+		/// </param>
 		public void SetTTSParameters ( string voice, double rate, int volume )
 		{
 			try
@@ -70,6 +58,25 @@ namespace Dissonance.Services.TTSService
 			catch ( Exception ex )
 			{
 				Logger.Error ( ex, "Failed to update TTS parameters." );
+			}
+		}
+
+		/// <summary>
+		/// Speaks the given text using the configured TTS settings.
+		/// </summary>
+		/// <param name="text">
+		/// The text to convert to speech.
+		/// </param>
+		public void Speak ( string text )
+		{
+			try
+			{
+				_synthesizer.SpeakAsync ( text );
+				Logger.Info ( "Speaking text: " + text );
+			}
+			catch ( Exception ex )
+			{
+				Logger.Error ( ex, "Failed to speak text." );
 			}
 		}
 	}

@@ -2,9 +2,12 @@
 {
 	public interface ISettingsService
 	{
-		AppSettings LoadSettings ( );
-		void SaveSettings ( AppSettings settings );
-		void ResetToFactorySettings ( );
 		AppSettings GetCurrentSettings ( );
+
+		AppSettings LoadSettings ( );
+
+		void ResetToFactorySettings ( );
+
+		void SaveSettings ( AppSettings settings );
 	}
 }

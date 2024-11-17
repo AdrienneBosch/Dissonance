@@ -97,6 +97,9 @@ namespace Dissonance
 
 		protected override void OnExit ( ExitEventArgs e )
 		{
+			var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>() as IDisposable;
+			hotkeyService?.Dispose ( );
+
 			LogManager.Shutdown ( );
 			base.OnExit ( e );
 		}

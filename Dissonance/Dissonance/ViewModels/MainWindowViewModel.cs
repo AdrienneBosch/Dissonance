@@ -36,7 +36,7 @@ namespace Dissonance.ViewModels
 			}
 
 			var settings = _settingsService.GetCurrentSettings();
-			HotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
+			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
 		}
 
 		public double VoiceRate

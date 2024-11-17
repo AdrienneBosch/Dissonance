@@ -48,7 +48,7 @@ namespace Dissonance.Services.HotkeyService
 
 				if ( _currentHotkeyId.HasValue )
 				{
-					UnregisterHotkey ( ); // Unregister any previous hotkey
+					UnregisterHotkey ( );
 				}
 
 				int hotkeyId = _nextHotkeyId++;
@@ -60,13 +60,22 @@ namespace Dissonance.Services.HotkeyService
 				}
 				else
 				{
-					MessageBox.Show ($"Failed to register hotkey:{modifiers} + {key}. It might already be in use by another application.", "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-					Logger.Warn ( $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application." );
+					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application.";
+					Logger.Warn ( errorMessage );
+					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 				}
+			}
+			catch ( ArgumentException ex )
+			{
+				string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. {ex.Message}";
+				Logger.Warn ( errorMessage );
+				MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to register hotkey." );
+				string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. An unexpected error occurred.";
+				Logger.Error ( ex, errorMessage );
+				MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 				throw;
 			}
 		}
@@ -89,11 +98,18 @@ namespace Dissonance.Services.HotkeyService
 
 		public void UnregisterHotkey ( )
 		{
+			var hotkeyId = _currentHotkeyId.Value;
 			if ( _currentHotkeyId.HasValue )
 			{
-				UnregisterHotKey ( _windowHandle, _currentHotkeyId.Value );
+				if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
+				{
+					Logger.Info ($"Hotkey unregistered with Id: {hotkeyId}" );
+				}
+				else
+				{
+					Logger.Warn ($"Failed to unregister hotkey with id: {hotkeyId}" );
+				}
 				_currentHotkeyId = null;
-				Logger.Info ( "Hotkey unregistered." );
 			}
 		}
 
@@ -112,6 +128,7 @@ namespace Dissonance.Services.HotkeyService
 		{
 			_source?.RemoveHook ( WndProc );
 			UnregisterHotkey ( );
+			Logger.Info ( "HotkeyService disposed." );
 		}
 	}
 }

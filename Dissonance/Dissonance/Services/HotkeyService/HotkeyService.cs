@@ -27,7 +27,9 @@ namespace Dissonance.Services.HotkeyService
 
 		[DllImport ( "user32.dll" )]
 		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-		
+
+		private readonly object _lock = new object();
+
 		private uint ParseModifiers ( string modifiers )
 		{
 			uint mod = 0;
@@ -49,7 +51,11 @@ namespace Dissonance.Services.HotkeyService
 			if ( msg == WM_HOTKEY )
 			{
 				Logger.Info ( "Hotkey pressed." );
-				HotkeyPressed?.Invoke ( );
+				var handler = HotkeyPressed;
+				if ( handler != null )
+				{
+					Application.Current.Dispatcher.BeginInvoke ( handler );
+				}
 				handled = true;
 			}
 			return IntPtr.Zero;
@@ -72,59 +78,65 @@ namespace Dissonance.Services.HotkeyService
 
 		public void RegisterHotkey ( string modifiers, string key )
 		{
-			try
+			lock ( _lock )
 			{
-				uint mod = ParseModifiers(modifiers);
-				uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true));
-
-				if ( _currentHotkeyId.HasValue )
+				try
 				{
-					UnregisterHotkey ( );
+					uint mod = ParseModifiers(modifiers);
+					uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true));
+
+					if ( _currentHotkeyId.HasValue )
+					{
+						UnregisterHotkey ( );
+					}
+
+					int hotkeyId = _nextHotkeyId++;
+
+					if ( RegisterHotKey ( _windowHandle, hotkeyId, mod, vk ) )
+					{
+						_currentHotkeyId = hotkeyId;
+						Logger.Info ( $"Hotkey registered: {modifiers} + {key}" );
+					}
+					else
+					{
+						string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application.";
+						Logger.Warn ( errorMessage );
+						MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					}
 				}
-
-				int hotkeyId = _nextHotkeyId++;
-
-				if ( RegisterHotKey ( _windowHandle, hotkeyId, mod, vk ) )
+				catch ( ArgumentException ex )
 				{
-					_currentHotkeyId = hotkeyId;
-					Logger.Info ( $"Hotkey registered: {modifiers} + {key}" );
-				}
-				else
-				{
-					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application.";
+					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. {ex.Message}";
 					Logger.Warn ( errorMessage );
 					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 				}
-			}
-			catch ( ArgumentException ex )
-			{
-				string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. {ex.Message}";
-				Logger.Warn ( errorMessage );
-				MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-			}
-			catch ( Exception ex )
-			{
-				string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. An unexpected error occurred.";
-				Logger.Error ( ex, errorMessage );
-				MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-				throw;
+				catch ( Exception ex )
+				{
+					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. An unexpected error occurred.";
+					Logger.Error ( ex, errorMessage );
+					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					throw;
+				}
 			}
 		}
 
 		public void UnregisterHotkey ( )
 		{
-			if ( _currentHotkeyId.HasValue )
+			lock ( _lock )
 			{
-				var hotkeyId = _currentHotkeyId.Value;
-				if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
+				if ( _currentHotkeyId.HasValue )
 				{
-					Logger.Info ( $"Hotkey unregistered with Id: {hotkeyId}" );
+					var hotkeyId = _currentHotkeyId.Value;
+					if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
+					{
+						Logger.Info ( $"Hotkey unregistered with Id: {hotkeyId}" );
+					}
+					else
+					{
+						Logger.Warn ( $"Failed to unregister hotkey with id: {hotkeyId}" );
+					}
+					_currentHotkeyId = null;
 				}
-				else
-				{
-					Logger.Warn ( $"Failed to unregister hotkey with id: {hotkeyId}" );
-				}
-				_currentHotkeyId = null;
 			}
 		}
 	}

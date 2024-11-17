@@ -21,7 +21,7 @@ namespace Dissonance
 		public App ( )
 		{
 			var serviceCollection = new ServiceCollection();
-			ConfigureLogging ( serviceCollection );  // Configure logging
+			ConfigureLogging ( serviceCollection );
 			ConfigureServices ( serviceCollection );
 			_serviceProvider = serviceCollection.BuildServiceProvider ( );
 		}
@@ -47,15 +47,17 @@ namespace Dissonance
 			services.AddSingleton<ISettingsService, SettingsService> ( );
 			services.AddSingleton<IClipboardService, ClipboardService> ( );
 			services.AddSingleton<ITTSService, TTSService> ( );
-			services.AddSingleton<IHotkeyService, HotkeyService> ( );  // Register HotkeyService
+			services.AddSingleton<IHotkeyService, HotkeyService> ( );
 			services.AddSingleton<MainWindowViewModel> ( );
 			services.AddSingleton<MainWindow> ( );
 		}
 
 		protected override void OnExit ( ExitEventArgs e )
 		{
-			var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>() as IDisposable;
-			hotkeyService?.Dispose ( );
+			if ( _serviceProvider.GetService<IHotkeyService> ( ) is IDisposable hotkeyService )
+			{
+				hotkeyService.Dispose ( );
+			}
 
 			LogManager.Shutdown ( );
 			base.OnExit ( e );
@@ -63,47 +65,53 @@ namespace Dissonance
 
 		protected override void OnStartup ( StartupEventArgs e )
 		{
-			var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
-
-			var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
-			var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>();
-			var clipboardService = _serviceProvider.GetRequiredService<IClipboardService>();
-			var ttsService = _serviceProvider.GetRequiredService<ITTSService>();
-			var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
-
-			mainWindow.Loaded += ( s, ev ) =>
+			try
 			{
-				( ( HotkeyService ) hotkeyService ).Initialize ( mainWindow );
+				var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
 
-				// Get settings and register hotkey
-				var settings = settingsService.GetCurrentSettings();
-				hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, settings.Hotkey.Key );
+				var settingsService = _serviceProvider.GetRequiredService<ISettingsService>();
+				var hotkeyService = _serviceProvider.GetRequiredService<IHotkeyService>();
+				var clipboardService = _serviceProvider.GetRequiredService<IClipboardService>();
+				var ttsService = _serviceProvider.GetRequiredService<ITTSService>();
+				var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
 
-				// Update TTS parameters based on settings
-				ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
-
-				hotkeyService.HotkeyPressed += ( ) =>
+				mainWindow.Loaded += ( s, ev ) =>
 				{
-					var clipboardText = clipboardService.GetClipboardText();
-					if ( !string.IsNullOrEmpty ( clipboardText ) )
-					{
-						logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
+					( ( HotkeyService ) hotkeyService ).Initialize ( mainWindow );
 
-						// Ensure TTS parameters are updated before speaking
-						ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
-						ttsService.Speak ( clipboardText );
-					}
-					else
+					var settings = settingsService.GetCurrentSettings();
+					hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, settings.Hotkey.Key );
+
+					ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+
+					hotkeyService.HotkeyPressed += ( ) =>
 					{
-						logger.LogWarning ( "Hotkey pressed, but clipboard is empty or doesn't contain text." );
-					}
+						var clipboardText = clipboardService.GetClipboardText();
+						if ( !string.IsNullOrEmpty ( clipboardText ) )
+						{
+							logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
+
+							ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+							ttsService.Speak ( clipboardText );
+						}
+						else
+						{
+							logger.LogWarning ( "Hotkey pressed, but clipboard is empty or doesn't contain text." );
+						}
+					};
+
+					logger.LogInformation ( "HotkeyService initialized and hotkey registered." );
 				};
 
-				logger.LogInformation ( "HotkeyService initialized and hotkey registered." );
-			};
-
-			logger.LogInformation ( "Application startup." );
-			mainWindow.Show ( );
+				logger.LogInformation ( "Application startup." );
+				mainWindow.Show ( );
+			}
+			catch ( Exception ex )
+			{
+				var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+				logger.LogError ( ex, "An error occurred during application startup." );
+				throw;
+			}
 		}
 	}
 }

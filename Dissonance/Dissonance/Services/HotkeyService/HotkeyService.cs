@@ -27,7 +27,7 @@ namespace Dissonance.Services.HotkeyService
 
 		[DllImport ( "user32.dll" )]
 		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-
+		
 		private uint ParseModifiers ( string modifiers )
 		{
 			uint mod = 0;

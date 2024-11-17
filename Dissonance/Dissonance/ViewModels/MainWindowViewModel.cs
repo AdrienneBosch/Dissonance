@@ -69,7 +69,6 @@ namespace Dissonance.ViewModels
 				if ( settings.Voice != value )
 				{
 					settings.Voice = value;
-					_settingsService.SaveSettings ( settings );
 					_ttsService.SetTTSParameters ( value, settings.VoiceRate, settings.Volume ); // Live update
 					OnPropertyChanged ( nameof ( Voice ) );
 				}
@@ -85,7 +84,6 @@ namespace Dissonance.ViewModels
 				if ( settings.VoiceRate != value )
 				{
 					settings.VoiceRate = value;
-					_settingsService.SaveSettings ( settings );
 					_ttsService.SetTTSParameters ( settings.Voice, value, settings.Volume ); // Live update
 					OnPropertyChanged ( nameof ( VoiceRate ) );
 				}
@@ -104,7 +102,6 @@ namespace Dissonance.ViewModels
 				if ( settings.Volume != value )
 				{
 					settings.Volume = value;
-					_settingsService.SaveSettings ( settings );
 					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); // Live update
 					OnPropertyChanged ( nameof ( Volume ) );
 				}
@@ -145,7 +142,6 @@ namespace Dissonance.ViewModels
 
 					settings.Hotkey.Modifiers = string.Join ( "+", modifiers );
 					settings.Hotkey.Key = newKey.ToString ( );
-					_settingsService.SaveSettings ( settings );
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
 				}
 				catch ( Exception ex )

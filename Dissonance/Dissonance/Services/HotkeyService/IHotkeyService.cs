@@ -10,7 +10,6 @@ namespace Dissonance.Services.HotkeyService
 	{
 		event Action HotkeyPressed;
 
-		void RegisterHotkey ( string modifiers, string key );
 		void RegisterHotkey ( AppSettings.HotkeySettings hotkey ); 
 		void UnregisterHotkey ( );
 	}

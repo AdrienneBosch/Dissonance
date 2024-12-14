@@ -87,14 +87,15 @@ namespace Dissonance.Services.HotkeyService
 			_source.AddHook ( WndProc );
 		}
 
-		public void RegisterHotkey ( string modifiers, string key )
+		public void RegisterHotkey ( AppSettings.HotkeySettings hotkey )
 		{
+			if ( hotkey == null ) throw new ArgumentNullException ( nameof ( hotkey ) );
 			lock ( _lock )
 			{
 				try
 				{
-					uint mod = ParseModifiers(modifiers);
-					uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), key, true));
+					uint mod = ParseModifiers(hotkey.Modifiers);
+					uint vk = (uint)KeyInterop.VirtualKeyFromKey((Key)Enum.Parse(typeof(Key), hotkey.Key, true));
 
 					if ( _currentHotkeyId.HasValue )
 					{
@@ -106,35 +107,29 @@ namespace Dissonance.Services.HotkeyService
 					if ( RegisterHotKey ( _windowHandle, hotkeyId, mod, vk ) )
 					{
 						_currentHotkeyId = hotkeyId;
-						Logger.Info ( $"Hotkey registered: {modifiers} + {key}" );
+						Logger.Info ( $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}" );
 					}
 					else
 					{
-						string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. It might already be in use by another application.";
+						string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.";
 						Logger.Warn ( errorMessage );
 						MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 					}
 				}
 				catch ( ArgumentException ex )
 				{
-					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. {ex.Message}";
+					string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. {ex.Message}";
 					Logger.Warn ( errorMessage );
 					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 				}
 				catch ( Exception ex )
 				{
-					string errorMessage = $"Failed to register hotkey: {modifiers} + {key}. An unexpected error occurred.";
+					string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. An unexpected error occurred.";
 					Logger.Error ( ex, errorMessage );
 					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 					throw;
 				}
 			}
-		}
-
-		public void RegisterHotkey ( AppSettings.HotkeySettings hotkey )
-		{
-			if ( hotkey == null ) throw new ArgumentNullException ( nameof ( hotkey ) );
-			RegisterHotkey ( hotkey.Modifiers, hotkey.Key );
 		}
 
 		public void UnregisterHotkey ( )

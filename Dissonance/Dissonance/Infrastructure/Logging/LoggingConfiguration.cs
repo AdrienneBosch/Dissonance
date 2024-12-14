@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using NLog.Extensions.Logging;
@@ -33,8 +27,8 @@ namespace Dissonance.Infrastructure.Logging
 				services.AddLogging ( loggingBuilder =>
 				{
 					loggingBuilder.ClearProviders ( );
-					loggingBuilder.SetMinimumLevel ( Microsoft.Extensions.Logging.LogLevel.Debug ); 
-					loggingBuilder.AddNLog ( ); 
+					loggingBuilder.SetMinimumLevel ( Microsoft.Extensions.Logging.LogLevel.Debug );
+					loggingBuilder.AddNLog ( );
 				} );
 			}
 		}

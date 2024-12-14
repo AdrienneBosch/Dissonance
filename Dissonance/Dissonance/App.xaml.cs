@@ -1,6 +1,5 @@
 ﻿using System.Windows;
 
-using Dissonance.Infrastructure.Logging;
 using Dissonance.Infrastructure.Logging.Dissonance.Infrastructure.Logging;
 using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
@@ -37,17 +36,30 @@ namespace Dissonance
 			services.AddSingleton<MainWindow> ( );
 		}
 
-		protected override void OnStartup ( StartupEventArgs e )
+		private void DisposeServices ( )
 		{
-			try
+			if ( _serviceProvider.GetService<IHotkeyService> ( ) is IDisposable hotkeyService )
 			{
-				InitializeApplication ( );
+				hotkeyService.Dispose ( );
 			}
-			catch ( Exception ex )
+
+			LogManager.Shutdown ( );
+		}
+
+		private void HandleHotkeyPressed ( ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
+		{
+			var settings = settingsService.GetCurrentSettings();
+			var clipboardText = clipboardService.GetClipboardText();
+
+			if ( !string.IsNullOrEmpty ( clipboardText ) )
 			{
-				var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
-				logger.LogError ( ex, "An error occurred during application startup." );
-				throw;
+				logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
+				ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+				ttsService.Speak ( clipboardText );
+			}
+			else
+			{
+				logger.LogWarning ( "Hotkey pressed, but clipboard is empty or doesn't contain text." );
 			}
 		}
 
@@ -64,11 +76,6 @@ namespace Dissonance
 
 			mainWindow.Loaded += ( s, ev ) => OnMainWindowLoaded ( mainWindow, hotkeyService, settingsService, clipboardService, ttsService, logger );
 			mainWindow.Show ( );
-		}
-
-		private void OnMainWindowLoaded ( MainWindow mainWindow, IHotkeyService hotkeyService, ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
-		{
-			InitializeHotkeyService ( mainWindow, hotkeyService, settingsService, clipboardService, ttsService, logger );
 		}
 
 		private void InitializeHotkeyService ( MainWindow mainWindow, IHotkeyService hotkeyService, ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
@@ -91,21 +98,9 @@ namespace Dissonance
 			logger.LogInformation ( "HotkeyService initialized and hotkey registered." );
 		}
 
-		private void HandleHotkeyPressed ( ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
+		private void OnMainWindowLoaded ( MainWindow mainWindow, IHotkeyService hotkeyService, ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
 		{
-			var settings = settingsService.GetCurrentSettings();
-			var clipboardText = clipboardService.GetClipboardText();
-
-			if ( !string.IsNullOrEmpty ( clipboardText ) )
-			{
-				logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
-				ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
-				ttsService.Speak ( clipboardText );
-			}
-			else
-			{
-				logger.LogWarning ( "Hotkey pressed, but clipboard is empty or doesn't contain text." );
-			}
+			InitializeHotkeyService ( mainWindow, hotkeyService, settingsService, clipboardService, ttsService, logger );
 		}
 
 		protected override void OnExit ( ExitEventArgs e )
@@ -114,14 +109,18 @@ namespace Dissonance
 			base.OnExit ( e );
 		}
 
-		private void DisposeServices ( )
+		protected override void OnStartup ( StartupEventArgs e )
 		{
-			if ( _serviceProvider.GetService<IHotkeyService> ( ) is IDisposable hotkeyService )
+			try
 			{
-				hotkeyService.Dispose ( );
+				InitializeApplication ( );
 			}
-
-			LogManager.Shutdown ( );
+			catch ( Exception ex )
+			{
+				var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+				logger.LogError ( ex, "An error occurred during application startup." );
+				throw;
+			}
 		}
 	}
 }

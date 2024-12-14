@@ -16,10 +16,12 @@ namespace Dissonance.Services.HotkeyService
 		private const int WM_HOTKEY = 0x0312;
 
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
+		private readonly object _lock = new object ( );
 		private int? _currentHotkeyId;
 		private int _nextHotkeyId = 0;
 		private HwndSource _source;
 		private IntPtr _windowHandle;
+
 		public event Action HotkeyPressed;
 
 		[DllImport ( "user32.dll" )]
@@ -27,8 +29,6 @@ namespace Dissonance.Services.HotkeyService
 
 		[DllImport ( "user32.dll" )]
 		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-
-		private readonly object _lock = new object();
 
 		private uint ParseModifiers ( string modifiers )
 		{

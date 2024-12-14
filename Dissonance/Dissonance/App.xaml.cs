@@ -1,5 +1,6 @@
 ﻿using System.Windows;
 
+using Dissonance.Infrastructure.Logging.Dissonance.Infrastructure.Logging;
 using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
@@ -21,25 +22,9 @@ namespace Dissonance
 		public App ( )
 		{
 			var serviceCollection = new ServiceCollection();
-			ConfigureLogging ( serviceCollection );
+			LoggingConfiguration.Configure ( serviceCollection );
 			ConfigureServices ( serviceCollection );
 			_serviceProvider = serviceCollection.BuildServiceProvider ( );
-		}
-
-		private void ConfigureLogging ( IServiceCollection services )
-		{
-			var loggerConfig = new NLog.Config.LoggingConfiguration();
-			var fileTarget = new NLog.Targets.FileTarget("logfile") { FileName = "app_logs.txt" };
-			loggerConfig.AddTarget ( fileTarget );
-			loggerConfig.AddRule ( NLog.LogLevel.Debug, NLog.LogLevel.Fatal, fileTarget );
-			NLog.LogManager.Configuration = loggerConfig;
-
-			services.AddLogging ( loggingBuilder =>
-			{
-				loggingBuilder.ClearProviders ( );
-				loggingBuilder.SetMinimumLevel ( Microsoft.Extensions.Logging.LogLevel.Trace );
-				loggingBuilder.AddNLog ( );
-			} );
 		}
 
 		private void ConfigureServices ( IServiceCollection services )

@@ -121,7 +121,7 @@ namespace Dissonance.ViewModels
 				throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key." );
 			}
 
-			var modifiers = parts.Take(parts.Length - 1).ToArray();
+			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
 			var key = parts.Last();
 
 			if ( !Enum.TryParse ( key, true, out Key newKey ) )
@@ -130,30 +130,33 @@ namespace Dissonance.ViewModels
 			}
 
 			var settings = _settingsService.GetCurrentSettings();
-			var newHotkey = string.Join("+", modifiers) + "+" + newKey;
+			var newHotkey = new AppSettings.HotkeySettings
+			{
+				Modifiers = modifiers,
+				Key = newKey.ToString()
+			};
 
-			if ( settings.Hotkey.Key != newHotkey )
+			if ( settings.Hotkey.Modifiers != newHotkey.Modifiers || settings.Hotkey.Key != newHotkey.Key )
 			{
 				try
 				{
-					_hotkeyService.UnregisterHotkey ( ); // Unregister previous hotkey
-					var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
-					_hotkeyService.RegisterHotkey ( string.Join ( "+", modifiers ), newKey.ToString ( ) );
+					_hotkeyService.RegisterHotkey ( newHotkey );
 
-					settings.Hotkey.Modifiers = string.Join ( "+", modifiers );
-					settings.Hotkey.Key = newKey.ToString ( );
+					settings.Hotkey = newHotkey;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
 				}
 				catch ( Exception ex )
 				{
-					MessageBox.Show ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.", "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-					Logger.Warn ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application." );
+					var errorMessage = $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.";
+					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					Logger.Warn ( errorMessage, ex );
 				}
 
 				var ttsSettings = _settingsService.GetCurrentSettings();
 				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
 			}
 		}
+
 
 		protected void OnPropertyChanged ( string propertyName )
 		{

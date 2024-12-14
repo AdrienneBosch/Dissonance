@@ -32,16 +32,27 @@ namespace Dissonance.Services.HotkeyService
 
 		private uint ParseModifiers ( string modifiers )
 		{
+			if ( string.IsNullOrWhiteSpace ( modifiers ) )
+				throw new ArgumentException ( "Modifiers cannot be null or empty.", nameof ( modifiers ) );
+
 			uint mod = 0;
-			if ( modifiers.Contains ( "Alt" ) ) mod |= MOD_ALT;
-			if ( modifiers.Contains ( "Ctrl" ) ) mod |= MOD_CONTROL;
-			if ( modifiers.Contains ( "Shift" ) ) mod |= MOD_SHIFT;
-			if ( modifiers.Contains ( "Win" ) ) mod |= MOD_WIN;
+			var parts = modifiers.Split(new[] { '+', ',' }, StringSplitOptions.RemoveEmptyEntries);
+
+			foreach ( var part in parts.Select ( p => p.Trim ( ) ) )
+			{
+				switch ( part.ToLower ( ) )
+				{
+					case "alt": mod |= MOD_ALT; break;
+					case "ctrl": mod |= MOD_CONTROL; break;
+					case "shift": mod |= MOD_SHIFT; break;
+					case "win": mod |= MOD_WIN; break;
+					default:
+						throw new ArgumentException ( $"Unknown modifier: {part}", nameof ( modifiers ) );
+				}
+			}
 
 			if ( mod == 0 )
-			{
 				throw new ArgumentException ( "Hotkey must include at least one modifier." );
-			}
 
 			return mod;
 		}
@@ -118,6 +129,12 @@ namespace Dissonance.Services.HotkeyService
 					throw;
 				}
 			}
+		}
+
+		public void RegisterHotkey ( AppSettings.HotkeySettings hotkey )
+		{
+			if ( hotkey == null ) throw new ArgumentNullException ( nameof ( hotkey ) );
+			RegisterHotkey ( hotkey.Modifiers, hotkey.Key );
 		}
 
 		public void UnregisterHotkey ( )

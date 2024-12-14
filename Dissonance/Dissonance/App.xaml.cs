@@ -76,7 +76,11 @@ namespace Dissonance
 			( ( HotkeyService ) hotkeyService ).Initialize ( mainWindow );
 
 			var settings = settingsService.GetCurrentSettings();
-			hotkeyService.RegisterHotkey ( settings.Hotkey.Modifiers, settings.Hotkey.Key );
+			hotkeyService.RegisterHotkey ( new AppSettings.HotkeySettings
+			{
+				Modifiers = settings.Hotkey.Modifiers,
+				Key = settings.Hotkey.Key
+			} );
 			ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
 			hotkeyService.HotkeyPressed += ( ) =>

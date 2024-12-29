@@ -1,11 +1,7 @@
-﻿using System.Speech.Synthesis;  // For TTS functionality
-
+﻿using System.Speech.Synthesis; 
 using Dissonance.Infrastructure.Constants;
-
 using Microsoft.Extensions.Logging;
-
 using NLog;
-
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dissonance.Services.TTSService

@@ -12,5 +12,6 @@ namespace Dissonance.Infrastructure.Constants
 		public const string HotkeyServiceWarning = "Hotkey Service Warning";
 		public const string TTSServiceError = "TTS Service Failure";
 		public const string TTSServiceWarning = "TTS Service Warning";
+		public const string SettingsServiceError = "Settings Service Failure";
 	}
 }

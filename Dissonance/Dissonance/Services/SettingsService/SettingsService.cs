@@ -1,5 +1,10 @@
 ﻿using System.IO;
 
+using Dissonance.Infrastructure.Constants;
+using Dissonance.Services.MessageService;
+
+using Microsoft.Extensions.Logging;
+
 using Newtonsoft.Json;
 
 using NLog;
@@ -11,11 +16,15 @@ namespace Dissonance.Services.SettingsService
 	internal class SettingsService : ISettingsService
 	{
 		private const string SettingsFilePath = "appsettings.json";
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
 		private AppSettings _currentSettings;
+		private readonly ILogger<SettingsService> _logger;
+		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 
-		public SettingsService ( )
+		public SettingsService ( ILogger<SettingsService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
+			 _logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
+
 			if ( !File.Exists ( SettingsFilePath ) )
 			{
 				_currentSettings = GetDefaultSettings ( );
@@ -49,7 +58,7 @@ namespace Dissonance.Services.SettingsService
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to load settings, reverting to default." );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.SettingsServiceError, "Failed to load settings, reverting to default.", ex );
 				return GetDefaultSettings ( );
 			}
 		}
@@ -70,7 +79,7 @@ namespace Dissonance.Services.SettingsService
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to save settings." );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.SettingsServiceError, "Failed to save settings.", ex );
 			}
 		}
 	}

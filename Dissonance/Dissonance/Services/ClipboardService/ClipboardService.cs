@@ -1,4 +1,4 @@
-﻿using System.Windows;  // For accessing clipboard
+﻿using System.Windows;  
 
 using NLog;
 
@@ -28,7 +28,7 @@ namespace Dissonance.Services.ClipboardService
 				Logger.Error ( ex, "Error accessing clipboard content." );
 			}
 
-			return null;  // Return null if text is unavailable or an error occurs
+			return null;  
 		}
 
 		/// <summary>

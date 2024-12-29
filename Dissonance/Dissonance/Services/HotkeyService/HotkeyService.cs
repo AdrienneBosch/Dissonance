@@ -4,6 +4,8 @@ using System.Windows.Input;
 using System.Windows.Interop;
 
 using Dissonance.Infrastructure.Constants;
+using Dissonance.ViewModels;
+
 using Microsoft.Extensions.Logging;
 
 using NLog;
@@ -111,6 +113,7 @@ namespace Dissonance.Services.HotkeyService
 					{
 						_currentHotkeyId = hotkeyId;
 						_logger.LogInformation( $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}" );
+						DissonanceMessageBoxViewModel.Show ( "Hotkey Registered", $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}", showCancelButton: false );
 					}
 					else
 					{
@@ -123,7 +126,7 @@ namespace Dissonance.Services.HotkeyService
 				{
 					string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. {ex.Message}";
 					_logger.LogWarning( errorMessage );
-					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					DissonanceMessageBoxViewModel.Show ( "Hotkey Registration Error", errorMessage, showCancelButton: false );
 				}
 				catch ( Exception ex )
 				{

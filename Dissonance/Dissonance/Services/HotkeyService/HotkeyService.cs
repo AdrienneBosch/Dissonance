@@ -129,16 +129,16 @@ namespace Dissonance.Services.HotkeyService
 					}
 					else
 					{
-						_messageService.DissonanceMessageBoxShowWarning ( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.");
+						_messageService.DissonanceMessageBoxShowWarning ( "Hotkey Warning", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.");
 					}
 				}
 				catch ( ArgumentException ex )
 				{
-					_messageService.DissonanceMessageBoxShowError( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}.", ex);
+					_messageService.DissonanceMessageBoxShowError( "Hotkey Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}.", ex);
 				}
 				catch ( Exception ex )
 				{
-					_messageService.DissonanceMessageBoxShowError ( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. An unexpected error occurred.", ex );
+					_messageService.DissonanceMessageBoxShowError ( "Hotkey Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. An unexpected error occurred.", ex );
 				}
 			}
 		}
@@ -152,7 +152,7 @@ namespace Dissonance.Services.HotkeyService
 					var hotkeyId = _currentHotkeyId.Value;
 					if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
 					{
-						_logger.LogInformation( $"Hotkey unregistered with Id: {hotkeyId}" );
+						_logger.LogDebug( $"Hotkey unregistered with Id: {hotkeyId}" );
 					}
 					else
 					{

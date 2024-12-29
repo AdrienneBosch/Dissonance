@@ -1,43 +1,46 @@
-﻿using System.Media;
+﻿using Dissonance.Services.ClipboardService;
+using Microsoft.Extensions.Logging;
 using System.Windows;
 
-using NLog;
-
-namespace Dissonance.Services.ClipboardService
+public class ClipboardService : IClipboardService
 {
-	internal class ClipboardService : IClipboardService
+	private readonly ILogger<ClipboardService> _logger;
+
+	public ClipboardService ( ILogger<ClipboardService> logger )
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
+		_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+	}
 
-		public string? GetClipboardText ( )
+	public string? GetClipboardText ( )
+	{
+		try
 		{
-			try
+			if ( IsTextAvailable ( ) )
 			{
-				if ( IsTextAvailable ( ) )
-				{
-					return Clipboard.GetText ( );
-				}
+				var text = Clipboard.GetText();
+				_logger.LogInformation ( "Clipboard text retrieved." );
+				return text;
 			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Error accessing clipboard content." );
-				//TODO: Play error sound and show error message in UI
-			}
-
-			return null;
+		}
+		catch ( Exception ex )
+		{
+			_logger.LogError ( ex, "Error accessing clipboard content." );
+			//TODO: Play error sound and show error message in UI
 		}
 
-		public bool IsTextAvailable ( )
+		return null;
+	}
+
+	public bool IsTextAvailable ( )
+	{
+		try
 		{
-			try
-			{
-				return Clipboard.ContainsText ( );
-			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Error checking clipboard content." );
-				return false;
-			}
+			return Clipboard.ContainsText ( );
+		}
+		catch ( Exception ex )
+		{
+			_logger.LogError ( ex, "Error checking clipboard content." );
+			return false;
 		}
 	}
 }

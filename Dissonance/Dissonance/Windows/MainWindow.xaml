@@ -8,40 +8,41 @@
         Title="Dissonance" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- Voice Rate TextBox -->
-        <TextBox x:Name="VoiceRateTextBox"
-                 HorizontalAlignment="Left"
-                 Margin="156,187,0,0"
-                 TextWrapping="Wrap"
-                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 VerticalAlignment="Top"
-                 Width="120" />
 
         <!-- Hotkey TextBox for reading clipboard -->
         <TextBox x:Name="ReadClipboardHotkeyTextBox"
                  HorizontalAlignment="Left"
-                 Margin="106,85,0,0"
+                 Margin="422,121,0,0"
                  TextWrapping="Wrap"
                  Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  VerticalAlignment="Top"
                  Width="200" />
 
         <!-- Voice Volume Slider -->
-        <Slider x:Name="VoiceVolumeSlider"
-                HorizontalAlignment="Left"
-                Margin="472,124,0,0"
-                VerticalAlignment="Top"
-                Width="120"
-                Minimum="0"
-                Maximum="100"
-                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
 
         <!-- Voice Selection ComboBox -->
         <ComboBox x:Name="VoiceSelectionComboBox"
                   HorizontalAlignment="Left"
-                  Margin="259,42,0,0"
+                  Margin="422,82,0,0"
                   VerticalAlignment="Top"
                   Width="200"
                   ItemsSource="{Binding AvailableVoices}"
                   SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
+        <Label x:Name="DissonanceTitleLable" Content="Dissonance" HorizontalAlignment="Left" Margin="265,10,0,0" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="2.124,0.466"/>
+        <StackPanel x:Name="VoiceRateStackPannel" MinHeight="90" MaxWidth="115" MaxHeight="90" Margin="61,257,624,87" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True">
+            <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="33"/>
+            <TextBox x:Name="VoiceRateTextBox"
+                 TextWrapping="Wrap"
+                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 Width="81" Margin="10,10,10,10" />
+        </StackPanel>
+        <StackPanel x:Name="VolumeStackPannel" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="530,257,58,73" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True">
+            <Label x:Name="VolumeHeadingLable" Content="Volume" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="33" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
+            <Slider x:Name="VoiceVolumeSlider"
+                Width="181"
+                Minimum="0"
+                Maximum="100"
+                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Margin="10,10,10,10" HorizontalAlignment="Center" />
+        </StackPanel>
     </Grid>
 </Window>

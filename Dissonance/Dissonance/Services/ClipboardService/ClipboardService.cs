@@ -1,4 +1,4 @@
-﻿using System.Windows;  
+﻿using System.Windows;
 
 using NLog;
 
@@ -28,7 +28,7 @@ namespace Dissonance.Services.ClipboardService
 				Logger.Error ( ex, "Error accessing clipboard content." );
 			}
 
-			return null;  
+			return null;
 		}
 
 		/// <summary>

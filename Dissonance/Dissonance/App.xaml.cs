@@ -17,6 +17,7 @@ namespace Dissonance
 	public partial class App : Application
 	{
 		private readonly IServiceProvider _serviceProvider;
+		private bool _isSpeaking = false;
 
 		public App ( )
 		{
@@ -48,6 +49,14 @@ namespace Dissonance
 
 		private void HandleHotkeyPressed ( ISettingsService settingsService, IClipboardService clipboardService, ITTSService ttsService, ILogger<App> logger )
 		{
+			if ( _isSpeaking )
+			{
+				ttsService.Stop ( );
+				_isSpeaking = false;
+				logger.LogInformation ( "Stopped speaking." );
+				return;
+			}
+
 			var settings = settingsService.GetCurrentSettings();
 			var clipboardText = clipboardService.GetClipboardText();
 
@@ -56,6 +65,7 @@ namespace Dissonance
 				logger.LogInformation ( $"Hotkey pressed, speaking clipboard text: {clipboardText}" );
 				ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 				ttsService.Speak ( clipboardText );
+				_isSpeaking = true; 
 			}
 			else
 			{

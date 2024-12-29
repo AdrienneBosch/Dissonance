@@ -13,26 +13,8 @@ namespace Dissonance.Services.TTSService
 		public TTSService ( )
 		{
 			_synthesizer = new SpeechSynthesizer ( );
-
-			// Log all available voices
-			foreach ( var voice in _synthesizer.GetInstalledVoices ( ) )
-			{
-				Logger.Info ( $"Installed voice: {voice.VoiceInfo.Name}" );
-			}
 		}
 
-		/// <summary>
-		/// Updates the TTS parameters (voice, rate, volume).
-		/// </summary>
-		/// <param name="voice">
-		/// Voice to use.
-		/// </param>
-		/// <param name="rate">
-		/// Speed of speech.
-		/// </param>
-		/// <param name="volume">
-		/// Volume level.
-		/// </param>
 		public void SetTTSParameters ( string voice, double rate, int volume )
 		{
 			try
@@ -53,7 +35,6 @@ namespace Dissonance.Services.TTSService
 
 				_synthesizer.Rate = ( int ) rate;
 				_synthesizer.Volume = volume;
-				Logger.Info ( $"TTS parameters set: Voice = {_synthesizer.Voice.Name}, Rate = {rate}, Volume = {volume}" );
 			}
 			catch ( Exception ex )
 			{
@@ -61,12 +42,6 @@ namespace Dissonance.Services.TTSService
 			}
 		}
 
-		/// <summary>
-		/// Speaks the given text using the configured TTS settings.
-		/// </summary>
-		/// <param name="text">
-		/// The text to convert to speech.
-		/// </param>
 		public void Speak ( string text )
 		{
 			try
@@ -78,6 +53,11 @@ namespace Dissonance.Services.TTSService
 			{
 				Logger.Error ( ex, "Failed to speak text." );
 			}
+		}
+
+		public void Stop ( )
+		{
+			_synthesizer.SpeakAsyncCancelAll ( );
 		}
 	}
 }

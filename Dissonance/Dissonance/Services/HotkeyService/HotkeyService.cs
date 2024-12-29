@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
 
+using Dissonance.Infrastructure.Constants;
 using Microsoft.Extensions.Logging;
 
 using NLog;
@@ -11,12 +12,6 @@ namespace Dissonance.Services.HotkeyService
 {
 	internal class HotkeyService : IHotkeyService, IDisposable
 	{
-		private const uint MOD_ALT = 0x0001;
-		private const uint MOD_CONTROL = 0x0002;
-		private const uint MOD_SHIFT = 0x0004;
-		private const uint MOD_WIN = 0x0008;
-		private const int WM_HOTKEY = 0x0312;
-
 		private readonly object _lock = new object ( );
 		private int? _currentHotkeyId;
 		private int _nextHotkeyId = 0;
@@ -50,10 +45,10 @@ namespace Dissonance.Services.HotkeyService
 			{
 				switch ( part.ToLower ( ) )
 				{
-					case "alt": mod |= MOD_ALT; break;
-					case "ctrl": mod |= MOD_CONTROL; break;
-					case "shift": mod |= MOD_SHIFT; break;
-					case "win": mod |= MOD_WIN; break;
+					case "alt": mod |= Infrastructure.Constants.ModifierKeys.Alt; break;
+					case "ctrl": mod |= Infrastructure.Constants.ModifierKeys.Control; break;
+					case "shift": mod |= Infrastructure.Constants.ModifierKeys.Shift; break;
+					case "win": mod |= Infrastructure.Constants.ModifierKeys.Win; break;
 					default:
 						throw new ArgumentException ( $"Unknown modifier: {part}", nameof ( modifiers ) );
 				}
@@ -67,7 +62,7 @@ namespace Dissonance.Services.HotkeyService
 
 		private IntPtr WndProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )
 		{
-			if ( msg == WM_HOTKEY )
+			if ( msg == WindowsMessages.Hotkey )
 			{
 				_logger.LogInformation( "Hotkey pressed." );
 				var handler = HotkeyPressed;

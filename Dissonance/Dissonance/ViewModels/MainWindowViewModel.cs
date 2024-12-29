@@ -95,14 +95,14 @@ namespace Dissonance.ViewModels
 			get => _settingsService.GetCurrentSettings ( ).Volume;
 			set
 			{
-				if ( value < 0 || value > 100 ) // Ensure volume is within acceptable range
+				if ( value < 0 || value > 100 )
 					throw new ArgumentOutOfRangeException ( nameof ( Volume ), "Volume must be between 0 and 100." );
 
 				var settings = _settingsService.GetCurrentSettings();
 				if ( settings.Volume != value )
 				{
 					settings.Volume = value;
-					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); // Live update
+					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); 
 					OnPropertyChanged ( nameof ( Volume ) );
 				}
 			}

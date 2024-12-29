@@ -16,7 +16,7 @@ namespace Dissonance.Infrastructure.Logging
 				var fileTarget = new NLog.Targets.FileTarget("logfile")
 				{
 					FileName = "app_logs.txt",
-					Layout = "${longdate} ${uppercase:${level}} ${message} ${exception:format=ToString}"
+					Layout = "${longdate} ${uppercase:${level}} ${logger} ${message} ${exception:format=ToString}"
 				};
 
 				loggerConfig.AddTarget ( fileTarget );

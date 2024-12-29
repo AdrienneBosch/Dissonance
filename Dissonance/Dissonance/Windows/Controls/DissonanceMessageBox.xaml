@@ -1,11 +1,11 @@
-﻿<Window x:Class="Dissonance.Windows.Controls.DissonanceMessageBox"
+﻿<Window x:Name="AlertMessageBox" x:Class="Dissonance.Windows.Controls.DissonanceMessageBox"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Dissonance.Windows.Controls"
         mc:Ignorable="d"
-        Title="DissonanceMessageBox" Height="199" Width="373">
+        Title="Alert" Height="199" Width="373" WindowStartupLocation="CenterOwner" ResizeMode="NoResize" WindowStyle="ToolWindow">
     <Window.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Window.Resources>

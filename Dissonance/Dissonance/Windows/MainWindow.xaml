@@ -1,11 +1,11 @@
-﻿<Window x:Class="Dissonance.MainWindow"
+﻿<Window x:Name="Dissonance" x:Class="Dissonance.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Dissonance.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Dissonance" Height="450" Width="800" WindowStartupLocation="CenterScreen">
     <Grid>
         <!-- Voice Rate TextBox -->
         <TextBox x:Name="VoiceRateTextBox"

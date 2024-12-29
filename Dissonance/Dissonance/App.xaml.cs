@@ -41,6 +41,12 @@ namespace Dissonance
 			services.AddSingleton<MainWindow> ( );
 		}
 
+		protected override void OnExit ( ExitEventArgs e )
+		{
+			_startupManager.Dispose ( );
+			base.OnExit ( e );
+		}
+
 		protected override void OnStartup ( StartupEventArgs e )
 		{
 			base.OnStartup ( e );
@@ -60,12 +66,6 @@ namespace Dissonance
 				logger.LogError ( ex, "Application startup failed." );
 				throw;
 			}
-		}
-
-		protected override void OnExit ( ExitEventArgs e )
-		{
-			_startupManager.Dispose ( );
-			base.OnExit ( e );
 		}
 	}
 }

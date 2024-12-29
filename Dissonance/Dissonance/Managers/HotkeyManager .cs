@@ -1,5 +1,4 @@
-﻿using Dissonance.Services.ClipboardService;
-using Dissonance.Services.HotkeyService;
+﻿using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 
@@ -9,11 +8,11 @@ namespace Dissonance.Managers
 {
 	public class HotkeyManager
 	{
+		private readonly ClipboardManager _clipboardManager;
 		private readonly IHotkeyService _hotkeyService;
+		private readonly ILogger<HotkeyManager> _logger;
 		private readonly ISettingsService _settingsService;
 		private readonly ITTSService _ttsService;
-		private readonly ClipboardManager _clipboardManager;
-		private readonly ILogger<HotkeyManager> _logger;
 		private bool _isSpeaking;
 
 		public HotkeyManager ( IHotkeyService hotkeyService, ISettingsService settingsService, ITTSService ttsService, ClipboardManager clipboardManager, ILogger<HotkeyManager> logger )
@@ -23,21 +22,6 @@ namespace Dissonance.Managers
 			_ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
 			_clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
-		}
-
-		public void Initialize ( MainWindow mainWindow )
-		{
-			_hotkeyService.Initialize ( mainWindow );
-			var settings = _settingsService.GetCurrentSettings();
-
-			_hotkeyService.RegisterHotkey ( new AppSettings.HotkeySettings
-			{
-				Modifiers = settings.Hotkey.Modifiers,
-				Key = settings.Hotkey.Key
-			} );
-
-			_hotkeyService.HotkeyPressed += OnHotkeyPressed;
-			_logger.LogInformation ( "HotkeyManager initialized and hotkey registered." );
 		}
 
 		private void OnHotkeyPressed ( )
@@ -69,6 +53,21 @@ namespace Dissonance.Managers
 		{
 			_hotkeyService.Dispose ( );
 			_logger.LogInformation ( "HotkeyManager disposed." );
+		}
+
+		public void Initialize ( MainWindow mainWindow )
+		{
+			_hotkeyService.Initialize ( mainWindow );
+			var settings = _settingsService.GetCurrentSettings();
+
+			_hotkeyService.RegisterHotkey ( new AppSettings.HotkeySettings
+			{
+				Modifiers = settings.Hotkey.Modifiers,
+				Key = settings.Hotkey.Key
+			} );
+
+			_hotkeyService.HotkeyPressed += OnHotkeyPressed;
+			_logger.LogInformation ( "HotkeyManager initialized and hotkey registered." );
 		}
 	}
 }

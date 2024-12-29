@@ -15,11 +15,6 @@ namespace Dissonance.Managers
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
 		}
 
-		public void Initialize ( )
-		{
-			_logger.LogInformation ( "ClipboardManager initialized." );
-		}
-
 		public string GetValidatedClipboardText ( )
 		{
 			var text = _clipboardService.GetClipboardText();
@@ -30,6 +25,11 @@ namespace Dissonance.Managers
 			}
 
 			return text;
+		}
+
+		public void Initialize ( )
+		{
+			_logger.LogInformation ( "ClipboardManager initialized." );
 		}
 	}
 }

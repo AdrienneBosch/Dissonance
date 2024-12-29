@@ -1,5 +1,4 @@
-﻿using System;
-using System.Windows.Input;
+﻿using System.Windows.Input;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Windows.Controls;
@@ -8,13 +7,6 @@ namespace Dissonance.ViewModels
 {
 	internal class DissonanceMessageBoxViewModel
 	{
-		public string Title { get; set; }
-		public string Message { get; set; }
-		public bool ShowCancelButton { get; set; }
-
-		public ICommand OkCommand { get; }
-		public ICommand CancelCommand { get; }
-
 		private readonly DissonanceMessageBox _messageBox;
 
 		public DissonanceMessageBoxViewModel ( DissonanceMessageBox messageBox )
@@ -24,15 +16,21 @@ namespace Dissonance.ViewModels
 			CancelCommand = new RelayCommandNoParam ( Cancel );
 		}
 
-		private void Ok ( )
-		{
-			_messageBox.DialogResult = true;
-			_messageBox.Close ( );
-		}
+		public ICommand CancelCommand { get; }
+		public string Message { get; set; }
+		public ICommand OkCommand { get; }
+		public bool ShowCancelButton { get; set; }
+		public string Title { get; set; }
 
 		private void Cancel ( )
 		{
 			_messageBox.DialogResult = false;
+			_messageBox.Close ( );
+		}
+
+		private void Ok ( )
+		{
+			_messageBox.DialogResult = true;
 			_messageBox.Close ( );
 		}
 

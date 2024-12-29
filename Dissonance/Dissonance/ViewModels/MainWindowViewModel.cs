@@ -102,7 +102,7 @@ namespace Dissonance.ViewModels
 				if ( settings.Volume != value )
 				{
 					settings.Volume = value;
-					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); 
+					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value );
 					OnPropertyChanged ( nameof ( Volume ) );
 				}
 			}

@@ -1,6 +1,8 @@
-﻿using Dissonance.Services.ClipboardService;
+﻿using System.Windows;
+
+using Dissonance.Services.ClipboardService;
+
 using Microsoft.Extensions.Logging;
-using System.Windows;
 
 public class ClipboardService : IClipboardService
 {
@@ -25,6 +27,7 @@ public class ClipboardService : IClipboardService
 		catch ( Exception ex )
 		{
 			_logger.LogError ( ex, "Error accessing clipboard content." );
+
 			//TODO: Play error sound and show error message in UI
 		}
 

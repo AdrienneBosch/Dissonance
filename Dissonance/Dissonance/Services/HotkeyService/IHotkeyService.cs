@@ -6,10 +6,10 @@ namespace Dissonance.Services.HotkeyService
 	{
 		event Action HotkeyPressed;
 
+		void Initialize ( Window mainWindow );
+
 		void RegisterHotkey ( AppSettings.HotkeySettings hotkey );
 
 		void UnregisterHotkey ( );
-
-		void Initialize ( Window mainWindow );
 	}
 }

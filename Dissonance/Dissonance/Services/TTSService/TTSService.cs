@@ -1,8 +1,8 @@
-﻿using System.Speech.Synthesis; 
+﻿using System.Speech.Synthesis;
+
 using Dissonance.Infrastructure.Constants;
+
 using Microsoft.Extensions.Logging;
-using NLog;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dissonance.Services.TTSService
 {
@@ -12,7 +12,7 @@ namespace Dissonance.Services.TTSService
 		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 		private readonly SpeechSynthesizer _synthesizer;
 
-		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService)
+		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
 			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
@@ -41,7 +41,7 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				_messageService.DissonanceMessageBoxShowError( MessageBoxTitles.TTSServiceError, $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
 			}
 		}
 

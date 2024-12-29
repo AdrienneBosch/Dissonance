@@ -5,27 +5,14 @@ namespace Dissonance.Managers
 {
 	public class StartupManager : IDisposable
 	{
-		private readonly IServiceProvider _serviceProvider;
 		private readonly ILogger<StartupManager> _logger;
+		private readonly IServiceProvider _serviceProvider;
 		private bool _disposed = false;
 
 		public StartupManager ( IServiceProvider serviceProvider, ILogger<StartupManager> logger )
 		{
 			_serviceProvider = serviceProvider ?? throw new ArgumentNullException ( nameof ( serviceProvider ) );
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
-		}
-
-		public void Initialize ( MainWindow mainWindow )
-		{
-			if ( mainWindow == null ) throw new ArgumentNullException ( nameof ( mainWindow ) );
-
-			mainWindow.Loaded += ( s, e ) =>
-			{
-				var hotkeyManager = _serviceProvider.GetRequiredService<HotkeyManager>();
-				hotkeyManager.Initialize ( mainWindow );
-			};
-
-			_logger.LogInformation ( "StartupManager subscribed to MainWindow Loaded event." );
 		}
 
 		public void Dispose ( )
@@ -41,6 +28,19 @@ namespace Dissonance.Managers
 
 			_disposed = true;
 			_logger.LogInformation ( "Resources disposed." );
+		}
+
+		public void Initialize ( MainWindow mainWindow )
+		{
+			if ( mainWindow == null ) throw new ArgumentNullException ( nameof ( mainWindow ) );
+
+			mainWindow.Loaded += ( s, e ) =>
+			{
+				var hotkeyManager = _serviceProvider.GetRequiredService<HotkeyManager>();
+				hotkeyManager.Initialize ( mainWindow );
+			};
+
+			_logger.LogInformation ( "StartupManager subscribed to MainWindow Loaded event." );
 		}
 	}
 }

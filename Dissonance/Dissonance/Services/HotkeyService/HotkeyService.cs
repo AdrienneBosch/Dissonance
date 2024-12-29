@@ -4,24 +4,26 @@ using System.Windows.Input;
 using System.Windows.Interop;
 
 using Dissonance.Infrastructure.Constants;
-using Dissonance.ViewModels;
 
 using Microsoft.Extensions.Logging;
-
-using NLog;
 
 namespace Dissonance.Services.HotkeyService
 {
 	internal class HotkeyService : IHotkeyService, IDisposable
 	{
+		private readonly object _lock = new object ( );
 		private readonly ILogger<HotkeyService> _logger;
 		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
-
-		private readonly object _lock = new object ( );
 		private int? _currentHotkeyId;
 		private int _nextHotkeyId = 0;
 		private HwndSource _source;
 		private IntPtr _windowHandle;
+
+		public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
+		{
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
+		}
 
 		public event Action HotkeyPressed;
 
@@ -30,12 +32,6 @@ namespace Dissonance.Services.HotkeyService
 
 		[DllImport ( "user32.dll" )]
 		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-
-		public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
-		{
-			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
-			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
-		}
 
 		private uint ParseModifiers ( string modifiers )
 		{
@@ -68,7 +64,7 @@ namespace Dissonance.Services.HotkeyService
 		{
 			if ( msg == WindowsMessages.Hotkey )
 			{
-				_logger.LogInformation( "Hotkey pressed." );
+				_logger.LogInformation ( "Hotkey pressed." );
 				var handler = HotkeyPressed;
 				if ( handler != null )
 				{
@@ -83,7 +79,7 @@ namespace Dissonance.Services.HotkeyService
 		{
 			_source?.RemoveHook ( WndProc );
 			UnregisterHotkey ( );
-			_logger.LogInformation( "HotkeyService disposed." );
+			_logger.LogInformation ( "HotkeyService disposed." );
 		}
 
 		public void Initialize ( Window mainWindow )
@@ -125,16 +121,16 @@ namespace Dissonance.Services.HotkeyService
 					if ( RegisterHotKey ( _windowHandle, hotkeyId, mod, vk ) )
 					{
 						_currentHotkeyId = hotkeyId;
-						_logger.LogDebug( $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}" );
+						_logger.LogDebug ( $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}" );
 					}
 					else
 					{
-						_messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.HotkeyServiceWarning, $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.");
+						_messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.HotkeyServiceWarning, $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application." );
 					}
 				}
 				catch ( ArgumentException ex )
 				{
-					_messageService.DissonanceMessageBoxShowError( MessageBoxTitles.HotkeyServiceError, $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}.", ex);
+					_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.HotkeyServiceError, $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}.", ex );
 				}
 				catch ( Exception ex )
 				{
@@ -152,11 +148,11 @@ namespace Dissonance.Services.HotkeyService
 					var hotkeyId = _currentHotkeyId.Value;
 					if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
 					{
-						_logger.LogDebug( $"Hotkey unregistered with Id: {hotkeyId}" );
+						_logger.LogDebug ( $"Hotkey unregistered with Id: {hotkeyId}" );
 					}
 					else
 					{
-						_logger.LogWarning( $"Failed to unregister hotkey with id: {hotkeyId}" );
+						_logger.LogWarning ( $"Failed to unregister hotkey with id: {hotkeyId}" );
 					}
 					_currentHotkeyId = null;
 				}

@@ -1,13 +1,10 @@
 ﻿using System.IO;
 
 using Dissonance.Infrastructure.Constants;
-using Dissonance.Services.MessageService;
 
 using Microsoft.Extensions.Logging;
 
 using Newtonsoft.Json;
-
-using NLog;
 
 using static Dissonance.AppSettings;
 
@@ -16,13 +13,13 @@ namespace Dissonance.Services.SettingsService
 	internal class SettingsService : ISettingsService
 	{
 		private const string SettingsFilePath = "appsettings.json";
-		private AppSettings _currentSettings;
 		private readonly ILogger<SettingsService> _logger;
 		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
+		private AppSettings _currentSettings;
 
 		public SettingsService ( ILogger<SettingsService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
-			 _logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
 			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 
 			if ( !File.Exists ( SettingsFilePath ) )

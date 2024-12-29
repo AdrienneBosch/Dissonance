@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using System.Media;
+using System.Windows;
 
 using NLog;
 
@@ -8,13 +9,7 @@ namespace Dissonance.Services.ClipboardService
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
 
-		/// <summary>
-		/// Gets the text from the clipboard if available.
-		/// </summary>
-		/// <returns>
-		/// Text from the clipboard, or null if unavailable or non-text content is present.
-		/// </returns>
-		public string GetClipboardText ( )
+		public string? GetClipboardText ( )
 		{
 			try
 			{
@@ -26,17 +21,12 @@ namespace Dissonance.Services.ClipboardService
 			catch ( Exception ex )
 			{
 				Logger.Error ( ex, "Error accessing clipboard content." );
+				//TODO: Play error sound and show error message in UI
 			}
 
 			return null;
 		}
 
-		/// <summary>
-		/// Checks whether the clipboard currently contains text data.
-		/// </summary>
-		/// <returns>
-		/// True if text is available, false otherwise.
-		/// </returns>
 		public bool IsTextAvailable ( )
 		{
 			try

@@ -47,7 +47,6 @@ namespace Dissonance.Services.TTSService
 			try
 			{
 				_synthesizer.SpeakAsync ( text );
-				Logger.Info ( "Speaking text: " + text );
 			}
 			catch ( Exception ex )
 			{

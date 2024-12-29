@@ -1,5 +1,7 @@
 ﻿using System.Speech.Synthesis;  // For TTS functionality
 
+using Dissonance.Infrastructure.Constants;
+
 using Microsoft.Extensions.Logging;
 
 using NLog;
@@ -43,7 +45,7 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				_messageService.DissonanceMessageBoxShowError( "TTS Failure", $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
+				_messageService.DissonanceMessageBoxShowError( MessageBoxTitles.TTSServiceError, $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
 			}
 		}
 
@@ -55,7 +57,7 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				_messageService.DissonanceMessageBoxShowError ( "TTS Failure", $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
 			}
 		}
 
@@ -67,7 +69,7 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				_messageService.DissonanceMessageBoxShowError ( "TTS Failure", "Failed to stop speaking text due to an unhandled exception.", ex );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, "Failed to stop speaking text due to an unhandled exception.", ex );
 			}
 		}
 	}

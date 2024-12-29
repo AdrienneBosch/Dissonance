@@ -116,26 +116,20 @@ namespace Dissonance.Services.HotkeyService
 					{
 						_currentHotkeyId = hotkeyId;
 						_logger.LogInformation( $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}" );
-						DissonanceMessageBoxViewModel.Show ( "Hotkey Registered", $"Hotkey registered: {hotkey.Modifiers} + {hotkey.Key}", showCancelButton: false );
 					}
 					else
 					{
-						string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.";
-						_logger.LogWarning ( errorMessage );
+						string errorMessage =;
+						_messageService.DissonanceMessageBoxShowWarning ( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.");
 					}
 				}
 				catch ( ArgumentException ex )
 				{
-					string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. {ex.Message}";
-					_logger.LogWarning( errorMessage );
-					DissonanceMessageBoxViewModel.Show ( "Hotkey Registration Error", errorMessage, showCancelButton: false );
+					_messageService.DissonanceMessageBoxShowError( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}.", ex);
 				}
 				catch ( Exception ex )
 				{
-					string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. An unexpected error occurred.";
-					_logger.LogError( ex, errorMessage );
-					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-					throw;
+					_messageService.DissonanceMessageBoxShowError ( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. An unexpected error occurred.", ex );
 				}
 			}
 		}

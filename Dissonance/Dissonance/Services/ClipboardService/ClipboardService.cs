@@ -1,50 +1,49 @@
-﻿using System;
-using System.Windows;  // For accessing clipboard
+﻿using System.Windows;
 
-using NLog;
+using Dissonance.Services.ClipboardService;
 
-namespace Dissonance.Services.ClipboardService
+using Microsoft.Extensions.Logging;
+
+public class ClipboardService : IClipboardService
 {
-	internal class ClipboardService : IClipboardService
+	private readonly ILogger<ClipboardService> _logger;
+
+	public ClipboardService ( ILogger<ClipboardService> logger )
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+		_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+	}
 
-		/// <summary>
-		/// Gets the text from the clipboard if available.
-		/// </summary>
-		/// <returns>Text from the clipboard, or null if unavailable or non-text content is present.</returns>
-		public string GetClipboardText ( )
+	public string? GetClipboardText ( )
+	{
+		try
 		{
-			try
+			if ( IsTextAvailable ( ) )
 			{
-				if ( IsTextAvailable ( ) )
-				{
-					return Clipboard.GetText ( );
-				}
+				var text = Clipboard.GetText();
+				_logger.LogInformation ( "Clipboard text retrieved." );
+				return text;
 			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Error accessing clipboard content." );
-			}
+		}
+		catch ( Exception ex )
+		{
+			_logger.LogError ( ex, "Error accessing clipboard content." );
 
-			return null;  // Return null if text is unavailable or an error occurs
+			//TODO: Play error sound and show error message in UI
 		}
 
-		/// <summary>
-		/// Checks whether the clipboard currently contains text data.
-		/// </summary>
-		/// <returns>True if text is available, false otherwise.</returns>
-		public bool IsTextAvailable ( )
+		return null;
+	}
+
+	public bool IsTextAvailable ( )
+	{
+		try
 		{
-			try
-			{
-				return Clipboard.ContainsText ( );
-			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Error checking clipboard content." );
-				return false;
-			}
+			return Clipboard.ContainsText ( );
+		}
+		catch ( Exception ex )
+		{
+			_logger.LogError ( ex, "Error checking clipboard content." );
+			return false;
 		}
 	}
 }

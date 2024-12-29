@@ -13,15 +13,15 @@ namespace Dissonance.ViewModels
 {
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
+		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
+
+		private readonly IHotkeyService _hotkeyService;
+
 		private readonly ISettingsService _settingsService;
-		public event PropertyChangedEventHandler PropertyChanged;
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
-		private string _hotkeyCombination;
 
 		private readonly ITTSService _ttsService;
 
-		private readonly IHotkeyService _hotkeyService;
+		private string _hotkeyCombination;
 
 		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService )
 		{
@@ -39,37 +39,20 @@ namespace Dissonance.ViewModels
 			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
 		}
 
-		public double VoiceRate
+		public event PropertyChangedEventHandler PropertyChanged;
+
+		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
+
+		public string HotkeyCombination
 		{
-			get => _settingsService.GetCurrentSettings ( ).VoiceRate;
+			get => _hotkeyCombination;
 			set
 			{
-				var settings = _settingsService.GetCurrentSettings();
-				if ( settings.VoiceRate != value )
+				if ( _hotkeyCombination != value )
 				{
-					settings.VoiceRate = value;
-					_settingsService.SaveSettings ( settings );
-					_ttsService.SetTTSParameters ( settings.Voice, value, settings.Volume ); // Live update
-					OnPropertyChanged ( nameof ( VoiceRate ) );
-				}
-			}
-		}
-
-		public int Volume
-		{
-			get => _settingsService.GetCurrentSettings ( ).Volume;
-			set
-			{
-				if ( value < 0 || value > 100 ) // Ensure volume is within acceptable range
-					throw new ArgumentOutOfRangeException ( nameof ( Volume ), "Volume must be between 0 and 100." );
-
-				var settings = _settingsService.GetCurrentSettings();
-				if ( settings.Volume != value )
-				{
-					settings.Volume = value;
-					_settingsService.SaveSettings ( settings );
-					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value ); // Live update
-					OnPropertyChanged ( nameof ( Volume ) );
+					_hotkeyCombination = value;
+					OnPropertyChanged ( nameof ( HotkeyCombination ) );
+					UpdateHotkey ( value );
 				}
 			}
 		}
@@ -86,23 +69,41 @@ namespace Dissonance.ViewModels
 				if ( settings.Voice != value )
 				{
 					settings.Voice = value;
-					_settingsService.SaveSettings ( settings );
 					_ttsService.SetTTSParameters ( value, settings.VoiceRate, settings.Volume ); // Live update
 					OnPropertyChanged ( nameof ( Voice ) );
 				}
 			}
 		}
 
-		public string HotkeyCombination
+		public double VoiceRate
 		{
-			get => _hotkeyCombination;
+			get => _settingsService.GetCurrentSettings ( ).VoiceRate;
 			set
 			{
-				if ( _hotkeyCombination != value )
+				var settings = _settingsService.GetCurrentSettings();
+				if ( settings.VoiceRate != value )
 				{
-					_hotkeyCombination = value;
-					OnPropertyChanged ( nameof ( HotkeyCombination ) );
-					UpdateHotkey ( value );
+					settings.VoiceRate = value;
+					_ttsService.SetTTSParameters ( settings.Voice, value, settings.Volume ); // Live update
+					OnPropertyChanged ( nameof ( VoiceRate ) );
+				}
+			}
+		}
+
+		public int Volume
+		{
+			get => _settingsService.GetCurrentSettings ( ).Volume;
+			set
+			{
+				if ( value < 0 || value > 100 )
+					throw new ArgumentOutOfRangeException ( nameof ( Volume ), "Volume must be between 0 and 100." );
+
+				var settings = _settingsService.GetCurrentSettings();
+				if ( settings.Volume != value )
+				{
+					settings.Volume = value;
+					_ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, value );
+					OnPropertyChanged ( nameof ( Volume ) );
 				}
 			}
 		}
@@ -120,7 +121,7 @@ namespace Dissonance.ViewModels
 				throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key." );
 			}
 
-			var modifiers = parts.Take(parts.Length - 1).ToArray();
+			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
 			var key = parts.Last();
 
 			if ( !Enum.TryParse ( key, true, out Key newKey ) )
@@ -129,25 +130,26 @@ namespace Dissonance.ViewModels
 			}
 
 			var settings = _settingsService.GetCurrentSettings();
-			var newHotkey = string.Join("+", modifiers) + "+" + newKey;
+			var newHotkey = new AppSettings.HotkeySettings
+			{
+				Modifiers = modifiers,
+				Key = newKey.ToString()
+			};
 
-			if ( settings.Hotkey.Key != newHotkey )
+			if ( settings.Hotkey.Modifiers != newHotkey.Modifiers || settings.Hotkey.Key != newHotkey.Key )
 			{
 				try
 				{
-					_hotkeyService.UnregisterHotkey ( ); // Unregister previous hotkey
-					var virtualKey = KeyInterop.VirtualKeyFromKey(newKey);
-					_hotkeyService.RegisterHotkey ( string.Join ( "+", modifiers ), newKey.ToString ( ) );
+					_hotkeyService.RegisterHotkey ( newHotkey );
 
-					settings.Hotkey.Modifiers = string.Join ( "+", modifiers );
-					settings.Hotkey.Key = newKey.ToString ( );
-					_settingsService.SaveSettings ( settings );
+					settings.Hotkey = newHotkey;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
 				}
 				catch ( Exception ex )
 				{
-					MessageBox.Show ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.", "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-					Logger.Warn ( $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application." );
+					var errorMessage = $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.";
+					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
+					Logger.Warn ( errorMessage, ex );
 				}
 
 				var ttsSettings = _settingsService.GetCurrentSettings();

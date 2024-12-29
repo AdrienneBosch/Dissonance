@@ -1,50 +1,24 @@
-﻿using System;
-using System.Linq;
-using System.Speech.Synthesis;  // For TTS functionality
+﻿using System.Speech.Synthesis;
 
-using NLog;
+using Dissonance.Infrastructure.Constants;
+
+using Microsoft.Extensions.Logging;
 
 namespace Dissonance.Services.TTSService
 {
 	internal class TTSService : ITTSService
 	{
+		private readonly ILogger<TTSService> _logger;
+		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 		private readonly SpeechSynthesizer _synthesizer;
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-		public TTSService ( )
+		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 			_synthesizer = new SpeechSynthesizer ( );
-
-			// Log all available voices
-			foreach ( var voice in _synthesizer.GetInstalledVoices ( ) )
-			{
-				Logger.Info ( $"Installed voice: {voice.VoiceInfo.Name}" );
-			}
 		}
 
-		/// <summary>
-		/// Speaks the given text using the configured TTS settings.
-		/// </summary>
-		/// <param name="text">The text to convert to speech.</param>
-		public void Speak ( string text )
-		{
-			try
-			{
-				_synthesizer.SpeakAsync ( text );
-				Logger.Info ( "Speaking text: " + text );
-			}
-			catch ( Exception ex )
-			{
-				Logger.Error ( ex, "Failed to speak text." );
-			}
-		}
-
-		/// <summary>
-		/// Updates the TTS parameters (voice, rate, volume).
-		/// </summary>
-		/// <param name="voice">Voice to use.</param>
-		/// <param name="rate">Speed of speech.</param>
-		/// <param name="volume">Volume level.</param>
 		public void SetTTSParameters ( string voice, double rate, int volume )
 		{
 			try
@@ -55,21 +29,43 @@ namespace Dissonance.Services.TTSService
 				if ( voiceAvailable )
 				{
 					_synthesizer.SelectVoice ( voice );
-					Logger.Info ( $"Selected voice: {voice}" );
 				}
 				else
 				{
-					Logger.Warn ( $"Voice '{voice}' not available. Using default voice." );
-					_synthesizer.SelectVoice ( installedVoices.First ( ).VoiceInfo.Name );  // Use default if not found
+					_logger.LogWarning ( $"Voice '{voice}' not available. Using default voice." );
+					_synthesizer.SelectVoice ( installedVoices.First ( ).VoiceInfo.Name );
 				}
 
 				_synthesizer.Rate = ( int ) rate;
 				_synthesizer.Volume = volume;
-				Logger.Info ( $"TTS parameters set: Voice = {_synthesizer.Voice.Name}, Rate = {rate}, Volume = {volume}" );
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to update TTS parameters." );
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
+			}
+		}
+
+		public void Speak ( string text )
+		{
+			try
+			{
+				_synthesizer.SpeakAsync ( text );
+			}
+			catch ( Exception ex )
+			{
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
+			}
+		}
+
+		public void Stop ( )
+		{
+			try
+			{
+				_synthesizer.SpeakAsyncCancelAll ( );
+			}
+			catch ( Exception ex )
+			{
+				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, "Failed to stop speaking text due to an unhandled exception.", ex );
 			}
 		}
 	}

@@ -1,0 +1,11 @@
+﻿namespace Dissonance.Infrastructure.Constants
+{
+	internal static class MessageBoxTitles
+	{
+		public const string HotkeyServiceError = "Hotkey Service Failure";
+		public const string HotkeyServiceWarning = "Hotkey Service Warning";
+		public const string SettingsServiceError = "Settings Service Failure";
+		public const string TTSServiceError = "TTS Service Failure";
+		public const string TTSServiceWarning = "TTS Service Warning";
+	}
+}

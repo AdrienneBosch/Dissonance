@@ -14,6 +14,9 @@ namespace Dissonance.Services.HotkeyService
 {
 	internal class HotkeyService : IHotkeyService, IDisposable
 	{
+		private readonly ILogger<HotkeyService> _logger;
+		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
+
 		private readonly object _lock = new object ( );
 		private int? _currentHotkeyId;
 		private int _nextHotkeyId = 0;
@@ -27,10 +30,6 @@ namespace Dissonance.Services.HotkeyService
 
 		[DllImport ( "user32.dll" )]
 		private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-
-		private readonly ILogger<HotkeyService> _logger;
-
-		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 
 		public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{

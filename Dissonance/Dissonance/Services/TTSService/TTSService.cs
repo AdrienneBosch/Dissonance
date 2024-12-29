@@ -1,17 +1,23 @@
 ﻿using System.Speech.Synthesis;  // For TTS functionality
 
+using Microsoft.Extensions.Logging;
+
 using NLog;
+
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Dissonance.Services.TTSService
 {
 	internal class TTSService : ITTSService
 	{
-		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
-
+		private readonly ILogger<TTSService> _logger;
+		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 		private readonly SpeechSynthesizer _synthesizer;
 
-		public TTSService ( )
+		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService)
 		{
+			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 			_synthesizer = new SpeechSynthesizer ( );
 		}
 
@@ -25,12 +31,11 @@ namespace Dissonance.Services.TTSService
 				if ( voiceAvailable )
 				{
 					_synthesizer.SelectVoice ( voice );
-					Logger.Info ( $"Selected voice: {voice}" );
 				}
 				else
 				{
-					Logger.Warn ( $"Voice '{voice}' not available. Using default voice." );
-					_synthesizer.SelectVoice ( installedVoices.First ( ).VoiceInfo.Name );  // Use default if not found
+					_logger.LogWarning ( $"Voice '{voice}' not available. Using default voice." );
+					_synthesizer.SelectVoice ( installedVoices.First ( ).VoiceInfo.Name );
 				}
 
 				_synthesizer.Rate = ( int ) rate;
@@ -38,7 +43,7 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to update TTS parameters." );
+				_messageService.DissonanceMessageBoxShowError( "TTS Failure", $"Failed to update TTS parameters for: \nVoice: {voice} \nRate: {rate} \nVolume: {volume}", ex );
 			}
 		}
 
@@ -50,13 +55,20 @@ namespace Dissonance.Services.TTSService
 			}
 			catch ( Exception ex )
 			{
-				Logger.Error ( ex, "Failed to speak text." );
+				_messageService.DissonanceMessageBoxShowError ( "TTS Failure", $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
 			}
 		}
 
 		public void Stop ( )
 		{
-			_synthesizer.SpeakAsyncCancelAll ( );
+			try
+			{
+				_synthesizer.SpeakAsyncCancelAll ( );
+			}
+			catch ( Exception ex )
+			{
+				_messageService.DissonanceMessageBoxShowError ( "TTS Failure", "Failed to stop speaking text due to an unhandled exception.", ex );
+			}
 		}
 	}
 }

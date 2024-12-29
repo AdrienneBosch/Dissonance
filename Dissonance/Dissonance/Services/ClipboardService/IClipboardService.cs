@@ -2,7 +2,7 @@
 
 namespace Dissonance.Services.ClipboardService
 {
-	internal interface IClipboardService
+	public interface IClipboardService
 	{
 		string? GetClipboardText ( );
 

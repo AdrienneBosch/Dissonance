@@ -89,8 +89,19 @@ namespace Dissonance.Services.HotkeyService
 
 		public void Initialize ( Window mainWindow )
 		{
+			if ( mainWindow == null )
+			{
+				throw new ArgumentNullException ( nameof ( mainWindow ), "MainWindow cannot be null." );
+			}
+
 			var helper = new WindowInteropHelper(mainWindow);
 			_windowHandle = helper.Handle;
+
+			if ( _windowHandle == IntPtr.Zero )
+			{
+				throw new InvalidOperationException ( "Failed to get a valid window handle." );
+			}
+
 			_source = HwndSource.FromHwnd ( _windowHandle );
 			_source.AddHook ( WndProc );
 		}
@@ -119,7 +130,6 @@ namespace Dissonance.Services.HotkeyService
 					}
 					else
 					{
-						string errorMessage =;
 						_messageService.DissonanceMessageBoxShowWarning ( "Hotkey Registration Failure", $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.");
 					}
 				}

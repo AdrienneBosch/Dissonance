@@ -3,6 +3,7 @@
 using Dissonance.Infrastructure.Logging.Dissonance.Infrastructure.Logging;
 using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
+using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
@@ -33,6 +34,7 @@ namespace Dissonance
 			services.AddSingleton<IClipboardService, ClipboardService> ( );
 			services.AddSingleton<ITTSService, TTSService> ( );
 			services.AddSingleton<IHotkeyService, HotkeyService> ( );
+			services.AddSingleton<IMessageService, MessageService> ( ); 
 			services.AddSingleton<MainWindowViewModel> ( );
 			services.AddSingleton<MainWindow> ( );
 		}

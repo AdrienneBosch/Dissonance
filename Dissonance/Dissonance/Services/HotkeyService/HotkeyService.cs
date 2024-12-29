@@ -30,9 +30,12 @@ namespace Dissonance.Services.HotkeyService
 
 		private readonly ILogger<HotkeyService> _logger;
 
-		public HotkeyService ( ILogger<HotkeyService> logger )
+		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
+
+		public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 		}
 
 		private uint ParseModifiers ( string modifiers )
@@ -119,7 +122,6 @@ namespace Dissonance.Services.HotkeyService
 					{
 						string errorMessage = $"Failed to register hotkey: {hotkey.Modifiers} + {hotkey.Key}. It might already be in use by another application.";
 						_logger.LogWarning ( errorMessage );
-						MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
 					}
 				}
 				catch ( ArgumentException ex )

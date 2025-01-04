@@ -39,13 +39,14 @@
                   ItemsSource="{Binding AvailableVoices}"
                   SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Grid.Row="1" Height="27" TabIndex="2" Text="Select a voice" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="1,1,1,1" VerticalContentAlignment="Center" Padding="5,5,5,5" UseLayoutRounding="True" FontSize="14" Margin="0,10,0,0" />
         <Grid x:Name="VoiceRateGrid" MinHeight="90" MaxWidth="115" MaxHeight="90" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="90" Width="115">
-            <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0,0,0,57"/>
+            <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Margin="0,0,0,57" HorizontalAlignment="Center" Width="115" Height="33" VerticalAlignment="Bottom"/>
             <TextBox x:Name="VoiceRateTextBox"
                 TextWrapping="Wrap"
                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                TabIndex="1" Margin="17,43,17,29" AllowDrop="False" />
+                AutomationProperties.LabeledBy="{Binding ElementName=VoiceRateHeadingLable}" 
+                TabIndex="1" Margin="0,0,0,29" AllowDrop="False" HorizontalAlignment="Center" Width="81" Height="18" VerticalAlignment="Bottom" />
         </Grid>
-        <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="51,31,65,117" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2">
+        <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="16,24,100,124" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="23*"/>
                 <RowDefinition Height="27*"/>
@@ -54,7 +55,8 @@
             <Slider x:Name="VoiceVolumeSlider"
                 Minimum="0"
                 Maximum="100"
-                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" VerticalAlignment="Center" Width="170" MinWidth="170" MinHeight="35" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" TabIndex="4" Height="34" HorizontalAlignment="Left" Margin="-28,0,0,0" />
+                AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeadingLable}" 
+                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" MinWidth="170" MinHeight="35" TabIndex="4" Height="34" Interval="10" IsMoveToPointEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" />
         </Grid>
     </Grid>
 </Window>

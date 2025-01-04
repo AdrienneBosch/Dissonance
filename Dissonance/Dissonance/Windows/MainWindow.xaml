@@ -42,7 +42,7 @@
                 TextWrapping="Wrap"
                 Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                 AutomationProperties.LabeledBy="{Binding ElementName=VoiceRateHeadingLable}" 
-                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="27" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" MinHeight="27" />
+                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="25" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" />
         </Grid>
         <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="69,0,0,0" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="98">
             <Grid.RowDefinitions>
@@ -65,7 +65,7 @@
             <ComboBox x:Name="VoiceSelectionComboBox"
                   AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeadingLable}" 
                   ItemsSource="{Binding AvailableVoices}"
-                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" TabIndex="2" Text="Select a voice" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="1,1,1,1" VerticalContentAlignment="Center" Padding="5,5,5,5" UseLayoutRounding="True" VerticalAlignment="Center" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Center" Width="170" IsTabStop="True" ToolTip="Select the text to speach voice you would like to use" AutomationProperties.HelpText="Select the text to speach voice you would like to use" ForceCursor="True" Height="27" MinHeight="27" />
+                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" TabIndex="2" Text="Select a voice" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="1,1,1,1" VerticalContentAlignment="Center" Padding="5,5,5,5" UseLayoutRounding="True" VerticalAlignment="Center" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Center" Width="170" IsTabStop="True" ToolTip="Select the text to speach voice you would like to use" AutomationProperties.HelpText="Select the text to speach voice you would like to use" ForceCursor="True" />
         </Grid>
     </Grid>
 </Window>

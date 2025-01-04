@@ -32,7 +32,7 @@
                  Width="100" Grid.Column="2" Grid.Row="1" Height="25" TabIndex="3" />
 
         <!-- Voice Selection ComboBox -->
-        <Grid x:Name="VoiceRateGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="False" Grid.Row="1" HorizontalAlignment="Center" IsHitTestVisible="False">
+        <Grid x:Name="VoiceRateGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="False" Grid.Row="1" HorizontalAlignment="Center">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -40,9 +40,9 @@
             <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" HorizontalAlignment="Center" Width="115" Height="32" VerticalAlignment="Center" MaxHeight="85" Background="#FFFBAA8C"/>
             <TextBox x:Name="VoiceRateTextBox"
                 TextWrapping="Wrap"
-                Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                Text="1"
                 AutomationProperties.LabeledBy="{Binding ElementName=VoiceRateHeadingLable}" 
-                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="25" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" />
+                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="27" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" />
         </Grid>
         <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="69,0,0,0" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="98">
             <Grid.RowDefinitions>

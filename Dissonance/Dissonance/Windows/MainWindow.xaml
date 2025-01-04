@@ -38,17 +38,17 @@
                 AutomationProperties.LabeledBy="{Binding ElementName=VoiceRateHeadingLable}" 
                 TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="27" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" MinHeight="27" />
         </Grid>
-        <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="69,34,0,0" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Height="98" Grid.RowSpan="2">
+        <Grid x:Name="VolumeGrid" MinHeight="92.48" MaxHeight="92.48" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Center" Height="92.48" Width="172">
             <Grid.RowDefinitions>
-                <RowDefinition Height="23*"/>
-                <RowDefinition Height="27*"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
-            <Label x:Name="VolumeHeadingLable" Content="Volume" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center" HorizontalAlignment="Left" Margin="22,0,0,0"/>
+            <Label x:Name="VolumeHeadingLable" Content="Volume" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="22,0,0,0"/>
             <Slider x:Name="VoiceVolumeSlider"
                 Minimum="0"
                 Maximum="100"
                 AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeadingLable}" 
-                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" MinWidth="170" MinHeight="35" TabIndex="4" Height="34" Interval="10" IsMoveToPointEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Ticks="10" />
+                Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" TabIndex="4" Interval="10" IsMoveToPointEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Ticks="10" Width="134" />
         </Grid>
         <Grid x:Name="VoiceSelectionGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" HorizontalAlignment="Center" Width="220" MinWidth="220" Height="92.48" MinHeight="92.48" MaxHeight="92.48" Grid.Row="1">
             <Grid.RowDefinitions>

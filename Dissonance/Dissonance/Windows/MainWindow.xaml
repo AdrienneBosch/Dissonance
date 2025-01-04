@@ -5,38 +5,48 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Dissonance.ViewModels"
         mc:Ignorable="d"
-        Title="Dissonance" Height="450" Width="800" WindowStartupLocation="CenterScreen">
+        Title="Dissonance" Height="450" Width="800" WindowStartupLocation="CenterScreen" BorderBrush="White" Background="#FFD08753">
     <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="39*"/>
+            <RowDefinition Height="54*"/>
+            <RowDefinition Height="124*"/>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="243*"/>
+            <ColumnDefinition Width="328*"/>
+            <ColumnDefinition Width="229*"/>
+        </Grid.ColumnDefinitions>
         <!-- Voice Rate TextBox -->
 
         <!-- Hotkey TextBox for reading clipboard -->
-        <Label x:Name="DissonanceTitleLable" Content="Dissonance" Margin="10,10,10,10" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="2.124,0.466" UseLayoutRounding="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
+        <Label x:Name="DissonanceTitleLable" Content="Dissonance" VerticalAlignment="Center" FontSize="28" RenderTransformOrigin="2.124,0.466" UseLayoutRounding="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Grid.Column="1" Height="48" Width="150"/>
 
         <!-- Hotkey TextBox for reading clipboard -->
         <TextBox x:Name="ReadClipboardHotkeyTextBox"
                  HorizontalAlignment="Left"
-                 Margin="422,121,0,0"
+                 Margin="45,0,0,0"
                  TextWrapping="Wrap"
                  Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 VerticalAlignment="Top"
-                 Width="200" />
+                 VerticalAlignment="Center"
+                 Width="100" Grid.Column="2" Grid.Row="1" Height="18" />
 
         <!-- Voice Selection ComboBox -->
         <ComboBox x:Name="VoiceSelectionComboBox"
-                  HorizontalAlignment="Left"
-                  Margin="422,82,0,0"
+                  HorizontalAlignment="Center"
+                  Margin="0,47,0,0"
                   VerticalAlignment="Top"
                   Width="200"
                   ItemsSource="{Binding AvailableVoices}"
-                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <StackPanel x:Name="VoiceRateStackPannel" MinHeight="90" MaxWidth="115" MaxHeight="90" Margin="61,257,624,87" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True">
+                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Column="1" Grid.Row="1" Height="22" />
+        <StackPanel x:Name="VoiceRateStackPannel" MinHeight="90" MaxWidth="115" MaxHeight="90" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Row="1" HorizontalAlignment="Center" VerticalAlignment="Center" Height="90" Width="115">
             <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="33"/>
             <TextBox x:Name="VoiceRateTextBox"
                  TextWrapping="Wrap"
                  Text="{Binding VoiceRate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Width="81" Margin="10,10,10,10" />
         </StackPanel>
-        <StackPanel x:Name="VolumeStackPannel" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="530,257,58,73" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True">
+        <StackPanel x:Name="VolumeStackPannel" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="51,31,65,117" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2">
             <Label x:Name="VolumeHeadingLable" Content="Volume" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="33" ScrollViewer.VerticalScrollBarVisibility="Disabled"/>
             <Slider x:Name="VoiceVolumeSlider"
                 Width="181"

@@ -6,8 +6,11 @@
         xmlns:local="clr-namespace:Dissonance.ViewModels"
         mc:Ignorable="d"
         Title="Dissonance" Height="450" Width="800" WindowStartupLocation="CenterScreen">
-    <Grid>
+    <Grid ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
         <!-- Voice Rate TextBox -->
+
+        <!-- Hotkey TextBox for reading clipboard -->
+        <Label x:Name="DissonanceTitleLable" Content="Dissonance" Margin="10,10,10,10" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="2.124,0.466" UseLayoutRounding="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 
         <!-- Hotkey TextBox for reading clipboard -->
         <TextBox x:Name="ReadClipboardHotkeyTextBox"
@@ -18,8 +21,6 @@
                  VerticalAlignment="Top"
                  Width="200" />
 
-        <!-- Voice Volume Slider -->
-
         <!-- Voice Selection ComboBox -->
         <ComboBox x:Name="VoiceSelectionComboBox"
                   HorizontalAlignment="Left"
@@ -28,7 +29,6 @@
                   Width="200"
                   ItemsSource="{Binding AvailableVoices}"
                   SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" />
-        <Label x:Name="DissonanceTitleLable" Content="Dissonance" HorizontalAlignment="Left" Margin="265,10,0,0" VerticalAlignment="Top" FontSize="28" RenderTransformOrigin="2.124,0.466"/>
         <StackPanel x:Name="VoiceRateStackPannel" MinHeight="90" MaxWidth="115" MaxHeight="90" Margin="61,257,624,87" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True">
             <Label x:Name="VoiceRateHeadingLable" Content="Voice Rate" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Height="33"/>
             <TextBox x:Name="VoiceRateTextBox"

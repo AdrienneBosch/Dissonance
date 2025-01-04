@@ -1,4 +1,5 @@
-﻿using System.Speech.Synthesis;
+﻿using System;
+using System.Speech.Synthesis;
 
 using Dissonance.Infrastructure.Constants;
 
@@ -11,12 +12,14 @@ namespace Dissonance.Services.TTSService
 		private readonly ILogger<TTSService> _logger;
 		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
 		private readonly SpeechSynthesizer _synthesizer;
+		public event EventHandler SpeechCompleted;
 
 		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
 			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 			_synthesizer = new SpeechSynthesizer ( );
+			_synthesizer.SpeakCompleted += OnSpeakCompleted;
 		}
 
 		public void SetTTSParameters ( string voice, double rate, int volume )
@@ -67,6 +70,11 @@ namespace Dissonance.Services.TTSService
 			{
 				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, "Failed to stop speaking text due to an unhandled exception.", ex );
 			}
+		}
+
+		private void OnSpeakCompleted ( object sender, SpeakCompletedEventArgs e )
+		{
+			SpeechCompleted?.Invoke ( this, EventArgs.Empty );
 		}
 	}
 }

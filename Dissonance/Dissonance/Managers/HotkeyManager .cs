@@ -22,6 +22,7 @@ namespace Dissonance.Managers
 			_ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
 			_clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
 			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+			_ttsService.SpeechCompleted += OnSpeechCompleted;
 		}
 
 		private void OnHotkeyPressed ( )
@@ -47,6 +48,12 @@ namespace Dissonance.Managers
 			{
 				_logger.LogWarning ( "Clipboard is empty or contains invalid text." );
 			}
+		}
+
+		private void OnSpeechCompleted ( object sender, EventArgs e )
+		{
+			_isSpeaking = false;
+			_logger.LogInformation ( "TTS playback completed." );
 		}
 
 		public void Dispose ( )

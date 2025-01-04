@@ -7,5 +7,7 @@
 		void Speak ( string text );
 
 		void Stop ( );
+
+		event EventHandler SpeechCompleted;
 	}
 }

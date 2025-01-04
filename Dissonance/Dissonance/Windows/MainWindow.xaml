@@ -8,13 +8,14 @@
         Title="Dissonance" Height="409" Width="800" WindowStartupLocation="CenterScreen" BorderBrush="White" Background="#FFD08753">
     <Grid x:Name="DissonanceGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True">
         <Grid.RowDefinitions>
-            <RowDefinition Height="*"/>
-            <RowDefinition Height="3*"/>
+            <RowDefinition Height="1.5*"/>
+            <RowDefinition Height="2*"/>
+            <RowDefinition Height="2*"/>
             <RowDefinition Height="3*"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="0.75*"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
         <!-- Voice Rate TextBox -->
@@ -23,16 +24,9 @@
         <Label x:Name="DissonanceTitleLable" Content="Dissonance" VerticalAlignment="Center" FontSize="28" RenderTransformOrigin="2.124,0.466" UseLayoutRounding="True" ScrollViewer.VerticalScrollBarVisibility="Disabled" HorizontalAlignment="Center" Grid.Column="1" Height="48" Width="150" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"/>
 
         <!-- Hotkey TextBox for reading clipboard -->
-        <TextBox x:Name="ReadClipboardHotkeyTextBox"
-                 HorizontalAlignment="Left"
-                 Margin="45,0,0,0"
-                 TextWrapping="Wrap"
-                 Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                 VerticalAlignment="Center"
-                 Width="100" Grid.Column="2" Grid.Row="1" Height="25" TabIndex="3" />
 
         <!-- Voice Selection ComboBox -->
-        <Grid x:Name="VoiceRateGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="False" Grid.Row="1" HorizontalAlignment="Center">
+        <Grid x:Name="VoiceRateGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" UseLayoutRounding="False" Grid.Row="1" HorizontalAlignment="Center" MinHeight="92.48" MaxHeight="92.48">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -42,9 +36,9 @@
                 TextWrapping="Wrap"
                 Text="1"
                 AutomationProperties.LabeledBy="{Binding ElementName=VoiceRateHeadingLable}" 
-                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="27" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" />
+                TabIndex="1" AllowDrop="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="96" Grid.Row="1" Height="27" AutomationProperties.ItemType="TextBox" AutomationProperties.HelpText="Set the speaking rate of the text to speach voice" ToolTip="Set the speaking rate of the text to speach voice" MinHeight="27" />
         </Grid>
-        <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="69,0,0,0" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Center" Height="98">
+        <Grid x:Name="VolumeGrid" MinHeight="100" MaxWidth="115" MaxHeight="100" Margin="69,34,0,0" MinWidth="115" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" Grid.Row="2" HorizontalAlignment="Left" VerticalAlignment="Top" Height="98" Grid.RowSpan="2">
             <Grid.RowDefinitions>
                 <RowDefinition Height="23*"/>
                 <RowDefinition Height="27*"/>
@@ -56,7 +50,7 @@
                 AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeadingLable}" 
                 Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" MinWidth="170" MinHeight="35" TabIndex="4" Height="34" Interval="10" IsMoveToPointEnabled="True" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" Ticks="10" />
         </Grid>
-        <Grid x:Name="VoiceSelectionGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" HorizontalAlignment="Center" Grid.Row="1" Width="220" MinWidth="220">
+        <Grid x:Name="VoiceSelectionGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="1" HorizontalAlignment="Center" Width="220" MinWidth="220" Height="92.48" MinHeight="92.48" MaxHeight="92.48" Grid.Row="1">
             <Grid.RowDefinitions>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
@@ -65,7 +59,20 @@
             <ComboBox x:Name="VoiceSelectionComboBox"
                   AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeadingLable}" 
                   ItemsSource="{Binding AvailableVoices}"
-                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" TabIndex="2" Text="Select a voice" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="1,1,1,1" VerticalContentAlignment="Center" Padding="5,5,5,5" UseLayoutRounding="True" VerticalAlignment="Center" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Center" Width="170" IsTabStop="True" ToolTip="Select the text to speach voice you would like to use" AutomationProperties.HelpText="Select the text to speach voice you would like to use" ForceCursor="True" />
+                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Grid.Row="1" TabIndex="2" Text="Select a voice" BorderBrush="{x:Null}" Foreground="Black" BorderThickness="1,1,1,1" VerticalContentAlignment="Center" Padding="5,5,5,5" UseLayoutRounding="True" VerticalAlignment="Center" ScrollViewer.CanContentScroll="True" HorizontalAlignment="Center" Width="170" IsTabStop="True" ToolTip="Select the text to speach voice you would like to use" AutomationProperties.HelpText="Select the text to speach voice you would like to use" ForceCursor="True" MinHeight="27" Height="27" />
+        </Grid>
+        <Grid x:Name="ReadClipboardHotkeySelectionGrid" ScrollViewer.VerticalScrollBarVisibility="Disabled" Grid.IsSharedSizeScope="True" UseLayoutRounding="True" Grid.Column="2" HorizontalAlignment="Center" Width="220" MinWidth="220" Height="92.48" MinHeight="92.48" MaxHeight="92.48" Grid.Row="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <Label x:Name="ReadClipboardHotkeySelectionHeadingLabel" Content="Read Clipboard Hotkey&#xD;&#xA;" FontSize="18" RenderTransformOrigin="2.124,0.466" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" ScrollViewer.VerticalScrollBarVisibility="Disabled" VerticalAlignment="Center" HorizontalAlignment="Center" Height="34" Width="200" Background="#FFFBAA8C"/>
+            <TextBox x:Name="ReadClipboardHotkeyTextBox"
+                 HorizontalAlignment="Center"
+                 TextWrapping="Wrap"
+                 Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                 VerticalAlignment="Center"
+                 Width="200" Grid.Row="1" Height="28" TabIndex="3" MinHeight="27" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" />
         </Grid>
     </Grid>
 </Window>

@@ -49,12 +49,12 @@ namespace Dissonance.ViewModels
 			}
 
 			var settings = _settingsService.GetCurrentSettings();
+			// Remove clipboard hotkey registration from ViewModel
 			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
 			_lastAppliedHotkeyCombination = _hotkeyCombination;
-			UpdateHotkey(_hotkeyCombination);
 			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
 
-			 // Zoom hotkey setup
+			// Zoom hotkey setup
 			if (settings.ZoomHotkey != null)
 			{
 				_zoomHotkeyCombination = settings.ZoomHotkey.Modifiers + "+" + settings.ZoomHotkey.Key;
@@ -234,56 +234,35 @@ namespace Dissonance.ViewModels
 		}
 
 		private void UpdateHotkey ( string hotkeyCombination )
-		{ 
+		{
+			// Only update settings, do not register clipboard hotkey here
 			if ( string.IsNullOrWhiteSpace ( hotkeyCombination ) )
 			{
 				throw new ArgumentException ( "Hotkey combination cannot be null, empty, or whitespace." );
 			}
- 
 			var parts = hotkeyCombination.Split('+');
 			if ( parts.Length < 2 )
 			{
 				throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key." );
 			}
-
-			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
+			var modifiers = string.Join("+", parts.Take(parts.Length - 1));
 			var key = parts.Last();
-
 			if ( !Enum.TryParse ( key, true, out Key newKey ) )
 			{
 				throw new ArgumentException ( $"Invalid key value: {key}" );
 			}
-
 			var settings = _settingsService.GetCurrentSettings();
 			var newHotkey = new AppSettings.HotkeySettings
 			{
 				Modifiers = modifiers,
 				Key = newKey.ToString()
 			};
-
 			if ( settings.Hotkey.Modifiers != newHotkey.Modifiers || settings.Hotkey.Key != newHotkey.Key )
 			{
-				try
-				{
-					_hotkeyService.RegisterHotkey(ClipboardHotkeyId, newHotkey, OnClipboardHotkeyPressed);
-
-					settings.Hotkey = newHotkey;
-					OnPropertyChanged ( nameof ( HotkeyCombination ) );
-				}
-				catch ( Exception ex )
-				{
-					var errorMessage = $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.";
-					MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-					Logger.Warn ( errorMessage, ex );
-				}
-
+				settings.Hotkey = newHotkey;
+				OnPropertyChanged ( nameof ( HotkeyCombination ) );
 				var ttsSettings = _settingsService.GetCurrentSettings();
 				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
-			}
-			else
-			{
-				// Always re-register to ensure callback is up to date
-				_hotkeyService.RegisterHotkey(ClipboardHotkeyId, newHotkey, OnClipboardHotkeyPressed);
 			}
 		}
 
@@ -309,19 +288,7 @@ namespace Dissonance.ViewModels
 				settings.ZoomHotkey = newHotkey;
 				OnPropertyChanged(nameof(ZoomHotkeyCombination));
 			}
-			// Always register the zoom hotkey
-			_hotkeyService.RegisterHotkey(ZoomHotkeyId, newHotkey, () => OnZoomHotkeyPressed());
-		}
-
-		private void OnClipboardHotkeyPressed()
-		{
-			// Clipboard hotkey pressed logic can be implemented here or delegated
-		}
-
-		private void OnZoomHotkeyPressed()
-		{
-			_magnifierService.ToggleZoom();
-			ZoomLevel = _magnifierService.GetCurrentZoom();
+				// (Now handled by HotkeyManager, so do not register here)
 		}
 
 		protected void OnPropertyChanged(string propertyName)

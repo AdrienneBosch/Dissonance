@@ -57,6 +57,13 @@ namespace Dissonance.Managers
 			_logger.LogInformation ( "TTS playback completed." );
 		}
 
+		private void OnZoomHotkeyPressed()
+		{
+			// You may need to get the magnifier service from DI or pass it in
+			// For now, this is a placeholder for actual zoom logic
+			_logger.LogInformation("Zoom hotkey pressed (implement magnifier logic here).");
+		}
+
 		public void Dispose ( )
 		{
 			_hotkeyService.Dispose ( );
@@ -68,6 +75,7 @@ namespace Dissonance.Managers
 			_hotkeyService.Initialize ( mainWindow );
 			var settings = _settingsService.GetCurrentSettings();
 
+			// Register clipboard hotkey for TTS
 			_hotkeyService.RegisterHotkey(
 				ClipboardHotkeyId,
 				new AppSettings.HotkeySettings
@@ -78,7 +86,21 @@ namespace Dissonance.Managers
 				OnHotkeyPressed
 			);
 
-			_logger.LogInformation ( "HotkeyManager initialized and hotkey registered." );
+			// Register zoom hotkey for magnifier
+			if (settings.ZoomHotkey != null)
+			{
+				_hotkeyService.RegisterHotkey(
+					"Zoom",
+					new AppSettings.HotkeySettings
+					{
+						Modifiers = settings.ZoomHotkey.Modifiers,
+						Key = settings.ZoomHotkey.Key
+					},
+					OnZoomHotkeyPressed
+				);
+			}
+
+			_logger.LogInformation ( "HotkeyManager initialized and hotkey(s) registered." );
 		}
 	}
 }

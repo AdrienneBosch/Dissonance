@@ -16,7 +16,9 @@ jobs:
           echo "${{ github.event.pull_request.body }}" | \
           grep -o 'AB#[0-9]*' | sed 's/AB#//' > workitem.txt || true
           wid=$(cat workitem.txt)
-          echo "workitem_id=$wid" >> $GITHUB_OUTPUT
+          echo "workitem_id=$wid"
+          echo "workitem_id=$wid" >> $GITHUB_ENV
+          echo "::set-output name=workitem_id::$wid"
 
       - name: Debug Work Item ID
         run: echo "Extracted Work Item ID: ${{ steps.extract.outputs.workitem_id }}"

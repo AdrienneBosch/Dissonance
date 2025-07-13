@@ -10,21 +10,31 @@ using NLog;
 
 namespace Dissonance.ViewModels
 {
+	public interface IMagnifierService
+	{
+		double GetCurrentZoom();
+		void ToggleZoom();
+		event EventHandler ZoomChanged;
+	}
+
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
 		private readonly IHotkeyService _hotkeyService;
 		private readonly ISettingsService _settingsService;
 		private readonly ITTSService _ttsService;
+		private readonly IMagnifierService _magnifierService;
 		private string _hotkeyCombination;
 		private string _lastAppliedHotkeyCombination;
+		private double _zoomLevel;
 		public ICommand ApplyHotkeyCommand { get; }
 
-		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService )
+		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IMagnifierService magnifierService )
 		{
 			_settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
 			_ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
 			_hotkeyService = hotkeyService ?? throw new ArgumentNullException ( nameof ( hotkeyService ) );
+			_magnifierService = magnifierService ?? throw new ArgumentNullException ( nameof ( magnifierService ) );
 
 			var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer().GetInstalledVoices();
 			foreach ( var voice in installedVoices )
@@ -37,6 +47,16 @@ namespace Dissonance.ViewModels
 			_lastAppliedHotkeyCombination = _hotkeyCombination;
 			UpdateHotkey(_hotkeyCombination);
 			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
+
+			// Magnifier integration
+			_zoomLevel = _magnifierService.GetCurrentZoom();
+			_magnifierService.ZoomChanged += (s, e) =>
+			{
+				ZoomLevel = _magnifierService.GetCurrentZoom();
+			};
+
+			// Hotkey trigger handling for magnifier
+			_hotkeyService.HotkeyPressed += OnHotkeyPressed;
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -108,6 +128,22 @@ namespace Dissonance.ViewModels
 				}
 			}
 		}
+
+		public double ZoomLevel
+		{
+			get => _zoomLevel;
+			set
+			{
+				if (_zoomLevel != value)
+				{
+					_zoomLevel = value;
+					OnPropertyChanged(nameof(ZoomLevel));
+					OnPropertyChanged(nameof(ZoomLevelDisplay));
+				}
+			}
+		}
+
+		public string ZoomLevelDisplay => $"Zoom: {ZoomLevel * 100:0}%";
 
 		private bool CanApplyHotkey()
 		{
@@ -184,6 +220,12 @@ namespace Dissonance.ViewModels
 				var ttsSettings = _settingsService.GetCurrentSettings();
 				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
 			}
+		}
+
+		private void OnHotkeyPressed()
+		{
+			_magnifierService.ToggleZoom();
+			ZoomLevel = _magnifierService.GetCurrentZoom();
 		}
 
 		protected void OnPropertyChanged ( string propertyName )

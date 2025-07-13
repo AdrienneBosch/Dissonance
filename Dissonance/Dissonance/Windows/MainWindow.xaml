@@ -111,5 +111,15 @@
                         ToolTip="Apply the new hotkey"/>
             </StackPanel>
         </Grid>
+
+        <Label x:Name="ZoomLevelLabel"
+               Content="{Binding ZoomLevelDisplay}"
+               FontSize="16"
+               HorizontalAlignment="Center"
+               VerticalAlignment="Top"
+               Grid.Row="2" Grid.Column="2"
+               Margin="0,10,0,0"
+               Height="32"
+               Width="200"/>
     </Grid>
 </Window>

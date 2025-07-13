@@ -7,6 +7,7 @@ using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
+using Dissonance.Services.MagnifierService;
 using Dissonance.ViewModels;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -34,6 +35,7 @@ namespace Dissonance
 			services.AddSingleton<ITTSService, TTSService> ( );
 			services.AddSingleton<IHotkeyService, HotkeyService> ( );
 			services.AddSingleton<IMessageService, MessageService> ( );
+			services.AddSingleton<IMagnifierService, MagnifierService> ( );
 			services.AddSingleton<MainWindowViewModel> ( );
 			services.AddSingleton<StartupManager> ( );
 			services.AddSingleton<HotkeyManager> ( );

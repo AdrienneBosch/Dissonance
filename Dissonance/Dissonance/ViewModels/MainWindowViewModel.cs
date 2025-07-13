@@ -138,7 +138,7 @@ namespace Dissonance.ViewModels
 		}
 
 		private void UpdateHotkey ( string hotkeyCombination )
-		{
+		{ 
 			if ( string.IsNullOrWhiteSpace ( hotkeyCombination ) )
 			{
 				throw new ArgumentException ( "Hotkey combination cannot be null, empty, or whitespace." );

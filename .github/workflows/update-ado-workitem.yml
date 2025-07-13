@@ -1,0 +1,30 @@
+name: Update Azure DevOps Work Item on PR Merge
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  update-work-item:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Extract Work Item ID from PR Body
+        id: extract
+        run: |
+          echo "${{ github.event.pull_request.body }}" | \
+          grep -o 'AB#[0-9]*' | sed 's/AB#//' > workitem.txt
+          wid=$(cat workitem.txt)
+          echo "workitem_id=$wid" >> $GITHUB_OUTPUT
+
+      - name: Update Azure DevOps Work Item State
+        env:
+          AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
+          WORK_ITEM_ID: ${{ steps.extract.outputs.workitem_id }}
+        run: |
+          curl -X PATCH \
+            -H "Content-Type: application/json-patch+json" \
+            -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
+            --data '[{"op": "add", "path": "/fields/System.State", "value": "Closed"}]' \
+            https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0

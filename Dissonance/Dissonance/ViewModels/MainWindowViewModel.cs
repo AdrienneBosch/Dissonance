@@ -133,7 +133,7 @@ namespace Dissonance.ViewModels
 			{
 				var errorMessage = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
 				MessageBox.Show(errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error);
-				Logger.Warn(errorMessage, ex);
+				Logger.Warn(ex, errorMessage);
 			}
 		}
 
@@ -153,7 +153,7 @@ namespace Dissonance.ViewModels
 			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
 			var key = parts.Last();
 
-			if ( !Enum.TryParse ( key, true, out System.Windows.Input.Key newKey ) )
+			if ( !Enum.TryParse ( key, true, out Key newKey ) )
 			{
 				throw new ArgumentException ( $"Invalid key value: {key}" );
 			}

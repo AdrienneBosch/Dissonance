@@ -35,6 +35,7 @@ namespace Dissonance.ViewModels
 			var settings = _settingsService.GetCurrentSettings();
 			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
 			_lastAppliedHotkeyCombination = _hotkeyCombination;
+			UpdateHotkey(_hotkeyCombination);
 			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
 		}
 

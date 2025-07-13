@@ -14,6 +14,7 @@ namespace Dissonance.Managers
 		private readonly ISettingsService _settingsService;
 		private readonly ITTSService _ttsService;
 		private bool _isSpeaking;
+		private const string ClipboardHotkeyId = "ReadClipboard";
 
 		public HotkeyManager ( IHotkeyService hotkeyService, ISettingsService settingsService, ITTSService ttsService, ClipboardManager clipboardManager, ILogger<HotkeyManager> logger )
 		{
@@ -67,13 +68,16 @@ namespace Dissonance.Managers
 			_hotkeyService.Initialize ( mainWindow );
 			var settings = _settingsService.GetCurrentSettings();
 
-			_hotkeyService.RegisterHotkey ( new AppSettings.HotkeySettings
-			{
-				Modifiers = settings.Hotkey.Modifiers,
-				Key = settings.Hotkey.Key
-			} );
+			_hotkeyService.RegisterHotkey(
+				ClipboardHotkeyId,
+				new AppSettings.HotkeySettings
+				{
+					Modifiers = settings.Hotkey.Modifiers,
+					Key = settings.Hotkey.Key
+				},
+				OnHotkeyPressed
+			);
 
-			_hotkeyService.HotkeyPressed += OnHotkeyPressed;
 			_logger.LogInformation ( "HotkeyManager initialized and hotkey registered." );
 		}
 	}

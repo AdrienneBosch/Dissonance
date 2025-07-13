@@ -1,15 +1,12 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
 namespace Dissonance.Services.HotkeyService
 {
 	public interface IHotkeyService : IDisposable
 	{
-		event Action HotkeyPressed;
-
-		void Initialize ( Window mainWindow );
-
-		void RegisterHotkey ( AppSettings.HotkeySettings hotkey );
-
-		void UnregisterHotkey ( );
+		void Initialize(Window mainWindow);
+		void RegisterHotkey(string id, AppSettings.HotkeySettings hotkey, Action callback);
+		void UnregisterHotkey(string id);
 	}
 }

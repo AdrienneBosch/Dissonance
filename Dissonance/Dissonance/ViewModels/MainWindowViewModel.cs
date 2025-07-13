@@ -32,6 +32,9 @@ namespace Dissonance.ViewModels
 		public ICommand ApplyHotkeyCommand { get; }
 		public ICommand ApplyZoomHotkeyCommand { get; }
 
+		private const string ClipboardHotkeyId = "ReadClipboard";
+		private const string ZoomHotkeyId = "Zoom";
+
 		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IMagnifierService magnifierService )
 		{
 			_settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
@@ -71,9 +74,6 @@ namespace Dissonance.ViewModels
 			{
 				ZoomLevel = _magnifierService.GetCurrentZoom();
 			};
-
-			// Hotkey trigger handling for magnifier
-			_hotkeyService.HotkeyPressed += OnHotkeyPressed;
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -265,7 +265,7 @@ namespace Dissonance.ViewModels
 			{
 				try
 				{
-					_hotkeyService.RegisterHotkey ( newHotkey );
+					_hotkeyService.RegisterHotkey(ClipboardHotkeyId, newHotkey, OnClipboardHotkeyPressed);
 
 					settings.Hotkey = newHotkey;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
@@ -279,6 +279,11 @@ namespace Dissonance.ViewModels
 
 				var ttsSettings = _settingsService.GetCurrentSettings();
 				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
+			}
+			else
+			{
+				// Always re-register to ensure callback is up to date
+				_hotkeyService.RegisterHotkey(ClipboardHotkeyId, newHotkey, OnClipboardHotkeyPressed);
 			}
 		}
 
@@ -301,21 +306,27 @@ namespace Dissonance.ViewModels
 			};
 			if (settings.ZoomHotkey == null || settings.ZoomHotkey.Modifiers != newHotkey.Modifiers || settings.ZoomHotkey.Key != newHotkey.Key)
 			{
-				// TODO: Register this hotkey with a separate hotkey service instance or extend the service to support multiple hotkeys
 				settings.ZoomHotkey = newHotkey;
 				OnPropertyChanged(nameof(ZoomHotkeyCombination));
 			}
+			// Always register the zoom hotkey
+			_hotkeyService.RegisterHotkey(ZoomHotkeyId, newHotkey, () => OnZoomHotkeyPressed());
 		}
 
-		private void OnHotkeyPressed()
+		private void OnClipboardHotkeyPressed()
+		{
+			// Clipboard hotkey pressed logic can be implemented here or delegated
+		}
+
+		private void OnZoomHotkeyPressed()
 		{
 			_magnifierService.ToggleZoom();
 			ZoomLevel = _magnifierService.GetCurrentZoom();
 		}
 
-		protected void OnPropertyChanged ( string propertyName )
+		protected void OnPropertyChanged(string propertyName)
 		{
-			PropertyChanged?.Invoke ( this, new PropertyChangedEventArgs ( propertyName ) );
+			PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
 		}
 	}
 }

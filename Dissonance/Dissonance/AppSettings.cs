@@ -3,6 +3,7 @@
 	public class AppSettings
 	{
 		public HotkeySettings Hotkey { get; set; }
+		public HotkeySettings ZoomHotkey { get; set; } // New property for zoom hotkey
 
 		public string Voice { get; set; }
 

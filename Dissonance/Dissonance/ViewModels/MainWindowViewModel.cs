@@ -26,8 +26,11 @@ namespace Dissonance.ViewModels
 		private readonly IMagnifierService _magnifierService;
 		private string _hotkeyCombination;
 		private string _lastAppliedHotkeyCombination;
+		private string _zoomHotkeyCombination;
+		private string _lastAppliedZoomHotkeyCombination;
 		private double _zoomLevel;
 		public ICommand ApplyHotkeyCommand { get; }
+		public ICommand ApplyZoomHotkeyCommand { get; }
 
 		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IMagnifierService magnifierService )
 		{
@@ -47,6 +50,20 @@ namespace Dissonance.ViewModels
 			_lastAppliedHotkeyCombination = _hotkeyCombination;
 			UpdateHotkey(_hotkeyCombination);
 			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
+
+			 // Zoom hotkey setup
+			if (settings.ZoomHotkey != null)
+			{
+				_zoomHotkeyCombination = settings.ZoomHotkey.Modifiers + "+" + settings.ZoomHotkey.Key;
+				_lastAppliedZoomHotkeyCombination = _zoomHotkeyCombination;
+			}
+			else
+			{
+				_zoomHotkeyCombination = "Ctrl+Alt+Z";
+				_lastAppliedZoomHotkeyCombination = _zoomHotkeyCombination;
+			}
+			UpdateZoomHotkey(_zoomHotkeyCombination);
+			ApplyZoomHotkeyCommand = new RelayCommandNoParam(ApplyZoomHotkey, CanApplyZoomHotkey);
 
 			// Magnifier integration
 			_zoomLevel = _magnifierService.GetCurrentZoom();
@@ -73,6 +90,21 @@ namespace Dissonance.ViewModels
 					_hotkeyCombination = value;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
 					if (ApplyHotkeyCommand is Dissonance.Infrastructure.Commands.RelayCommandNoParam relay)
+						relay.RaiseCanExecuteChanged();
+				}
+			}
+		}
+
+		public string ZoomHotkeyCombination
+		{
+			get => _zoomHotkeyCombination;
+			set
+			{
+				if (_zoomHotkeyCombination != value)
+				{
+					_zoomHotkeyCombination = value;
+					OnPropertyChanged(nameof(ZoomHotkeyCombination));
+					if (ApplyZoomHotkeyCommand is Dissonance.Infrastructure.Commands.RelayCommandNoParam relay)
 						relay.RaiseCanExecuteChanged();
 				}
 			}
@@ -156,6 +188,17 @@ namespace Dissonance.ViewModels
 			return Enum.TryParse(key, true, out System.Windows.Input.Key _);
 		}
 
+		private bool CanApplyZoomHotkey()
+		{
+			if (string.IsNullOrWhiteSpace(_zoomHotkeyCombination) || _zoomHotkeyCombination == _lastAppliedZoomHotkeyCombination)
+				return false;
+			var parts = _zoomHotkeyCombination.Split('+');
+			if (parts.Length < 2)
+				return false;
+			var key = parts.Last();
+			return Enum.TryParse(key, true, out System.Windows.Input.Key _);
+		}
+
 		private void ApplyHotkey()
 		{
 			try
@@ -169,6 +212,23 @@ namespace Dissonance.ViewModels
 			{
 				var errorMessage = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
 				MessageBox.Show(errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				Logger.Warn(ex, errorMessage);
+			}
+		}
+
+		private void ApplyZoomHotkey()
+		{
+			try
+			{
+				UpdateZoomHotkey(_zoomHotkeyCombination);
+				_lastAppliedZoomHotkeyCombination = _zoomHotkeyCombination;
+				if (ApplyZoomHotkeyCommand is Dissonance.Infrastructure.Commands.RelayCommandNoParam relay)
+					relay.RaiseCanExecuteChanged();
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = $"Failed to register zoom hotkey: {_zoomHotkeyCombination}. It might already be in use by another application.";
+				MessageBox.Show(errorMessage, "Zoom Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error);
 				Logger.Warn(ex, errorMessage);
 			}
 		}
@@ -219,6 +279,31 @@ namespace Dissonance.ViewModels
 
 				var ttsSettings = _settingsService.GetCurrentSettings();
 				_ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
+			}
+		}
+
+		private void UpdateZoomHotkey(string zoomHotkeyCombination)
+		{
+			if (string.IsNullOrWhiteSpace(zoomHotkeyCombination))
+				throw new ArgumentException("Zoom hotkey combination cannot be null, empty, or whitespace.");
+			var parts = zoomHotkeyCombination.Split('+');
+			if (parts.Length < 2)
+				throw new ArgumentException("Zoom hotkey combination must include at least one modifier and a key.");
+			var modifiers = string.Join("+", parts.Take(parts.Length - 1));
+			var key = parts.Last();
+			if (!Enum.TryParse(key, true, out Key newKey))
+				throw new ArgumentException($"Invalid key value: {key}");
+			var settings = _settingsService.GetCurrentSettings();
+			var newHotkey = new AppSettings.HotkeySettings
+			{
+				Modifiers = modifiers,
+				Key = newKey.ToString()
+			};
+			if (settings.ZoomHotkey == null || settings.ZoomHotkey.Modifiers != newHotkey.Modifiers || settings.ZoomHotkey.Key != newHotkey.Key)
+			{
+				// TODO: Register this hotkey with a separate hotkey service instance or extend the service to support multiple hotkeys
+				settings.ZoomHotkey = newHotkey;
+				OnPropertyChanged(nameof(ZoomHotkeyCombination));
 			}
 		}
 

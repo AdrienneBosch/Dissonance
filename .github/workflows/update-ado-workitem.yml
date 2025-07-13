@@ -1,12 +1,11 @@
 name: Update Azure DevOps Work Item on PR Merge
-
 on:
   pull_request:
     types: [closed]
 
 jobs:
   update-work-item:
-    if: github.event.pull_request.merged == true
+    if: ${{ github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
 
     steps:
@@ -29,5 +28,5 @@ jobs:
           curl -X PATCH \
             -H "Content-Type: application/json-patch+json" \
             -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-            --data '[{"op": "add", "path": "/fields/System.State", "value": "Closed"}]' \
+            --data '[{"op":"add","path":"/fields/System.State","value":"Closed"}]' \
             https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0

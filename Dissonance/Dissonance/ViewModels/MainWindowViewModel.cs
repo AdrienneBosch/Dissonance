@@ -143,7 +143,7 @@ namespace Dissonance.ViewModels
 			{
 				throw new ArgumentException ( "Hotkey combination cannot be null, empty, or whitespace." );
 			}
-
+ 
 			var parts = hotkeyCombination.Split('+');
 			if ( parts.Length < 2 )
 			{

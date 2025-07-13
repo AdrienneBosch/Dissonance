@@ -131,7 +131,7 @@ namespace Dissonance.ViewModels
 			{
 				var errorMessage = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
 				MessageBox.Show(errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error);
-				Logger.Warn(errorMessage, ex);
+				Logger.Warn(ex, errorMessage);
 			}
 		}
 

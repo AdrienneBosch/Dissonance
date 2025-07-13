@@ -33,40 +33,45 @@ jobs:
             echo "AZURE_DEVOPS_PAT is set."
           fi
 
-      - name: Update Azure DevOps Work Item State (Two-Step Agile Transition)
+      - name: Update Azure DevOps Work Item State
         if: ${{ steps.extract.outputs.workitem_id != '' }}
         env:
           AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
           WORK_ITEM_ID: ${{ steps.extract.outputs.workitem_id }}
         run: |
           BASE_URL="https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0"
+          AUTH_HEADER="Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)"
 
-          echo "Step 1: Transitioning to 'Resolved'"
-          response1=$(curl --write-out "%{http_code}" --silent --output response1.txt -X PATCH \
-            -H "Content-Type: application/json-patch+json" \
-            -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-            --data '[{"op": "add", "path": "/fields/System.State", "value": "Resolved"}]' \
-            "$BASE_URL")
+          echo "Fetching current work item state..."
+          curl -s -H "Content-Type: application/json" -H "$AUTH_HEADER" "$BASE_URL" -o current.json
+          cat current.json
+          CURRENT_STATE=$(jq -r '.fields["System.State"]' current.json)
+          echo "Current state: $CURRENT_STATE"
 
-          echo "Response Code (Resolved): $response1"
-          cat response1.txt
+          declare -a STATES=("New" "Active" "Resolved" "Closed")
 
-          if [ "$response1" -lt 200 ] || [ "$response1" -ge 300 ]; then
-            echo "ERROR: Failed to set state to Resolved"
-            exit 1
-          fi
+          FOUND=0
+          for TARGET_STATE in "${STATES[@]}"; do
+            if [ "$FOUND" = "1" ]; then
+              echo "Transitioning to '$TARGET_STATE'"
+              RESPONSE_CODE=$(curl --write-out "%{http_code}" --silent --output response.json -X PATCH \
+                -H "Content-Type: application/json-patch+json" \
+                -H "$AUTH_HEADER" \
+                --data "[{\"op\": \"replace\", \"path\": \"/fields/System.State\", \"value\": \"$TARGET_STATE\"}]" \
+                "$BASE_URL")
 
-          echo "Step 2: Transitioning to 'Closed'"
-          response2=$(curl --write-out "%{http_code}" --silent --output response2.txt -X PATCH \
-            -H "Content-Type: application/json-patch+json" \
-            -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-            --data '[{"op": "add", "path": "/fields/System.State", "value": "Closed"}]' \
-            "$BASE_URL")
+              echo "Response Code: $RESPONSE_CODE"
+              cat response.json
 
-          echo "Response Code (Closed): $response2"
-          cat response2.txt
+              if [ "$RESPONSE_CODE" -lt 200 ] || [ "$RESPONSE_CODE" -ge 300 ]; then
+                echo "ERROR: Failed to transition to '$TARGET_STATE'"
+                exit 1
+              fi
+            fi
 
-          if [ "$response2" -lt 200 ] || [ "$response2" -ge 300 ]; then
-            echo "ERROR: Failed to set state to Closed"
-            exit 1
-          fi
+            if [ "$CURRENT_STATE" = "$TARGET_STATE" ]; then
+              FOUND=1
+            fi
+          done
+
+          echo "Final state: Closed"

@@ -33,25 +33,40 @@ jobs:
             echo "AZURE_DEVOPS_PAT is set."
           fi
 
-      - name: Update Azure DevOps Work Item State
+      - name: Update Azure DevOps Work Item State (Two-Step Agile Transition)
         if: ${{ steps.extract.outputs.workitem_id != '' }}
         env:
           AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
           WORK_ITEM_ID: ${{ steps.extract.outputs.workitem_id }}
         run: |
-          echo "Sending PATCH request to update Work Item ID: $WORK_ITEM_ID"
-          echo "Using URL: https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0"
-          response=$(curl --write-out "%{http_code}" --silent --output response.txt -X PATCH \
+          BASE_URL="https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0"
+
+          echo "Step 1: Transitioning to 'Resolved'"
+          response1=$(curl --write-out "%{http_code}" --silent --output response1.txt -X PATCH \
+            -H "Content-Type: application/json-patch+json" \
+            -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
+            --data '[{"op": "add", "path": "/fields/System.State", "value": "Resolved"}]' \
+            "$BASE_URL")
+
+          echo "Response Code (Resolved): $response1"
+          cat response1.txt
+
+          if [ "$response1" -lt 200 ] || [ "$response1" -ge 300 ]; then
+            echo "ERROR: Failed to set state to Resolved"
+            exit 1
+          fi
+
+          echo "Step 2: Transitioning to 'Closed'"
+          response2=$(curl --write-out "%{http_code}" --silent --output response2.txt -X PATCH \
             -H "Content-Type: application/json-patch+json" \
             -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
             --data '[{"op": "add", "path": "/fields/System.State", "value": "Closed"}]' \
-            "https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0")
+            "$BASE_URL")
 
-          echo "Azure DevOps API response code: $response"
-          echo "Azure DevOps API response body:"
-          cat response.txt
+          echo "Response Code (Closed): $response2"
+          cat response2.txt
 
-          if [ "$response" -lt 200 ] || [ "$response" -ge 300 ]; then
-            echo "ERROR: Request failed with status code $response"
+          if [ "$response2" -lt 200 ] || [ "$response2" -ge 300 ]; then
+            echo "ERROR: Failed to set state to Closed"
             exit 1
           fi

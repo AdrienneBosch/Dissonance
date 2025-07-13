@@ -13,15 +13,15 @@ jobs:
       - name: Extract Work Item ID from PR Body
         id: extract
         run: |
-          echo "${{ github.event.pull_request.body }}" | grep -o 'AB#[0-9]*' | sed 's/AB#//' > workitem.txt || true
-          wid=$(cat workitem.txt)
+          echo "${{ github.event.pull_request.body }}" | grep -o 'AB#[0-9]*' | sed 's/AB#//' > wid.txt || true
+          wid=$(cat wid.txt)
           echo "workitem_id=$wid" >> $GITHUB_OUTPUT
 
       - name: Debug Work Item ID
         run: echo "Extracted Work Item ID: ${{ steps.extract.outputs.workitem_id }}"
 
       - name: Update Azure DevOps Work Item State
-        if: steps.extract.outputs.workitem_id != ''
+        if: ${{ steps.extract.outputs.workitem_id != '' }}
         env:
           AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
           WORK_ITEM_ID: ${{ steps.extract.outputs.workitem_id }}

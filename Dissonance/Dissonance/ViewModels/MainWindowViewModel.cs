@@ -2,11 +2,10 @@
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Input;
-
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
-
+using Dissonance.Infrastructure.Commands;
 using NLog;
 
 namespace Dissonance.ViewModels
@@ -14,14 +13,12 @@ namespace Dissonance.ViewModels
 	public class MainWindowViewModel : INotifyPropertyChanged
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
-
 		private readonly IHotkeyService _hotkeyService;
-
 		private readonly ISettingsService _settingsService;
-
 		private readonly ITTSService _ttsService;
-
 		private string _hotkeyCombination;
+		private string _lastAppliedHotkeyCombination;
+		public ICommand ApplyHotkeyCommand { get; }
 
 		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService )
 		{
@@ -37,6 +34,8 @@ namespace Dissonance.ViewModels
 
 			var settings = _settingsService.GetCurrentSettings();
 			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
+			_lastAppliedHotkeyCombination = _hotkeyCombination;
+			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -52,7 +51,7 @@ namespace Dissonance.ViewModels
 				{
 					_hotkeyCombination = value;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
-					UpdateHotkey ( value );
+					CommandManager.InvalidateRequerySuggested();
 				}
 			}
 		}
@@ -108,6 +107,33 @@ namespace Dissonance.ViewModels
 			}
 		}
 
+		private bool CanApplyHotkey()
+		{
+			if (string.IsNullOrWhiteSpace(_hotkeyCombination) || _hotkeyCombination == _lastAppliedHotkeyCombination)
+				return false;
+			var parts = _hotkeyCombination.Split('+');
+			if (parts.Length < 2)
+				return false;
+			var key = parts.Last();
+			return Enum.TryParse(key, true, out System.Windows.Input.Key _);
+		}
+
+		private void ApplyHotkey()
+		{
+			try
+			{
+				UpdateHotkey(_hotkeyCombination);
+				_lastAppliedHotkeyCombination = _hotkeyCombination;
+				CommandManager.InvalidateRequerySuggested();
+			}
+			catch (Exception ex)
+			{
+				var errorMessage = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
+				MessageBox.Show(errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error);
+				Logger.Warn(errorMessage, ex);
+			}
+		}
+
 		private void UpdateHotkey ( string hotkeyCombination )
 		{
 			if ( string.IsNullOrWhiteSpace ( hotkeyCombination ) )
@@ -124,7 +150,7 @@ namespace Dissonance.ViewModels
 			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
 			var key = parts.Last();
 
-			if ( !Enum.TryParse ( key, true, out Key newKey ) )
+			if ( !Enum.TryParse ( key, true, out System.Windows.Input.Key newKey ) )
 			{
 				throw new ArgumentException ( $"Invalid key value: {key}" );
 			}

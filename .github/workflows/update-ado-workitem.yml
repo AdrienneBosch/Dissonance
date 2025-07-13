@@ -6,14 +6,17 @@ on:
 
 jobs:
   update-work-item:
-    if: ${{ github.event.pull_request.merged == true }}
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
 
     steps:
       - name: Extract Work Item ID from PR Body
         id: extract
         run: |
+          echo "PR Body:"
+          echo "${{ github.event.pull_request.body }}"
           echo "${{ github.event.pull_request.body }}" | grep -o 'AB#[0-9]*' | sed 's/AB#//' > wid.txt || true
+          cat wid.txt
           wid=$(cat wid.txt)
           echo "workitem_id=$wid" >> $GITHUB_OUTPUT
 
@@ -21,14 +24,34 @@ jobs:
         run: |
           echo "Extracted Work Item ID: ${{ steps.extract.outputs.workitem_id }}"
 
+      - name: Validate GitHub Secret
+        run: |
+          if [ -z "${{ secrets.AZURE_DEVOPS_PAT }}" ]; then
+            echo "ERROR: AZURE_DEVOPS_PAT secret is not set."
+            exit 1
+          else
+            echo "AZURE_DEVOPS_PAT is set."
+          fi
+
       - name: Update Azure DevOps Work Item State
         if: ${{ steps.extract.outputs.workitem_id != '' }}
         env:
           AZURE_DEVOPS_PAT: ${{ secrets.AZURE_DEVOPS_PAT }}
           WORK_ITEM_ID: ${{ steps.extract.outputs.workitem_id }}
         run: |
-          curl -X PATCH \
+          echo "Sending PATCH request to update Work Item ID: $WORK_ITEM_ID"
+          echo "Using URL: https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0"
+          response=$(curl --write-out "%{http_code}" --silent --output response.txt -X PATCH \
             -H "Content-Type: application/json-patch+json" \
             -H "Authorization: Basic $(echo -n :$AZURE_DEVOPS_PAT | base64)" \
-            --data '[{"op":"add","path":"/fields/System.State","value":"Closed"}]' \
-            https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0
+            --data '[{"op": "add", "path": "/fields/System.State", "value": "Closed"}]' \
+            "https://dev.azure.com/DissonanceCo/Dissonance/_apis/wit/workitems/$WORK_ITEM_ID?api-version=7.0")
+
+          echo "Azure DevOps API response code: $response"
+          echo "Azure DevOps API response body:"
+          cat response.txt
+
+          if [ "$response" -lt 200 ] || [ "$response" -ge 300 ]; then
+            echo "ERROR: Request failed with status code $response"
+            exit 1
+          fi

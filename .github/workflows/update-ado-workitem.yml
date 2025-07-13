@@ -10,6 +10,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
+
       - name: Extract Work Item ID from PR Body
         id: extract
         run: |
@@ -45,7 +48,14 @@ jobs:
           echo "Fetching current work item state..."
           curl -s -H "Content-Type: application/json" -H "$AUTH_HEADER" "$BASE_URL" -o current.json
           cat current.json
+
           CURRENT_STATE=$(jq -r '.fields["System.State"]' current.json)
+
+          if [ -z "$CURRENT_STATE" ] || [ "$CURRENT_STATE" = "null" ]; then
+            echo "ERROR: Could not determine current state from work item data."
+            exit 1
+          fi
+
           echo "Current state: $CURRENT_STATE"
 
           declare -a STATES=("New" "Active" "Resolved" "Closed")

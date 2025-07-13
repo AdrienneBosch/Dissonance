@@ -151,7 +151,7 @@ namespace Dissonance.ViewModels
 			var modifiers = string.Join("+", parts.Take(parts.Length - 1)); // Combine all except the last part as modifiers
 			var key = parts.Last();
 
-			if ( !Enum.TryParse ( key, true, out System.Windows.Input.Key newKey ) )
+			if ( !Enum.TryParse ( key, true, out Key newKey ) )
 			{
 				throw new ArgumentException ( $"Invalid key value: {key}" );
 			}

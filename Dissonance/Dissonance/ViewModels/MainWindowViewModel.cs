@@ -52,7 +52,8 @@ namespace Dissonance.ViewModels
 				{
 					_hotkeyCombination = value;
 					OnPropertyChanged ( nameof ( HotkeyCombination ) );
-					CommandManager.InvalidateRequerySuggested();
+					if (ApplyHotkeyCommand is Dissonance.Infrastructure.Commands.RelayCommandNoParam relay)
+						relay.RaiseCanExecuteChanged();
 				}
 			}
 		}
@@ -125,7 +126,8 @@ namespace Dissonance.ViewModels
 			{
 				UpdateHotkey(_hotkeyCombination);
 				_lastAppliedHotkeyCombination = _hotkeyCombination;
-				CommandManager.InvalidateRequerySuggested();
+				if (ApplyHotkeyCommand is Dissonance.Infrastructure.Commands.RelayCommandNoParam relay)
+					relay.RaiseCanExecuteChanged();
 			}
 			catch (Exception ex)
 			{

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Speech.Synthesis;
-using System.Linq;
-using System.Collections.Generic;
 
 using Dissonance.Infrastructure.Constants;
 
@@ -22,19 +20,6 @@ namespace Dissonance.Services.TTSService
 			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 			_synthesizer = new SpeechSynthesizer ( );
 			_synthesizer.SpeakCompleted += OnSpeakCompleted;
-		}
-
-		public IEnumerable<string> GetAvailableVoices()
-		{
-			try
-			{
-				return _synthesizer.GetInstalledVoices().Select(v => v.VoiceInfo.Name).ToList();
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Failed to get installed voices.");
-				return Enumerable.Empty<string>();
-			}
 		}
 
 		public void SetTTSParameters ( string voice, double rate, int volume )

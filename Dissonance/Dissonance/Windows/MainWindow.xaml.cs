@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
@@ -17,6 +18,17 @@ namespace Dissonance
                 private readonly ISettingsService _settingsService;
                 private bool _isWindowPlacementInitialized;
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
+                private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
+                {
+                        Key.LeftCtrl,
+                        Key.RightCtrl,
+                        Key.LeftShift,
+                        Key.RightShift,
+                        Key.LeftAlt,
+                        Key.RightAlt,
+                        Key.LWin,
+                        Key.RWin,
+                };
 
                 public MainWindow ( MainWindowViewModel viewModel, ISettingsService settingsService )
                 {
@@ -195,6 +207,71 @@ namespace Dissonance
                 private void SettingsMenuPopup_Closed ( object? sender, EventArgs e )
                 {
                         SettingsButton.Focus ( );
+                }
+
+                private void ReadClipboardHotkeyTextBox_PreviewKeyDown ( object sender, KeyEventArgs e )
+                {
+                        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+                        if ( key == Key.Tab )
+                        {
+                                var modifiersState = Keyboard.Modifiers;
+                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
+                                {
+                                        e.Handled = false;
+                                        return;
+                                }
+                        }
+
+                        e.Handled = true;
+
+                        if ( key == Key.None || IsModifierKey ( key ) )
+                        {
+                                return;
+                        }
+
+                        var modifiers = GetActiveModifiers ( );
+                        var hotkeyParts = new List<string> ( modifiers ) { key.ToString ( ) };
+
+                        if ( hotkeyParts.Count < 2 )
+                        {
+                                return;
+                        }
+
+                        _viewModel.HotkeyCombination = string.Join ( "+", hotkeyParts );
+                }
+
+                private static bool IsModifierKey ( Key key )
+                {
+                        return ModifierKeySet.Contains ( key );
+                }
+
+                private static List<string> GetActiveModifiers ( )
+                {
+                        var modifiers = new List<string> ( );
+                        var currentModifiers = Keyboard.Modifiers;
+
+                        if ( ( currentModifiers & ModifierKeys.Control ) == ModifierKeys.Control )
+                        {
+                                modifiers.Add ( "Ctrl" );
+                        }
+
+                        if ( ( currentModifiers & ModifierKeys.Shift ) == ModifierKeys.Shift )
+                        {
+                                modifiers.Add ( "Shift" );
+                        }
+
+                        if ( ( currentModifiers & ModifierKeys.Alt ) == ModifierKeys.Alt )
+                        {
+                                modifiers.Add ( "Alt" );
+                        }
+
+                        if ( ( currentModifiers & ModifierKeys.Windows ) == ModifierKeys.Windows )
+                        {
+                                modifiers.Add ( "Win" );
+                        }
+
+                        return modifiers;
                 }
         }
 }

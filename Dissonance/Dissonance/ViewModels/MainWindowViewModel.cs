@@ -30,8 +30,8 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private bool _isDarkTheme;
-                private string _hotkeyCombination;
-                private string _lastAppliedHotkeyCombination;
+                private string _hotkeyCombination = string.Empty;
+                private string _lastAppliedHotkeyCombination = string.Empty;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService )
                 {
@@ -53,9 +53,22 @@ namespace Dissonance.ViewModels
                         }
 
                         var settings = _settingsService.GetCurrentSettings ( );
-                        _hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
+                        _hotkeyCombination = ComposeHotkeyString ( settings.Hotkey );
                         _lastAppliedHotkeyCombination = _hotkeyCombination;
-                        UpdateHotkey ( _hotkeyCombination );
+
+                        if ( !string.IsNullOrWhiteSpace ( _hotkeyCombination ) )
+                        {
+                                try
+                                {
+                                        UpdateHotkey ( _hotkeyCombination );
+                                        _lastAppliedHotkeyCombination = _hotkeyCombination;
+                                }
+                                catch ( ArgumentException ex )
+                                {
+                                        Logger.Warn ( ex, "Invalid hotkey configuration \"{Hotkey}\" loaded from settings.", _hotkeyCombination );
+                                }
+                        }
+
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
                         _isDarkTheme = settings.UseDarkTheme;
@@ -89,7 +102,11 @@ namespace Dissonance.ViewModels
                                 _isDarkTheme = value;
                                 _themeService.ApplyTheme ( value ? AppTheme.Dark : AppTheme.Light );
                                 var settings = _settingsService.GetCurrentSettings ( );
-                                settings.UseDarkTheme = value;
+                                if ( settings.UseDarkTheme != value )
+                                {
+                                        settings.UseDarkTheme = value;
+                                        _settingsService.SaveCurrentSettings ( );
+                                }
                                 OnPropertyChanged ( nameof ( IsDarkTheme ) );
                                 OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         }
@@ -192,12 +209,7 @@ namespace Dissonance.ViewModels
                         if ( string.IsNullOrWhiteSpace ( _hotkeyCombination ) || _hotkeyCombination == _lastAppliedHotkeyCombination )
                                 return false;
 
-                        var parts = _hotkeyCombination.Split ( '+' );
-                        if ( parts.Length < 2 )
-                                return false;
-
-                        var key = parts.Last ( );
-                        return Enum.TryParse ( key, true, out System.Windows.Input.Key _ );
+                        return TryParseHotkeyCombination ( _hotkeyCombination, out _, out _ );
                 }
 
                 private void ApplyHotkey ( )
@@ -260,8 +272,15 @@ namespace Dissonance.ViewModels
                                 _settingsService.SaveCurrentSettings ( );
                         }
 
-                        _hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
-                        _lastAppliedHotkeyCombination = _hotkeyCombination;
+                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        if ( _isDarkTheme != settings.UseDarkTheme )
+                        {
+                                _isDarkTheme = settings.UseDarkTheme;
+                                OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        }
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
+
+                        _hotkeyCombination = ComposeHotkeyString ( settings.Hotkey );
                         OnPropertyChanged ( nameof ( HotkeyCombination ) );
                         OnPropertyChanged ( nameof ( Voice ) );
                         OnPropertyChanged ( nameof ( VoiceRate ) );
@@ -280,6 +299,7 @@ namespace Dissonance.ViewModels
                                 try
                                 {
                                         UpdateHotkey ( _hotkeyCombination );
+                                        _lastAppliedHotkeyCombination = _hotkeyCombination;
                                 }
                                 catch ( Exception ex )
                                 {
@@ -287,6 +307,10 @@ namespace Dissonance.ViewModels
                                         _messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.HotkeyServiceWarning, warning );
                                         Logger.Warn ( ex, warning );
                                 }
+                        }
+                        else
+                        {
+                                _lastAppliedHotkeyCombination = _hotkeyCombination;
                         }
 
                         if ( ApplyHotkeyCommand is RelayCommandNoParam relay )
@@ -306,50 +330,124 @@ namespace Dissonance.ViewModels
 
                 private void UpdateHotkey ( string hotkeyCombination )
                 {
-                        if ( string.IsNullOrWhiteSpace ( hotkeyCombination ) )
+                        if ( !TryParseHotkeyCombination ( hotkeyCombination, out var modifiers, out Key newKey ) )
                         {
-                                throw new ArgumentException ( "Hotkey combination cannot be null, empty, or whitespace." );
+                                throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key.", nameof ( hotkeyCombination ) );
                         }
 
-                        var parts = hotkeyCombination.Split ( '+' );
-                        if ( parts.Length < 2 )
-                        {
-                                throw new ArgumentException ( "Hotkey combination must include at least one modifier and a key." );
-                        }
+                        var normalizedModifiers = string.Join ( "+", modifiers );
+                        var keyText = newKey.ToString ( );
+                        var canonicalCombination = $"{normalizedModifiers}+{keyText}";
 
-                        var modifiers = string.Join ( "+", parts.Take ( parts.Length - 1 ) );
-                        var key = parts.Last ( );
-
-                        if ( !Enum.TryParse ( key, true, out Key newKey ) )
+                        if ( !string.Equals ( _hotkeyCombination, canonicalCombination, StringComparison.Ordinal ) )
                         {
-                                throw new ArgumentException ( $"Invalid key value: {key}" );
+                                _hotkeyCombination = canonicalCombination;
+                                OnPropertyChanged ( nameof ( HotkeyCombination ) );
                         }
 
                         var settings = _settingsService.GetCurrentSettings ( );
                         var newHotkey = new AppSettings.HotkeySettings
                         {
-                                Modifiers = modifiers,
-                                Key = newKey.ToString ( )
+                                Modifiers = normalizedModifiers,
+                                Key = keyText
                         };
 
-                        if ( settings.Hotkey.Modifiers != newHotkey.Modifiers || settings.Hotkey.Key != newHotkey.Key )
-                        {
-                                try
-                                {
-                                        _hotkeyService.RegisterHotkey ( newHotkey );
-                                        settings.Hotkey = newHotkey;
-                                        OnPropertyChanged ( nameof ( HotkeyCombination ) );
-                                }
-                                catch ( Exception ex )
-                                {
-                                        var errorMessage = $"Failed to register hotkey: {hotkeyCombination}. It might already be in use by another application.";
-                                        MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
-                                        Logger.Warn ( errorMessage, ex );
-                                }
+                        var hotkeyValuesDiffer = settings.Hotkey.Modifiers != newHotkey.Modifiers || settings.Hotkey.Key != newHotkey.Key;
 
-                                var ttsSettings = _settingsService.GetCurrentSettings ( );
-                                _ttsService.SetTTSParameters ( ttsSettings.Voice, ttsSettings.VoiceRate, ttsSettings.Volume );
+                        if ( hotkeyValuesDiffer )
+                        {
+                                settings.Hotkey = newHotkey;
                         }
+
+                        if ( string.Equals ( _lastAppliedHotkeyCombination, canonicalCombination, StringComparison.OrdinalIgnoreCase ) )
+                        {
+                                return;
+                        }
+
+                        _hotkeyService.RegisterHotkey ( newHotkey );
+
+                        if ( hotkeyValuesDiffer )
+                        {
+                                _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+                        }
+                }
+
+                private static bool TryParseHotkeyCombination ( string combination, out string[] modifiers, out Key key )
+                {
+                        modifiers = Array.Empty<string> ( );
+                        key = Key.None;
+
+                        if ( string.IsNullOrWhiteSpace ( combination ) )
+                                return false;
+
+                        var parts = combination.Split ( new[] { '+' }, StringSplitOptions.RemoveEmptyEntries );
+                        if ( parts.Length < 2 )
+                                return false;
+
+                        var modifierCandidates = parts.Take ( parts.Length - 1 )
+                                                        .Select ( part => part.Trim ( ) )
+                                                        .Where ( part => !string.IsNullOrWhiteSpace ( part ) )
+                                                        .ToArray ( );
+
+                        if ( modifierCandidates.Length == 0 )
+                                return false;
+
+                        string[] modifierParts;
+                        try
+                        {
+                                modifierParts = modifierCandidates.Select ( NormalizeModifierName ).ToArray ( );
+                        }
+                        catch ( ArgumentException )
+                        {
+                                return false;
+                        }
+
+                        var keyPart = parts[parts.Length - 1].Trim ( );
+                        if ( !Enum.TryParse ( keyPart, true, out key ) )
+                                return false;
+
+                        modifiers = modifierParts;
+                        return true;
+                }
+
+                private static string NormalizeModifierName ( string modifier )
+                {
+                        if ( string.IsNullOrWhiteSpace ( modifier ) )
+                                throw new ArgumentException ( "Modifier cannot be null or whitespace.", nameof ( modifier ) );
+
+                        switch ( modifier.Trim ( ).ToLowerInvariant ( ) )
+                        {
+                                case "ctrl":
+                                case "control":
+                                        return "Ctrl";
+                                case "shift":
+                                        return "Shift";
+                                case "alt":
+                                        return "Alt";
+                                case "win":
+                                case "windows":
+                                case "cmd":
+                                case "command":
+                                case "meta":
+                                        return "Win";
+                                default:
+                                        throw new ArgumentException ( $"Unsupported modifier: {modifier}", nameof ( modifier ) );
+                        }
+                }
+
+                private static string ComposeHotkeyString ( AppSettings.HotkeySettings? hotkey )
+                {
+                        if ( hotkey == null || string.IsNullOrWhiteSpace ( hotkey.Key ) )
+                                return string.Empty;
+
+                        var key = hotkey.Key.Trim ( );
+                        if ( string.IsNullOrWhiteSpace ( hotkey.Modifiers ) )
+                                return key;
+
+                        var candidate = $"{hotkey.Modifiers.Trim ( )}+{key}";
+                        return TryParseHotkeyCombination ( candidate, out var modifiers, out var parsedKey )
+                                ? string.Join ( "+", modifiers ) + "+" + parsedKey.ToString ( )
+                                : candidate;
                 }
 
                 protected void OnPropertyChanged ( string propertyName )

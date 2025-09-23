@@ -303,7 +303,7 @@ namespace Dissonance.ViewModels
                         if ( _settingsService.SaveCurrentSettings ( ) )
                         {
                                 ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved." );
+                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved.", TimeSpan.FromSeconds ( 20 ) );
                         }
                 }
 
@@ -312,7 +312,7 @@ namespace Dissonance.ViewModels
                         if ( _settingsService.SaveCurrentSettingsAsDefault ( ) )
                         {
                                 ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default." );
+                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default.", TimeSpan.FromSeconds ( 20 ) );
                         }
                 }
 

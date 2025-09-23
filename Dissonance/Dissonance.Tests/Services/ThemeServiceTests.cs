@@ -22,10 +22,7 @@ namespace Dissonance.Tests.Services
                 {
                         StaTestRunner.Run(() =>
                         {
-                                if (Application.Current == null)
-                                {
-                                        new Application();
-                                }
+                                WpfTestHelper.EnsureApplication();
 
                                 var service = new ThemeService();
                                 var application = Application.Current!;

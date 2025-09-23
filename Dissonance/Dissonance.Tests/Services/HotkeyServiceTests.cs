@@ -48,10 +48,7 @@ namespace Dissonance.Tests.Services
                                 using var logger = new ListLogger<HotkeyService>();
                                 var service = new HotkeyService(logger, new FakeMessageService());
 
-                                if (Application.Current == null)
-                                {
-                                        new Application();
-                                }
+                                WpfTestHelper.EnsureApplication();
 
                                 var resetEvent = new ManualResetEventSlim();
                                 service.HotkeyPressed += () => resetEvent.Set();
@@ -62,9 +59,9 @@ namespace Dissonance.Tests.Services
                                 var args = new object[] { IntPtr.Zero, WindowsMessages.Hotkey, IntPtr.Zero, IntPtr.Zero, false };
                                 wndProc!.Invoke(service, args);
 
-                                Application.Current!.Dispatcher.Invoke(() => { });
+                                WpfTestHelper.ProcessPendingEvents();
 
-                                Assert.True(resetEvent.Wait(TimeSpan.FromSeconds(1)));
+                                Assert.True(resetEvent.Wait(TimeSpan.FromMilliseconds(100)));
                                 Assert.True((bool)args[4]);
                         });
                 }

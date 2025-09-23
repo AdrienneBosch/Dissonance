@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Input;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
+using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 using Dissonance.Infrastructure.Commands;
 using NLog;
@@ -14,40 +15,63 @@ namespace Dissonance.ViewModels
 	{
 		private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
 		private readonly IHotkeyService _hotkeyService;
-		private readonly ISettingsService _settingsService;
-		private readonly ITTSService _ttsService;
-		private string _hotkeyCombination;
-		private string _lastAppliedHotkeyCombination;
-		public ICommand ApplyHotkeyCommand { get; }
+                private readonly ISettingsService _settingsService;
+                private readonly ITTSService _ttsService;
+                private readonly IThemeService _themeService;
+                private bool _isDarkTheme;
+                private string _hotkeyCombination;
+                private string _lastAppliedHotkeyCombination;
+                public ICommand ApplyHotkeyCommand { get; }
 
-		public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService )
-		{
-			_settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
-			_ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
-			_hotkeyService = hotkeyService ?? throw new ArgumentNullException ( nameof ( hotkeyService ) );
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService )
+                {
+                        _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
+                        _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
+                        _hotkeyService = hotkeyService ?? throw new ArgumentNullException ( nameof ( hotkeyService ) );
+                        _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
 
-			var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer().GetInstalledVoices();
-			foreach ( var voice in installedVoices )
-			{
-				AvailableVoices.Add ( voice.VoiceInfo.Name );
-			}
+                        var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer().GetInstalledVoices();
+                        foreach ( var voice in installedVoices )
+                        {
+                                AvailableVoices.Add ( voice.VoiceInfo.Name );
+                        }
 
-			var settings = _settingsService.GetCurrentSettings();
-			_hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
-			_lastAppliedHotkeyCombination = _hotkeyCombination;
-			UpdateHotkey(_hotkeyCombination);
-			ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
-		}
+                        var settings = _settingsService.GetCurrentSettings();
+                        _hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
+                        _lastAppliedHotkeyCombination = _hotkeyCombination;
+                        UpdateHotkey(_hotkeyCombination);
+                        ApplyHotkeyCommand = new RelayCommandNoParam(ApplyHotkey, CanApplyHotkey);
+                        _isDarkTheme = _themeService.CurrentTheme == AppTheme.Dark;
+                        OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
+                }
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
+                public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
 
-		public string HotkeyCombination
-		{
-			get => _hotkeyCombination;
-			set
-			{
+                public bool IsDarkTheme
+                {
+                        get => _isDarkTheme;
+                        set
+                        {
+                                if ( _isDarkTheme == value )
+                                        return;
+
+                                _isDarkTheme = value;
+                                _themeService.ApplyTheme ( value ? AppTheme.Dark : AppTheme.Light );
+                                OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                                OnPropertyChanged ( nameof ( CurrentThemeName ) );
+                        }
+                }
+
+                public string CurrentThemeName => _themeService.CurrentTheme == AppTheme.Dark ? "Dark Mode" : "Light Mode";
+
+                public string HotkeyCombination
+                {
+                        get => _hotkeyCombination;
+                        set
+                        {
 				if ( _hotkeyCombination != value )
 				{
 					_hotkeyCombination = value;

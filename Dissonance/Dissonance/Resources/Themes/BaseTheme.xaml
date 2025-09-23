@@ -115,14 +115,20 @@
 
     <Style x:Key="MaximizeWindowControlButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowControlButtonStyle}">
         <Setter Property="Content" Value="{StaticResource MaximizeIconGeometry}"/>
+        <Setter Property="AutomationProperties.Name" Value="Maximize window"/>
+        <Setter Property="AutomationProperties.HelpText" Value="Maximizes the application window"/>
         <Style.Triggers>
             <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=Window}, Path=WindowState}" Value="Maximized">
                 <Setter Property="Content" Value="{StaticResource RestoreIconGeometry}"/>
+                <Setter Property="AutomationProperties.Name" Value="Restore window"/>
+                <Setter Property="AutomationProperties.HelpText" Value="Restores the window to its previous size"/>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
     <Style x:Key="CloseWindowControlButtonStyle" TargetType="Button" BasedOn="{StaticResource WindowControlButtonStyle}">
+        <Setter Property="AutomationProperties.Name" Value="Close window"/>
+        <Setter Property="AutomationProperties.HelpText" Value="Closes the application"/>
         <Style.Triggers>
             <Trigger Property="IsMouseOver" Value="True">
                 <Setter Property="Background" Value="{DynamicResource CloseControlHoverBrush}"/>

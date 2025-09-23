@@ -62,6 +62,8 @@
                             Margin="0"
                             Content="{StaticResource MinimizeIconGeometry}"
                             ToolTip="Minimize"
+                            AutomationProperties.Name="Minimize window"
+                            AutomationProperties.HelpText="Minimizes the application window"
                             Click="MinimizeButton_Click"/>
                     <Button Style="{StaticResource MaximizeWindowControlButtonStyle}"
                             ToolTip="Maximize or restore"

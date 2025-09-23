@@ -217,18 +217,40 @@
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <Border x:Name="Border"
+                        <Border x:Name="BackgroundBorder"
                                 Background="{TemplateBinding Background}"
                                 BorderBrush="{TemplateBinding BorderBrush}"
                                 BorderThickness="{TemplateBinding BorderThickness}"
                                 CornerRadius="{StaticResource InputCornerRadius}"
-                                SnapsToDevicePixels="True">
+                                SnapsToDevicePixels="True"/>
+                        <ToggleButton x:Name="DropDownToggle"
+                                      Focusable="False"
+                                      Background="Transparent"
+                                      BorderBrush="{x:Null}"
+                                      BorderThickness="0"
+                                      Margin="0"
+                                      Padding="0"
+                                      ClickMode="Press"
+                                      HorizontalContentAlignment="Stretch"
+                                      VerticalContentAlignment="Stretch"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
                             <Grid>
-                                <ContentPresenter Margin="12,0,32,0"
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter x:Name="ContentPresenter"
+                                                  Margin="12,0,16,0"
                                                   HorizontalAlignment="Left"
                                                   VerticalAlignment="Center"
-                                                  RecognizesAccessKey="True"/>
-                                <Path x:Name="Arrow"
+                                                  RecognizesAccessKey="True"
+                                                  Foreground="{TemplateBinding Foreground}"
+                                                  Content="{TemplateBinding SelectionBoxItem}"
+                                                  ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                                  ContentTemplateSelector="{TemplateBinding ItemTemplateSelector}"
+                                                  ContentStringFormat="{TemplateBinding SelectionBoxItemStringFormat}"/>
+                                <Path x:Name="DropDownGlyph"
+                                      Grid.Column="1"
                                       Data="M 0 0 L 6 6 L 12 0"
                                       StrokeThickness="2"
                                       StrokeEndLineCap="Round"
@@ -236,15 +258,30 @@
                                       Stretch="Uniform"
                                       Width="12"
                                       Height="6"
-                                      HorizontalAlignment="Right"
+                                      HorizontalAlignment="Center"
                                       VerticalAlignment="Center"
                                       Margin="0,0,12,0"/>
                             </Grid>
-                        </Border>
+                        </ToggleButton>
+                        <TextBox x:Name="PART_EditableTextBox"
+                                 Margin="12,0,36,0"
+                                 Style="{x:Null}"
+                                 Background="Transparent"
+                                 BorderThickness="0"
+                                 HorizontalAlignment="Stretch"
+                                 VerticalContentAlignment="Center"
+                                 Foreground="{TemplateBinding Foreground}"
+                                 Visibility="Hidden"
+                                 Focusable="True"
+                                 Padding="0"
+                                 Text="{TemplateBinding Text}"
+                                 IsReadOnly="False"
+                                 CaretBrush="{DynamicResource AccentBrush}"/>
                         <Popup x:Name="PART_Popup"
                                AllowsTransparency="True"
                                Placement="Bottom"
                                IsOpen="{TemplateBinding IsDropDownOpen}"
+                               PlacementTarget="{Binding ElementName=DropDownToggle}"
                                Focusable="False"
                                PopupAnimation="Fade"
                                StaysOpen="False">
@@ -265,20 +302,29 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                            <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderThickness" Value="2"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDropDownOpen" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="HasItems" Value="False">
                             <Setter TargetName="PopupBorder" Property="MinHeight" Value="0"/>
                         </Trigger>
+                        <Trigger Property="IsEditable" Value="True">
+                            <Setter TargetName="ContentPresenter" Property="Visibility" Value="Hidden"/>
+                            <Setter TargetName="PART_EditableTextBox" Property="Visibility" Value="Visible"/>
+                            <Setter TargetName="PART_EditableTextBox" Property="IsHitTestVisible" Value="True"/>
+                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.6"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource MutedForegroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

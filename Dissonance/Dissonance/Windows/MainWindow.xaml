@@ -94,6 +94,59 @@
                 <StackPanel Grid.Column="1"
                             Orientation="Horizontal"
                             VerticalAlignment="Center">
+                    <Button x:Name="SettingsButton"
+                            Style="{StaticResource PrimaryButtonStyle}"
+                            Content="Settings"
+                            Height="36"
+                            MinWidth="110"
+                            Margin="0,0,12,0"
+                            Click="SettingsButton_Click"/>
+                    <Popup x:Name="SettingsMenuPopup"
+                           PlacementTarget="{Binding ElementName=SettingsButton}"
+                           Placement="Bottom"
+                           AllowsTransparency="True"
+                           StaysOpen="False"
+                           PopupAnimation="Fade"
+                           DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                        <Border Background="{DynamicResource CardBackgroundBrush}"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="12"
+                                Padding="12">
+                            <StackPanel>
+                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                        Content="Save current settings"
+                                        Command="{Binding SaveSettingsCommand}"
+                                        Click="SettingsMenuItem_Click"
+                                        Margin="0,0,0,6"/>
+                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                        Content="Save current settings as default"
+                                        Command="{Binding SaveDefaultSettingsCommand}"
+                                        Click="SettingsMenuItem_Click"
+                                        Margin="0,0,0,6"/>
+                                <Border Height="1"
+                                        Background="{DynamicResource CardBorderBrush}"
+                                        Margin="0,4,0,6"/>
+                                <CheckBox Style="{StaticResource MenuCheckBoxStyle}"
+                                         Content="Auto-save default on close"
+                                         IsChecked="{Binding SaveConfigAsDefaultOnClose, Mode=TwoWay}"
+                                         Click="SettingsMenuAutoSave_Click"
+                                         Margin="0,0,0,6"/>
+                                <Border Height="1"
+                                        Background="{DynamicResource CardBorderBrush}"
+                                        Margin="0,4,0,6"/>
+                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                        Content="Export settings..."
+                                        Command="{Binding ExportSettingsCommand}"
+                                        Click="SettingsMenuItem_Click"
+                                        Margin="0,0,0,6"/>
+                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                        Content="Import settings..."
+                                        Command="{Binding ImportSettingsCommand}"
+                                        Click="SettingsMenuItem_Click"/>
+                            </StackPanel>
+                        </Border>
+                    </Popup>
                     <TextBlock Text="{Binding CurrentThemeName}"
                                Foreground="{DynamicResource HeaderForegroundBrush}"
                                FontWeight="SemiBold"

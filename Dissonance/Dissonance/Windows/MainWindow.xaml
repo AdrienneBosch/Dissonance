@@ -205,13 +205,21 @@
                         Grid.Row="0"
                         Grid.Column="0"
                         Margin="0,0,12,12">
-                    <StackPanel>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
                         <TextBlock x:Name="VoiceSelectionHeading"
+                                   Grid.Row="0"
                                    Text="Text-to-Speech Voice"
                                    Style="{StaticResource CardTitleTextStyle}"/>
-                        <TextBlock Text="Choose which installed voice is used for speech."
+                        <TextBlock Grid.Row="1"
+                                   Text="Choose which installed voice is used for speech."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
                         <ComboBox x:Name="VoiceSelectionComboBox"
+                                  Grid.Row="2"
                                   Style="{StaticResource ModernComboBoxStyle}"
                                   ItemsSource="{Binding AvailableVoices}"
                                   SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
@@ -221,7 +229,7 @@
                                   HorizontalAlignment="Stretch"
                                   MinWidth="220"
                                   MinHeight="34"/>
-                    </StackPanel>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource CardContainerStyle}"

@@ -491,15 +491,18 @@
                     </Grid>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
                             <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderThickness" Value="2"/>
                             <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDropDownOpen" Value="True">
+                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
                         </Trigger>

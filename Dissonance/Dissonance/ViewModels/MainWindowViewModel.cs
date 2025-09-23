@@ -59,7 +59,9 @@ namespace Dissonance.ViewModels
                         UpdateHotkey ( _hotkeyCombination );
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
-                        _isDarkTheme = _themeService.CurrentTheme == AppTheme.Dark;
+                        _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        settings.UseDarkTheme = _isDarkTheme;
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
@@ -89,6 +91,8 @@ namespace Dissonance.ViewModels
 
                                 _isDarkTheme = value;
                                 _themeService.ApplyTheme ( value ? AppTheme.Dark : AppTheme.Light );
+                                var settings = _settingsService.GetCurrentSettings ( );
+                                settings.UseDarkTheme = value;
                                 OnPropertyChanged ( nameof ( IsDarkTheme ) );
                                 OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         }
@@ -179,8 +183,8 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
-                        _settingsService.SaveCurrentSettings ( );
-                        if ( _settingsService.GetCurrentSettings ( ).SaveConfigAsDefaultOnClose )
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        if ( settings.SaveConfigAsDefaultOnClose )
                         {
                                 _settingsService.SaveCurrentSettingsAsDefault ( );
                         }
@@ -266,6 +270,11 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( VoiceRate ) );
                         OnPropertyChanged ( nameof ( Volume ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
+
+                        _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
 
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 

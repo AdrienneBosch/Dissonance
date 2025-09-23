@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -17,6 +18,12 @@ namespace Dissonance
                         _viewModel = viewModel ?? throw new ArgumentNullException ( nameof ( viewModel ) );
                         InitializeComponent ( );
                         DataContext = _viewModel;
+                }
+
+                protected override void OnClosing ( CancelEventArgs e )
+                {
+                        _viewModel.OnWindowClosing ( );
+                        base.OnClosing ( e );
                 }
 
                 private void MinimizeButton_Click ( object sender, RoutedEventArgs e )
@@ -70,6 +77,21 @@ namespace Dissonance
                         }
 
                         return false;
+                }
+
+                private void SettingsButton_Click ( object sender, RoutedEventArgs e )
+                {
+                        SettingsMenuPopup.IsOpen = !SettingsMenuPopup.IsOpen;
+                }
+
+                private void SettingsMenuItem_Click ( object sender, RoutedEventArgs e )
+                {
+                        SettingsMenuPopup.IsOpen = false;
+                }
+
+                private void SettingsMenuAutoSave_Click ( object sender, RoutedEventArgs e )
+                {
+                        SettingsMenuPopup.IsOpen = false;
                 }
         }
 }

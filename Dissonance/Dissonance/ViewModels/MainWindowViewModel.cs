@@ -183,8 +183,8 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
-                        _settingsService.SaveCurrentSettings ( );
-                        if ( _settingsService.GetCurrentSettings ( ).SaveConfigAsDefaultOnClose )
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        if ( settings.SaveConfigAsDefaultOnClose )
                         {
                                 _settingsService.SaveCurrentSettingsAsDefault ( );
                         }

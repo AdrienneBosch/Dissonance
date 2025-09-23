@@ -28,19 +28,29 @@ namespace Dissonance.Tests.Services
                                 var application = Application.Current!;
                                 application.Resources.MergedDictionaries.Clear();
 
+                                var baseThemeUri = new Uri("pack://application:,,,/Resources/Themes/BaseTheme.xaml");
+                                var darkThemeUri = new Uri("pack://application:,,,/Resources/Themes/DarkTheme.xaml");
+                                var lightThemeUri = new Uri("pack://application:,,,/Resources/Themes/LightTheme.xaml");
+
+                                static bool UriEquals(Uri? actual, Uri expected)
+                                {
+                                        return actual != null
+                                                && Uri.Compare(actual, expected, UriComponents.AbsoluteUri, UriFormat.SafeUnescaped, StringComparison.OrdinalIgnoreCase) == 0;
+                                }
+
                                 service.ApplyTheme(AppTheme.Dark);
 
                                 Assert.Equal(AppTheme.Dark, service.CurrentTheme);
-                                Assert.Contains(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/BaseTheme.xaml", UriKind.Relative));
-                                Assert.Contains(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/DarkTheme.xaml", UriKind.Relative));
-                                Assert.DoesNotContain(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/LightTheme.xaml", UriKind.Relative));
+                                Assert.Contains(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, baseThemeUri));
+                                Assert.Contains(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, darkThemeUri));
+                                Assert.DoesNotContain(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, lightThemeUri));
 
                                 service.ApplyTheme(AppTheme.Light);
 
                                 Assert.Equal(AppTheme.Light, service.CurrentTheme);
-                                Assert.Contains(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/BaseTheme.xaml", UriKind.Relative));
-                                Assert.Contains(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/LightTheme.xaml", UriKind.Relative));
-                                Assert.DoesNotContain(application.Resources.MergedDictionaries, rd => rd.Source == new Uri("Resources/Themes/DarkTheme.xaml", UriKind.Relative));
+                                Assert.Contains(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, baseThemeUri));
+                                Assert.Contains(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, lightThemeUri));
+                                Assert.DoesNotContain(application.Resources.MergedDictionaries, rd => UriEquals(rd.Source, darkThemeUri));
                         });
                 }
         }

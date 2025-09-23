@@ -9,5 +9,7 @@
 		void Stop ( );
 
 		event EventHandler SpeechCompleted;
+
+		System.Collections.Generic.IEnumerable<string> GetAvailableVoices();
 	}
 }

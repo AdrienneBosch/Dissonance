@@ -28,9 +28,9 @@ namespace Dissonance.Tests.Services
                                 var application = Application.Current!;
                                 application.Resources.MergedDictionaries.Clear();
 
-                                var baseThemeUri = new Uri("pack://application:,,,/Resources/Themes/BaseTheme.xaml");
-                                var darkThemeUri = new Uri("pack://application:,,,/Resources/Themes/DarkTheme.xaml");
-                                var lightThemeUri = new Uri("pack://application:,,,/Resources/Themes/LightTheme.xaml");
+                                var baseThemeUri = new Uri("pack://application:,,,/Dissonance;component/Resources/Themes/BaseTheme.xaml", UriKind.Absolute);
+                                var darkThemeUri = new Uri("pack://application:,,,/Dissonance;component/Resources/Themes/DarkTheme.xaml", UriKind.Absolute);
+                                var lightThemeUri = new Uri("pack://application:,,,/Dissonance;component/Resources/Themes/LightTheme.xaml", UriKind.Absolute);
 
                                 static bool UriEquals(Uri? actual, Uri expected)
                                 {

@@ -6,6 +6,7 @@ using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
+using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
 
@@ -31,7 +32,8 @@ namespace Dissonance
 		{
 			services.AddSingleton<ISettingsService, SettingsService> ( );
 			services.AddSingleton<IClipboardService, ClipboardService> ( );
-			services.AddSingleton<ITTSService, TTSService> ( );
+                        services.AddSingleton<ITTSService, TTSService> ( );
+                        services.AddSingleton<IThemeService, ThemeService> ( );
 			services.AddSingleton<IHotkeyService, HotkeyService> ( );
 			services.AddSingleton<IMessageService, MessageService> ( );
 			services.AddSingleton<MainWindowViewModel> ( );
@@ -51,7 +53,9 @@ namespace Dissonance
 		{
 			base.OnStartup ( e );
 
-			var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+                        var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+                        var themeService = _serviceProvider.GetRequiredService<IThemeService> ( );
+                        themeService.ApplyTheme ( AppTheme.Light );
 			_startupManager = _serviceProvider.GetRequiredService<StartupManager> ( );
 
 			try

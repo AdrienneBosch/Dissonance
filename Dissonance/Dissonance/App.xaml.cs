@@ -54,9 +54,13 @@ namespace Dissonance
 			base.OnStartup ( e );
 
                         var logger = _serviceProvider.GetRequiredService<ILogger<App>>();
+                        var settingsService = _serviceProvider.GetRequiredService<ISettingsService> ( );
                         var themeService = _serviceProvider.GetRequiredService<IThemeService> ( );
-                        themeService.ApplyTheme ( AppTheme.Light );
-			_startupManager = _serviceProvider.GetRequiredService<StartupManager> ( );
+                        var settings = settingsService.GetCurrentSettings ( );
+                        var theme = settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light;
+                        themeService.ApplyTheme ( theme );
+                        settings.UseDarkTheme = theme == AppTheme.Dark;
+                        _startupManager = _serviceProvider.GetRequiredService<StartupManager> ( );
 
 			try
 			{

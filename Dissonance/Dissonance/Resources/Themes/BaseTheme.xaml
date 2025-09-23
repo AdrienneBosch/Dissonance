@@ -395,6 +395,20 @@
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True"/>
+                                <Condition Property="IsHighlighted" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
+                        </MultiTrigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsSelected" Value="True"/>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                            </MultiTrigger.Conditions>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
+                        </MultiTrigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
             </Setter.Value>
@@ -424,6 +438,7 @@
                         <ToggleButton x:Name="DropDownToggle"
                                       Focusable="False"
                                       Background="Transparent"
+                                      Foreground="{TemplateBinding Foreground}"
                                       BorderBrush="{x:Null}"
                                       BorderThickness="0"
                                       Margin="0"
@@ -513,18 +528,21 @@
                         <Trigger Property="IsMouseOver" Value="True">
                             <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
-                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource HoverForegroundBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
                             <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderThickness" Value="2"/>
-                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource HoverForegroundBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDropDownOpen" Value="True">
                             <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource HoverForegroundBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="HasItems" Value="False">
                             <Setter TargetName="PopupBorder" Property="MinHeight" Value="0"/>

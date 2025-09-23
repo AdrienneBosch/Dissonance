@@ -12,6 +12,8 @@ using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
 
+using Xunit;
+
 namespace Dissonance.Tests.ViewModels
 {
         public class MainWindowViewModelTests

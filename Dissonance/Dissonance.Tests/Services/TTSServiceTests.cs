@@ -6,6 +6,7 @@ using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Dissonance.Tests.Services
 {

@@ -43,6 +43,7 @@
     <SolidColorBrush x:Key="ControlPressedBrush" Color="{StaticResource ControlPressedColor}"/>
     <SolidColorBrush x:Key="HighlightBrush" Color="{StaticResource ControlHoverColor}"/>
     <SolidColorBrush x:Key="ButtonForegroundBrush" Color="{StaticResource ButtonForegroundColor}"/>
+    <SolidColorBrush x:Key="HoverForegroundBrush" Color="{StaticResource ButtonForegroundColor}"/>
     <SolidColorBrush x:Key="ToggleBackgroundBrush" Color="{StaticResource ToggleBackgroundColor}"/>
     <SolidColorBrush x:Key="ThemeToggleThumbBrush" Color="{StaticResource ToggleThumbColor}"/>
     <SolidColorBrush x:Key="InputBackgroundBrush" Color="{StaticResource InputBackgroundColor}"/>

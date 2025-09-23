@@ -343,7 +343,7 @@
                             <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="Border" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
                             <Setter TargetName="Border" Property="BorderThickness" Value="2"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
@@ -370,8 +370,8 @@
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsSelected" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
-                            <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>
@@ -482,13 +482,13 @@
                             <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocusWithin" Value="True">
-                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
                             <Setter TargetName="BackgroundBorder" Property="BorderThickness" Value="2"/>
-                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="IsDropDownOpen" Value="True">
-                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
-                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="BorderBrush" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter TargetName="DropDownGlyph" Property="Stroke" Value="{DynamicResource ControlHoverBrush}"/>
                         </Trigger>
                         <Trigger Property="HasItems" Value="False">
                             <Setter TargetName="PopupBorder" Property="MinHeight" Value="0"/>

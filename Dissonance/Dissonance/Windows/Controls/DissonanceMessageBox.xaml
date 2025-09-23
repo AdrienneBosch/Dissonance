@@ -58,12 +58,14 @@
                         HorizontalAlignment="Right"
                         Margin="0,20,0,0">
                 <Button Content="OK"
-                        Width="110"
+                        MinWidth="120"
+                        Height="36"
                         Margin="0,0,8,0"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding OkCommand}" />
                 <Button Content="Cancel"
-                        Width="110"
+                        MinWidth="120"
+                        Height="36"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding CancelCommand}"
                         Visibility="{Binding ShowCancelButton, Converter={StaticResource BoolToVisibilityConverter}}"

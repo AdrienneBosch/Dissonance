@@ -233,7 +233,7 @@ namespace Dissonance
                         var modifiers = GetActiveModifiers ( );
                         var hotkeyParts = new List<string> ( modifiers ) { key.ToString ( ) };
 
-                        if ( hotkeyParts.Count == 0 )
+                        if ( hotkeyParts.Count < 2 )
                         {
                                 return;
                         }

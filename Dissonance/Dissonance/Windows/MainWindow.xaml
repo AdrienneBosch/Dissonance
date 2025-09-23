@@ -75,8 +75,8 @@
         </Border>
 
         <Border Grid.Row="1"
-                Margin="24,12,24,0"
-                Padding="24"
+                Margin="24,6,24,0"
+                Padding="20,10"
                 CornerRadius="{StaticResource HeaderCornerRadius}"
                 Background="{DynamicResource HeaderBackgroundBrush}">
             <Grid>
@@ -150,7 +150,8 @@
                     <TextBlock Text="{Binding CurrentThemeName}"
                                Foreground="{DynamicResource HeaderForegroundBrush}"
                                FontWeight="SemiBold"
-                               Margin="0,0,12,0"/>
+                               Margin="0,0,12,0"
+                               VerticalAlignment="Center"/>
                     <ToggleButton Style="{StaticResource ThemeToggleButtonStyle}"
                                   IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
                                   ToolTip="Toggle between light and dark themes"

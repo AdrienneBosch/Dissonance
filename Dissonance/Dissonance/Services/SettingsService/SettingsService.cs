@@ -170,10 +170,11 @@ namespace Dissonance.Services.SettingsService
                                 Volume = 50,
                                 Voice = "Microsoft David",
                                 SaveConfigAsDefaultOnClose = false,
-                                WindowWidth = null,
-                                WindowHeight = null,
+                                UseDarkTheme = false,
                                 WindowLeft = null,
                                 WindowTop = null,
+                                WindowWidth = null,
+                                WindowHeight = null,
                                 IsWindowMaximized = false,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E" },
                         };
@@ -187,10 +188,11 @@ namespace Dissonance.Services.SettingsService
                                 VoiceRate = settings.VoiceRate,
                                 Volume = settings.Volume,
                                 SaveConfigAsDefaultOnClose = settings.SaveConfigAsDefaultOnClose,
-                                WindowWidth = settings.WindowWidth,
-                                WindowHeight = settings.WindowHeight,
+                                UseDarkTheme = settings.UseDarkTheme,
                                 WindowLeft = settings.WindowLeft,
                                 WindowTop = settings.WindowTop,
+                                WindowWidth = settings.WindowWidth,
+                                WindowHeight = settings.WindowHeight,
                                 IsWindowMaximized = settings.IsWindowMaximized,
                                 Hotkey = new HotkeySettings
                                 {
@@ -212,10 +214,11 @@ namespace Dissonance.Services.SettingsService
                                 VoiceRate = settings.VoiceRate <= 0 ? reference.VoiceRate : settings.VoiceRate,
                                 Volume = settings.Volume < 0 || settings.Volume > 100 ? reference.Volume : settings.Volume,
                                 SaveConfigAsDefaultOnClose = settings.SaveConfigAsDefaultOnClose,
-                                WindowWidth = settings.WindowWidth.HasValue && settings.WindowWidth.Value > 0 ? settings.WindowWidth : reference.WindowWidth,
-                                WindowHeight = settings.WindowHeight.HasValue && settings.WindowHeight.Value > 0 ? settings.WindowHeight : reference.WindowHeight,
-                                WindowLeft = settings.WindowLeft ?? reference.WindowLeft,
-                                WindowTop = settings.WindowTop ?? reference.WindowTop,
+                                UseDarkTheme = settings.UseDarkTheme,
+                                WindowLeft = NormalizeCoordinate ( settings.WindowLeft, reference.WindowLeft ),
+                                WindowTop = NormalizeCoordinate ( settings.WindowTop, reference.WindowTop ),
+                                WindowWidth = NormalizeDimension ( settings.WindowWidth, reference.WindowWidth ),
+                                WindowHeight = NormalizeDimension ( settings.WindowHeight, reference.WindowHeight ),
                                 IsWindowMaximized = settings.IsWindowMaximized,
                                 Hotkey = new HotkeySettings
                                 {
@@ -225,6 +228,22 @@ namespace Dissonance.Services.SettingsService
                         };
 
                         return normalized;
+                }
+
+                private static double? NormalizeDimension ( double? value, double? fallback )
+                {
+                        if ( value.HasValue && !double.IsNaN ( value.Value ) && !double.IsInfinity ( value.Value ) && value.Value > 0 )
+                                return value.Value;
+
+                        return fallback;
+                }
+
+                private static double? NormalizeCoordinate ( double? value, double? fallback )
+                {
+                        if ( value.HasValue && !double.IsNaN ( value.Value ) && !double.IsInfinity ( value.Value ) )
+                                return value.Value;
+
+                        return fallback;
                 }
 
                 private bool WriteSettingsToFile ( string path, AppSettings settings, string failureMessage )

@@ -59,7 +59,8 @@ namespace Dissonance.ViewModels
                         UpdateHotkey ( _hotkeyCombination );
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
-                        _isDarkTheme = _themeService.CurrentTheme == AppTheme.Dark;
+                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        _isDarkTheme = settings.UseDarkTheme;
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
@@ -89,6 +90,12 @@ namespace Dissonance.ViewModels
 
                                 _isDarkTheme = value;
                                 _themeService.ApplyTheme ( value ? AppTheme.Dark : AppTheme.Light );
+                                var settings = _settingsService.GetCurrentSettings ( );
+                                if ( settings.UseDarkTheme != value )
+                                {
+                                        settings.UseDarkTheme = value;
+                                        _settingsService.SaveCurrentSettings ( );
+                                }
                                 OnPropertyChanged ( nameof ( IsDarkTheme ) );
                                 OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         }
@@ -258,6 +265,14 @@ namespace Dissonance.ViewModels
                                 settings.Voice = fallbackVoice;
                                 _settingsService.SaveCurrentSettings ( );
                         }
+
+                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        if ( _isDarkTheme != settings.UseDarkTheme )
+                        {
+                                _isDarkTheme = settings.UseDarkTheme;
+                                OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        }
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
 
                         _hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
                         _lastAppliedHotkeyCombination = _hotkeyCombination;

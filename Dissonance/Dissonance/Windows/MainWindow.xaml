@@ -127,26 +127,17 @@
                                                   Color="#99000000"/>
                             </Border.Effect>
                             <StackPanel FocusManager.IsFocusScope="True"
-                                        FocusManager.FocusedElement="{Binding ElementName=SaveSettingsMenuButton}"
+                                        FocusManager.FocusedElement="{Binding ElementName=SaveSettingsAsDefaultMenuButton}"
                                         KeyboardNavigation.TabNavigation="Cycle"
                                         KeyboardNavigation.ControlTabNavigation="Cycle"
                                         KeyboardNavigation.DirectionalNavigation="Cycle">
-                                <Button x:Name="SaveSettingsMenuButton"
-                                        Style="{StaticResource DropdownMenuButtonStyle}"
-                                        Content="Save current settings"
-                                        Command="{Binding SaveSettingsCommand}"
-                                        Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"
-                                        TabIndex="0"
-                                        AutomationProperties.Name="Save current settings"
-                                        AutomationProperties.HelpText="Saves the current configuration to the active profile"/>
                                 <Button x:Name="SaveSettingsAsDefaultMenuButton"
                                         Style="{StaticResource DropdownMenuButtonStyle}"
                                         Content="Save current settings as default"
                                         Command="{Binding SaveDefaultSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
                                         Margin="0,0,0,6"
-                                        TabIndex="1"
+                                        TabIndex="0"
                                         AutomationProperties.Name="Save current settings as default"
                                         AutomationProperties.HelpText="Saves the configuration so it loads automatically next time"/>
                                 <Border Height="1"
@@ -157,7 +148,7 @@
                                          IsChecked="{Binding SaveConfigAsDefaultOnClose, Mode=TwoWay}"
                                          Click="SettingsMenuAutoSave_Click"
                                          Margin="0,0,0,6"
-                                         TabIndex="2"
+                                         TabIndex="1"
                                          AutomationProperties.Name="Auto-save default on close"
                                          AutomationProperties.HelpText="Automatically write the current configuration as the default when the app is closed"/>
                                 <Border Height="1"
@@ -168,14 +159,14 @@
                                         Command="{Binding ExportSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
                                         Margin="0,0,0,6"
-                                        TabIndex="3"
+                                        TabIndex="2"
                                         AutomationProperties.Name="Export settings"
                                         AutomationProperties.HelpText="Exports the current configuration to a file"/>
                                 <Button Style="{StaticResource DropdownMenuButtonStyle}"
                                         Content="Import settings..."
                                         Command="{Binding ImportSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
-                                        TabIndex="4"
+                                        TabIndex="3"
                                         AutomationProperties.Name="Import settings"
                                         AutomationProperties.HelpText="Imports a configuration from a saved file"/>
                             </StackPanel>

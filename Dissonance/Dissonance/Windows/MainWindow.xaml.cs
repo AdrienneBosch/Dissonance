@@ -189,7 +189,7 @@ namespace Dissonance
 
                 private void SettingsMenuPopup_Opened ( object? sender, EventArgs e )
                 {
-                        Dispatcher.BeginInvoke ( new Action ( ( ) => SaveSettingsMenuButton.Focus ( ) ), DispatcherPriority.Input );
+                        Dispatcher.BeginInvoke ( new Action ( ( ) => SaveSettingsAsDefaultMenuButton.Focus ( ) ), DispatcherPriority.Input );
                 }
 
                 private void SettingsMenuPopup_Closed ( object? sender, EventArgs e )

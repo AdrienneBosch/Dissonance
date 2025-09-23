@@ -41,7 +41,6 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 
-                        SaveSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfiguration );
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
@@ -78,8 +77,6 @@ namespace Dissonance.ViewModels
                 public ICommand ImportSettingsCommand { get; }
 
                 public ICommand SaveDefaultSettingsCommand { get; }
-
-                public ICommand SaveSettingsCommand { get; }
 
                 public bool IsDarkTheme
                 {
@@ -295,15 +292,6 @@ namespace Dissonance.ViewModels
                         if ( ApplyHotkeyCommand is RelayCommandNoParam relay )
                         {
                                 relay.RaiseCanExecuteChanged ( );
-                        }
-                }
-
-                private void SaveCurrentConfiguration ( )
-                {
-                        if ( _settingsService.SaveCurrentSettings ( ) )
-                        {
-                                ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved.", TimeSpan.FromSeconds ( 20 ) );
                         }
                 }
 

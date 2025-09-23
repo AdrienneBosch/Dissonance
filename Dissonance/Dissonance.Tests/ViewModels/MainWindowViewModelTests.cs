@@ -12,8 +12,6 @@ using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
 
-using Xunit.Sdk;
-
 namespace Dissonance.Tests.ViewModels
 {
         public class MainWindowViewModelTests
@@ -116,8 +114,7 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var synthesizer = new SpeechSynthesizer();
                         var voices = synthesizer.GetInstalledVoices();
-                        if (voices.Count == 0)
-                                throw new SkipException("No installed TTS voices available on this system.");
+                        Skip.If(voices.Count == 0, "No installed TTS voices available on this system.");
 
                         var voiceName = voices[0].VoiceInfo.Name;
 

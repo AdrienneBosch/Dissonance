@@ -7,8 +7,6 @@ using Dissonance.Tests.TestInfrastructure;
 
 using Microsoft.Extensions.Logging;
 
-using Xunit.Sdk;
-
 namespace Dissonance.Tests.Services
 {
         public class TTSServiceTests
@@ -25,12 +23,9 @@ namespace Dissonance.Tests.Services
                         var synthesizer = (SpeechSynthesizer)synthesizerField!.GetValue(service)!;
 
                         var voice = synthesizer.GetInstalledVoices().FirstOrDefault();
-                        if (voice == null)
-                        {
-                                throw new SkipException("No installed TTS voices available on this system.");
-                        }
+                        Skip.If(voice == null, "No installed TTS voices available on this system.");
 
-                        service.SetTTSParameters(voice.VoiceInfo.Name, 2.5, 70);
+                        service.SetTTSParameters(voice!.VoiceInfo.Name, 2.5, 70);
 
                         Assert.Equal(2, synthesizer.Rate);
                         Assert.Equal(70, synthesizer.Volume);

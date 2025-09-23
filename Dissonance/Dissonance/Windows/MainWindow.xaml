@@ -218,6 +218,7 @@
                                   AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
                                   ToolTip="Select the voice used by the text-to-speech engine"
                                   TabIndex="2"
+                                  HorizontalAlignment="Stretch"
                                   MinWidth="220"
                                   MinHeight="34"/>
                     </StackPanel>

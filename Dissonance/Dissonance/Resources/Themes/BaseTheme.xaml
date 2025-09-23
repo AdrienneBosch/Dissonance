@@ -373,8 +373,15 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource HighlightBrush}"/>
                         </Trigger>
+                        <MultiTrigger>
+                            <MultiTrigger.Conditions>
+                                <Condition Property="IsMouseOver" Value="True"/>
+                                <Condition Property="IsSelected" Value="False"/>
+                            </MultiTrigger.Conditions>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                        </MultiTrigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
                             <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
@@ -423,7 +430,7 @@
                                 </Grid.ColumnDefinitions>
                                 <ContentPresenter x:Name="ContentPresenter"
                                                   Margin="12,0,16,0"
-                                                  HorizontalAlignment="Left"
+                                                  HorizontalAlignment="Stretch"
                                                   VerticalAlignment="Center"
                                                   RecognizesAccessKey="True"
                                                   TextElement.Foreground="{TemplateBinding Foreground}"

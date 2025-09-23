@@ -41,7 +41,6 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 
-                        SaveSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfiguration );
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
@@ -59,8 +58,9 @@ namespace Dissonance.ViewModels
                         UpdateHotkey ( _hotkeyCombination );
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
-                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
                         _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        settings.UseDarkTheme = _isDarkTheme;
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
@@ -78,8 +78,6 @@ namespace Dissonance.ViewModels
 
                 public ICommand SaveDefaultSettingsCommand { get; }
 
-                public ICommand SaveSettingsCommand { get; }
-
                 public bool IsDarkTheme
                 {
                         get => _isDarkTheme;
@@ -91,11 +89,7 @@ namespace Dissonance.ViewModels
                                 _isDarkTheme = value;
                                 _themeService.ApplyTheme ( value ? AppTheme.Dark : AppTheme.Light );
                                 var settings = _settingsService.GetCurrentSettings ( );
-                                if ( settings.UseDarkTheme != value )
-                                {
-                                        settings.UseDarkTheme = value;
-                                        _settingsService.SaveCurrentSettings ( );
-                                }
+                                settings.UseDarkTheme = value;
                                 OnPropertyChanged ( nameof ( IsDarkTheme ) );
                                 OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         }
@@ -186,8 +180,8 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
-                        _settingsService.SaveCurrentSettings ( );
-                        if ( _settingsService.GetCurrentSettings ( ).SaveConfigAsDefaultOnClose )
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        if ( settings.SaveConfigAsDefaultOnClose )
                         {
                                 _settingsService.SaveCurrentSettingsAsDefault ( );
                         }
@@ -266,14 +260,6 @@ namespace Dissonance.ViewModels
                                 _settingsService.SaveCurrentSettings ( );
                         }
 
-                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
-                        if ( _isDarkTheme != settings.UseDarkTheme )
-                        {
-                                _isDarkTheme = settings.UseDarkTheme;
-                                OnPropertyChanged ( nameof ( IsDarkTheme ) );
-                        }
-                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
-
                         _hotkeyCombination = settings.Hotkey.Modifiers + "+" + settings.Hotkey.Key;
                         _lastAppliedHotkeyCombination = _hotkeyCombination;
                         OnPropertyChanged ( nameof ( HotkeyCombination ) );
@@ -281,6 +267,11 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( VoiceRate ) );
                         OnPropertyChanged ( nameof ( Volume ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
+
+                        _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
 
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
@@ -304,21 +295,12 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                private void SaveCurrentConfiguration ( )
-                {
-                        if ( _settingsService.SaveCurrentSettings ( ) )
-                        {
-                                ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved." );
-                        }
-                }
-
                 private void SaveCurrentConfigurationAsDefault ( )
                 {
                         if ( _settingsService.SaveCurrentSettingsAsDefault ( ) )
                         {
                                 ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default." );
+                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default.", TimeSpan.FromSeconds ( 20 ) );
                         }
                 }
 

@@ -316,6 +316,8 @@
                                      ToolTip="Set the hotkey used to trigger speaking the clipboard's text"
                                      Width="170"
                                      TabIndex="5"
+                                     IsReadOnly="True"
+                                     PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                      AutomationProperties.HelpText="Specify the key combination that will read clipboard contents"/>
                             <Button Content="Apply"
                                     Style="{StaticResource PrimaryButtonStyle}"

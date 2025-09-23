@@ -100,6 +100,9 @@
                             Height="36"
                             MinWidth="110"
                             Margin="0,0,12,0"
+                            TabIndex="0"
+                            AutomationProperties.Name="Open settings menu"
+                            AutomationProperties.HelpText="Opens a list of actions related to configuration and saving settings"
                             Click="SettingsButton_Click"/>
                     <Popup x:Name="SettingsMenuPopup"
                            PlacementTarget="{Binding ElementName=SettingsButton}"
@@ -107,23 +110,43 @@
                            AllowsTransparency="True"
                            StaysOpen="False"
                            PopupAnimation="Fade"
-                           DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}">
+                           DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                           Opened="SettingsMenuPopup_Opened"
+                           Closed="SettingsMenuPopup_Closed">
                         <Border Background="{DynamicResource CardBackgroundBrush}"
                                 BorderBrush="{DynamicResource CardBorderBrush}"
                                 BorderThickness="1"
                                 CornerRadius="12"
                                 Padding="12">
-                            <StackPanel>
-                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                            <Border.Effect>
+                                <DropShadowEffect BlurRadius="18"
+                                                  ShadowDepth="0"
+                                                  Opacity="0.4"
+                                                  Color="#99000000"/>
+                            </Border.Effect>
+                            <StackPanel FocusManager.IsFocusScope="True"
+                                        FocusManager.FocusedElement="{Binding ElementName=SaveSettingsMenuButton}"
+                                        KeyboardNavigation.TabNavigation="Cycle"
+                                        KeyboardNavigation.ControlTabNavigation="Cycle"
+                                        KeyboardNavigation.DirectionalNavigation="Cycle">
+                                <Button x:Name="SaveSettingsMenuButton"
+                                        Style="{StaticResource DropdownMenuButtonStyle}"
                                         Content="Save current settings"
                                         Command="{Binding SaveSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"/>
-                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                        Margin="0,0,0,6"
+                                        TabIndex="0"
+                                        AutomationProperties.Name="Save current settings"
+                                        AutomationProperties.HelpText="Saves the current configuration to the active profile"/>
+                                <Button x:Name="SaveSettingsAsDefaultMenuButton"
+                                        Style="{StaticResource DropdownMenuButtonStyle}"
                                         Content="Save current settings as default"
                                         Command="{Binding SaveDefaultSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"/>
+                                        Margin="0,0,0,6"
+                                        TabIndex="1"
+                                        AutomationProperties.Name="Save current settings as default"
+                                        AutomationProperties.HelpText="Saves the configuration so it loads automatically next time"/>
                                 <Border Height="1"
                                         Background="{DynamicResource CardBorderBrush}"
                                         Margin="0,4,0,6"/>
@@ -131,7 +154,10 @@
                                          Content="Auto-save default on close"
                                          IsChecked="{Binding SaveConfigAsDefaultOnClose, Mode=TwoWay}"
                                          Click="SettingsMenuAutoSave_Click"
-                                         Margin="0,0,0,6"/>
+                                         Margin="0,0,0,6"
+                                         TabIndex="2"
+                                         AutomationProperties.Name="Auto-save default on close"
+                                         AutomationProperties.HelpText="Automatically write the current configuration as the default when the app is closed"/>
                                 <Border Height="1"
                                         Background="{DynamicResource CardBorderBrush}"
                                         Margin="0,4,0,6"/>
@@ -139,11 +165,17 @@
                                         Content="Export settings..."
                                         Command="{Binding ExportSettingsCommand}"
                                         Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"/>
+                                        Margin="0,0,0,6"
+                                        TabIndex="3"
+                                        AutomationProperties.Name="Export settings"
+                                        AutomationProperties.HelpText="Exports the current configuration to a file"/>
                                 <Button Style="{StaticResource DropdownMenuButtonStyle}"
                                         Content="Import settings..."
                                         Command="{Binding ImportSettingsCommand}"
-                                        Click="SettingsMenuItem_Click"/>
+                                        Click="SettingsMenuItem_Click"
+                                        TabIndex="4"
+                                        AutomationProperties.Name="Import settings"
+                                        AutomationProperties.HelpText="Imports a configuration from a saved file"/>
                             </StackPanel>
                         </Border>
                     </Popup>
@@ -154,6 +186,7 @@
                     <ToggleButton Style="{StaticResource ThemeToggleButtonStyle}"
                                   IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
                                   ToolTip="Toggle between light and dark themes"
+                                  TabIndex="1"
                                   AutomationProperties.Name="Toggle between light and dark theme"/>
                 </StackPanel>
             </Grid>
@@ -223,8 +256,9 @@
                                  ToolTip="Set the speaking rate of the text-to-speech voice"
                                  HorizontalAlignment="Left"
                                  HorizontalContentAlignment="Center"
-                                 Width="140"
-                                 TabIndex="1"/>
+                                  Width="140"
+                                 TabIndex="3"
+                                 AutomationProperties.HelpText="Enter a numeric value to control how fast the voice speaks"/>
                     </StackPanel>
                 </Border>
 
@@ -255,6 +289,8 @@
                                 Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                 ToolTip="Set the output volume for text-to-speech"
                                 AutomationProperties.Name="Voice volume"
+                                AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeading}"
+                                AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
                                 TabIndex="4"/>
                     </StackPanel>
                 </Border>
@@ -276,13 +312,17 @@
                                      AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
                                      ToolTip="Set the hotkey used to trigger speaking the clipboard's text"
                                      Width="170"
-                                     TabIndex="3"/>
+                                     TabIndex="5"
+                                     AutomationProperties.HelpText="Specify the key combination that will read clipboard contents"/>
                             <Button Content="Apply"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding ApplyHotkeyCommand}"
                                     Margin="12,0,0,0"
                                     MinWidth="72"
-                                    ToolTip="Apply the new hotkey immediately"/>
+                                    ToolTip="Apply the new hotkey immediately"
+                                    TabIndex="6"
+                                    AutomationProperties.Name="Apply hotkey"
+                                    AutomationProperties.HelpText="Applies the entered hotkey combination"/>
                         </StackPanel>
                     </StackPanel>
                 </Border>

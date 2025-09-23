@@ -4,6 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 
 using Dissonance.ViewModels;
 
@@ -92,6 +93,16 @@ namespace Dissonance
                 private void SettingsMenuAutoSave_Click ( object sender, RoutedEventArgs e )
                 {
                         SettingsMenuPopup.IsOpen = false;
+                }
+
+                private void SettingsMenuPopup_Opened ( object? sender, EventArgs e )
+                {
+                        Dispatcher.BeginInvoke ( new Action ( ( ) => SaveSettingsMenuButton.Focus ( ) ), DispatcherPriority.Input );
+                }
+
+                private void SettingsMenuPopup_Closed ( object? sender, EventArgs e )
+                {
+                        SettingsButton.Focus ( );
                 }
         }
 }

@@ -41,7 +41,6 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
 
-                        SaveSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfiguration );
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
@@ -72,8 +71,9 @@ namespace Dissonance.ViewModels
 
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
-                        _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
                         _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        settings.UseDarkTheme = _isDarkTheme;
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
@@ -90,8 +90,6 @@ namespace Dissonance.ViewModels
                 public ICommand ImportSettingsCommand { get; }
 
                 public ICommand SaveDefaultSettingsCommand { get; }
-
-                public ICommand SaveSettingsCommand { get; }
 
                 public bool IsDarkTheme
                 {
@@ -199,8 +197,8 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
-                        _settingsService.SaveCurrentSettings ( );
-                        if ( _settingsService.GetCurrentSettings ( ).SaveConfigAsDefaultOnClose )
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        if ( settings.SaveConfigAsDefaultOnClose )
                         {
                                 _settingsService.SaveCurrentSettingsAsDefault ( );
                         }
@@ -289,6 +287,11 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( Volume ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
 
+                        _isDarkTheme = settings.UseDarkTheme;
+                        _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        OnPropertyChanged ( nameof ( IsDarkTheme ) );
+                        OnPropertyChanged ( nameof ( CurrentThemeName ) );
+
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
 
                         if ( reapplyHotkey )
@@ -316,21 +319,12 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                private void SaveCurrentConfiguration ( )
-                {
-                        if ( _settingsService.SaveCurrentSettings ( ) )
-                        {
-                                ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved." );
-                        }
-                }
-
                 private void SaveCurrentConfigurationAsDefault ( )
                 {
                         if ( _settingsService.SaveCurrentSettingsAsDefault ( ) )
                         {
                                 ReloadSettingsFromService ( false );
-                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default." );
+                                _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default.", TimeSpan.FromSeconds ( 20 ) );
                         }
                 }
 

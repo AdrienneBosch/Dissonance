@@ -361,15 +361,19 @@
     <Style x:Key="ModernComboBoxItemStyle" TargetType="ComboBoxItem">
         <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}"/>
         <Setter Property="FontSize" Value="14"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBoxItem">
                     <Border x:Name="Border"
                             Background="Transparent"
+                            HorizontalAlignment="Stretch"
                             CornerRadius="8"
                             Padding="12,6"
                             SnapsToDevicePixels="True">
-                        <ContentPresenter VerticalAlignment="Center"/>
+                        <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
@@ -422,7 +426,15 @@
                                       ClickMode="Press"
                                       HorizontalContentAlignment="Stretch"
                                       VerticalContentAlignment="Stretch"
+                                      OverridesDefaultStyle="True"
+                                      FocusVisualStyle="{x:Null}"
                                       IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*"/>
@@ -480,11 +492,14 @@
                                     BorderThickness="1"
                                     CornerRadius="12"
                                     Padding="4"
+                                    MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
                                     SnapsToDevicePixels="True">
                                 <ScrollViewer Margin="0"
                                               CanContentScroll="True"
-                                              Focusable="False">
-                                    <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained"/>
+                                              Focusable="False"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <ItemsPresenter HorizontalAlignment="Stretch"
+                                                    KeyboardNavigation.DirectionalNavigation="Contained"/>
                                 </ScrollViewer>
                             </Border>
                         </Popup>

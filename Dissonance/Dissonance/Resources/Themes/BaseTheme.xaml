@@ -198,10 +198,12 @@
                     </Border>
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}"/>
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsPressed" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
@@ -312,7 +314,8 @@
                             <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource SubtleBackgroundBrush}"/>
+                            <Setter TargetName="BackgroundBorder" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter Property="Opacity" Value="0.6"/>
@@ -378,6 +381,7 @@
                     <ControlTemplate.Triggers>
                         <Trigger Property="IsHighlighted" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </Trigger>
                         <MultiTrigger>
                             <MultiTrigger.Conditions>
@@ -385,6 +389,7 @@
                                 <Condition Property="IsSelected" Value="False"/>
                             </MultiTrigger.Conditions>
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource HighlightBrush}"/>
+                            <Setter Property="Foreground" Value="{DynamicResource HoverForegroundBrush}"/>
                         </MultiTrigger>
                         <Trigger Property="IsSelected" Value="True">
                             <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>

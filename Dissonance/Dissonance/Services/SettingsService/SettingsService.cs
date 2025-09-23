@@ -170,6 +170,11 @@ namespace Dissonance.Services.SettingsService
                                 Volume = 50,
                                 Voice = "Microsoft David",
                                 SaveConfigAsDefaultOnClose = false,
+                                WindowWidth = null,
+                                WindowHeight = null,
+                                WindowLeft = null,
+                                WindowTop = null,
+                                IsWindowMaximized = false,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E" },
                         };
                 }
@@ -182,6 +187,11 @@ namespace Dissonance.Services.SettingsService
                                 VoiceRate = settings.VoiceRate,
                                 Volume = settings.Volume,
                                 SaveConfigAsDefaultOnClose = settings.SaveConfigAsDefaultOnClose,
+                                WindowWidth = settings.WindowWidth,
+                                WindowHeight = settings.WindowHeight,
+                                WindowLeft = settings.WindowLeft,
+                                WindowTop = settings.WindowTop,
+                                IsWindowMaximized = settings.IsWindowMaximized,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
@@ -202,6 +212,11 @@ namespace Dissonance.Services.SettingsService
                                 VoiceRate = settings.VoiceRate <= 0 ? reference.VoiceRate : settings.VoiceRate,
                                 Volume = settings.Volume < 0 || settings.Volume > 100 ? reference.Volume : settings.Volume,
                                 SaveConfigAsDefaultOnClose = settings.SaveConfigAsDefaultOnClose,
+                                WindowWidth = settings.WindowWidth.HasValue && settings.WindowWidth.Value > 0 ? settings.WindowWidth : reference.WindowWidth,
+                                WindowHeight = settings.WindowHeight.HasValue && settings.WindowHeight.Value > 0 ? settings.WindowHeight : reference.WindowHeight,
+                                WindowLeft = settings.WindowLeft ?? reference.WindowLeft,
+                                WindowTop = settings.WindowTop ?? reference.WindowTop,
+                                IsWindowMaximized = settings.IsWindowMaximized,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,

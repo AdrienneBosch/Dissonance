@@ -20,6 +20,11 @@
     <Color x:Key="SubtleBackgroundColor">#FFF4E8FF</Color>
     <Color x:Key="SliderTrackBackgroundColor">#FFEADCF9</Color>
     <Color x:Key="SliderThumbBorderColor">#FFFFFFFF</Color>
+    <Color x:Key="SectionHeaderBackgroundColor">#FFF5ECFF</Color>
+    <Color x:Key="SectionHeaderBorderColor">#FFE4D5FB</Color>
+    <Color x:Key="TileBackgroundColor">#FFFDF8FF</Color>
+    <Color x:Key="TileBorderColor">#FFE4D6FA</Color>
+    <Color x:Key="TileShadowColor">#33000000</Color>
     <Color x:Key="HeaderGradientStartColor">#FF7F3BFF</Color>
     <Color x:Key="HeaderGradientEndColor">#FFFF8A4C</Color>
     <Color x:Key="TitleBarBackgroundColor">#FFF1E5FF</Color>
@@ -52,6 +57,10 @@
     <SolidColorBrush x:Key="SubtleBackgroundBrush" Color="{StaticResource SubtleBackgroundColor}"/>
     <SolidColorBrush x:Key="SliderTrackBackgroundBrush" Color="{StaticResource SliderTrackBackgroundColor}"/>
     <SolidColorBrush x:Key="SliderThumbBorderBrush" Color="{StaticResource SliderThumbBorderColor}"/>
+    <SolidColorBrush x:Key="SectionHeaderBackgroundBrush" Color="{StaticResource SectionHeaderBackgroundColor}"/>
+    <SolidColorBrush x:Key="SectionHeaderBorderBrush" Color="{StaticResource SectionHeaderBorderColor}"/>
+    <SolidColorBrush x:Key="TileBackgroundBrush" Color="{StaticResource TileBackgroundColor}"/>
+    <SolidColorBrush x:Key="TileBorderBrush" Color="{StaticResource TileBorderColor}"/>
     <SolidColorBrush x:Key="TitleBarBackgroundBrush" Color="{StaticResource TitleBarBackgroundColor}"/>
     <SolidColorBrush x:Key="TitleBarForegroundBrush" Color="{StaticResource TitleBarForegroundColor}"/>
     <SolidColorBrush x:Key="WindowControlHoverBrush" Color="{StaticResource WindowControlHoverColor}"/>

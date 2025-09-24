@@ -209,6 +209,24 @@ namespace Dissonance
                         SettingsButton.Focus ( );
                 }
 
+                private void NavigationMenuPopup_Opened ( object? sender, EventArgs e )
+                {
+                        Dispatcher.BeginInvoke ( new Action ( ( ) =>
+                        {
+                                if ( NavigationHomeButton.IsVisible )
+                                        NavigationHomeButton.Focus ( );
+                                else
+                                        NavigationListBox.Focus ( );
+                        } ), DispatcherPriority.Input );
+                }
+
+                private void NavigationMenuPopup_Closed ( object? sender, EventArgs e )
+                {
+                        _viewModel.IsNavigationMenuOpen = false;
+                        NavigationToggleButton.IsChecked = false;
+                        NavigationToggleButton.Focus ( );
+                }
+
                 private void ReadClipboardHotkeyTextBox_PreviewKeyDown ( object sender, KeyEventArgs e )
                 {
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;

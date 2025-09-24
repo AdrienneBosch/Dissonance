@@ -227,6 +227,29 @@ namespace Dissonance
                         NavigationToggleButton.Focus ( );
                 }
 
+                private void NavigationListBox_PreviewKeyDown ( object sender, KeyEventArgs e )
+                {
+                        if ( ( e.Key == Key.Enter || e.Key == Key.Space ) && Keyboard.Modifiers == ModifierKeys.None )
+                        {
+                                if ( NavigationListBox.SelectedItem is NavigationSectionViewModel section )
+                                {
+                                        if ( _viewModel.NavigateToSectionCommand?.CanExecute ( section ) == true )
+                                        {
+                                                _viewModel.NavigateToSectionCommand.Execute ( section );
+                                                e.Handled = true;
+                                        }
+                                }
+                        }
+                        else if ( e.Key == Key.Escape )
+                        {
+                                if ( NavigationMenuPopup.IsOpen )
+                                {
+                                        NavigationMenuPopup.IsOpen = false;
+                                        e.Handled = true;
+                                }
+                        }
+                }
+
                 private void ReadClipboardHotkeyTextBox_PreviewKeyDown ( object sender, KeyEventArgs e )
                 {
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;

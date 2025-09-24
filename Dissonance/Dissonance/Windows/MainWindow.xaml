@@ -214,11 +214,15 @@
                             AutomationProperties.HelpText="Minimizes the application window"
                             Click="MinimizeButton_Click"/>
                     <Button Style="{StaticResource MaximizeWindowControlButtonStyle}"
-                            ToolTip="Maximize or restore"
+                            ToolTip="Maximize or restore window"
+                            AutomationProperties.Name="Maximize or restore window"
+                            AutomationProperties.HelpText="Toggles between maximized and windowed layouts"
                             Click="MaximizeButton_Click"/>
                     <Button Style="{StaticResource CloseWindowControlButtonStyle}"
                             Content="{StaticResource CloseIconGeometry}"
-                            ToolTip="Close"
+                            ToolTip="Close window"
+                            AutomationProperties.Name="Close window"
+                            AutomationProperties.HelpText="Closes the Dissonance application"
                             Click="CloseButton_Click"/>
                 </StackPanel>
             </Grid>
@@ -239,6 +243,7 @@
                               Style="{StaticResource NavigationToggleButtonStyle}"
                               IsChecked="{Binding IsNavigationMenuOpen, Mode=TwoWay}"
                               ToolTip="Toggle navigation menu"
+                              TabIndex="0"
                               AutomationProperties.Name="Toggle navigation menu"
                               AutomationProperties.HelpText="Shows the available Dissonance tools"/>
                 <Popup x:Name="NavigationMenuPopup"
@@ -272,6 +277,8 @@
                                     Command="{Binding NavigateToSectionCommand}"
                                     CommandParameter="{x:Null}"
                                     Margin="0,0,0,8"
+                                    ToolTip="Return to the Dissonance home dashboard"
+                                    TabIndex="0"
                                     AutomationProperties.Name="Home"
                                     AutomationProperties.HelpText="Return to the main Dissonance dashboard">
                                 <TextBlock Text="Home"
@@ -288,6 +295,11 @@
                                      Background="Transparent"
                                      Foreground="{DynamicResource PrimaryForegroundBrush}"
                                      ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                     ToolTip="Select a section to open"
+                                     TabIndex="1"
+                                     PreviewKeyDown="NavigationListBox_PreviewKeyDown"
+                                     AutomationProperties.Name="Available sections"
+                                     AutomationProperties.HelpText="Use the arrow keys to choose a section and press Enter to open it"
                                      SelectionMode="Single"
                                      HorizontalContentAlignment="Stretch"
                                      ItemContainerStyle="{StaticResource NavigationMenuListBoxItemStyle}">
@@ -387,6 +399,7 @@
                                 Height="36"
                                 MinWidth="110"
                                 Margin="0,0,12,0"
+                                ToolTip="Open settings menu"
                                 TabIndex="0"
                                 AutomationProperties.Name="Open settings menu"
                                 AutomationProperties.HelpText="Opens a list of configuration options"
@@ -423,6 +436,7 @@
                                             Click="SettingsMenuItem_Click"
                                             Margin="0,0,0,6"
                                             TabIndex="0"
+                                            ToolTip="Save the current configuration as the default"
                                             AutomationProperties.Name="Save current settings as default"
                                             AutomationProperties.HelpText="Saves the configuration so it loads automatically next time"/>
                                     <Border Height="1"
@@ -434,6 +448,7 @@
                                              Click="SettingsMenuAutoSave_Click"
                                              Margin="0,0,0,6"
                                              TabIndex="1"
+                                             ToolTip="Automatically save the configuration when closing the app"
                                              AutomationProperties.Name="Auto-save default on close"
                                              AutomationProperties.HelpText="Automatically write the current configuration as the default when the app is closed"/>
                                     <Border Height="1"
@@ -445,6 +460,7 @@
                                             Click="SettingsMenuItem_Click"
                                             Margin="0,0,0,6"
                                             TabIndex="2"
+                                            ToolTip="Export the current configuration to a file"
                                             AutomationProperties.Name="Export settings"
                                             AutomationProperties.HelpText="Exports the current configuration to a file"/>
                                     <Button Style="{StaticResource DropdownMenuButtonStyle}"
@@ -452,6 +468,7 @@
                                             Command="{Binding ImportSettingsCommand}"
                                             Click="SettingsMenuItem_Click"
                                             TabIndex="3"
+                                            ToolTip="Import a configuration from a saved file"
                                             AutomationProperties.Name="Import settings"
                                             AutomationProperties.HelpText="Imports a configuration from a saved file"/>
                                 </StackPanel>
@@ -466,7 +483,8 @@
                                       IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
                                       ToolTip="Toggle between light and dark themes"
                                       TabIndex="1"
-                                      AutomationProperties.Name="Toggle between light and dark theme"/>
+                                      AutomationProperties.Name="Toggle between light and dark theme"
+                                      AutomationProperties.HelpText="Switches between the light and dark themes"/>
                     </StackPanel>
                 </Grid>
             </Border>
@@ -527,8 +545,9 @@
                                         Margin="0,0,24,24"
                                         Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
                                         CommandParameter="{Binding}"
+                                        ToolTip="{Binding Description, FallbackValue=Open this section}"
                                         AutomationProperties.Name="{Binding Title}"
-                                        AutomationProperties.HelpText="Open this section">
+                                        AutomationProperties.HelpText="{Binding Description, FallbackValue=Open this section}">
                                     <StackPanel>
                                         <TextBlock Text="{Binding Title}"
                                                    FontSize="18"

@@ -17,13 +17,19 @@
         Background="{DynamicResource WindowBackgroundBrush}"
         Foreground="{DynamicResource PrimaryForegroundBrush}"
         FontFamily="{DynamicResource BaseFontFamily}"
-        SnapsToDevicePixels="True">
+        SnapsToDevicePixels="True"
+        AutomationProperties.Name="{Binding Title}"
+        AutomationProperties.HelpText="Dissonance alert dialog">
     <Window.Resources>
         <local:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
     </Window.Resources>
 
     <Border Margin="24"
-            Style="{StaticResource CardContainerStyle}">
+            Style="{StaticResource CardContainerStyle}"
+            FocusManager.IsFocusScope="True"
+            FocusManager.FocusedElement="{Binding ElementName=OkButton}"
+            KeyboardNavigation.TabNavigation="Cycle"
+            KeyboardNavigation.ControlTabNavigation="Cycle">
         <Border.Effect>
             <DropShadowEffect BlurRadius="18"
                               ShadowDepth="0"
@@ -57,20 +63,32 @@
                         Orientation="Horizontal"
                         HorizontalAlignment="Right"
                         Margin="0,20,0,0">
-                <Button Content="OK"
+                <Button x:Name="OkButton"
+                        Content="OK"
                         MinWidth="120"
                         Height="36"
                         Margin="0,0,8,0"
                         Style="{StaticResource PrimaryButtonStyle}"
-                        Command="{Binding OkCommand}" />
-                <Button Content="Cancel"
+                        Command="{Binding OkCommand}"
+                        ToolTip="Confirm and close this alert"
+                        TabIndex="0"
+                        IsDefault="True"
+                        AutomationProperties.Name="Confirm alert"
+                        AutomationProperties.HelpText="Confirms the alert and closes the dialog" />
+                <Button x:Name="CancelButton"
+                        Content="Cancel"
                         MinWidth="120"
                         Height="36"
                         Style="{StaticResource PrimaryButtonStyle}"
                         Command="{Binding CancelCommand}"
                         Visibility="{Binding ShowCancelButton, Converter={StaticResource BoolToVisibilityConverter}}"
                         Background="{DynamicResource CardBorderBrush}"
-                        Foreground="{DynamicResource PrimaryForegroundBrush}" />
+                        Foreground="{DynamicResource PrimaryForegroundBrush}"
+                        ToolTip="Cancel and close this alert"
+                        TabIndex="1"
+                        IsCancel="True"
+                        AutomationProperties.Name="Cancel alert"
+                        AutomationProperties.HelpText="Cancels the action and closes the dialog" />
             </StackPanel>
         </Grid>
     </Border>

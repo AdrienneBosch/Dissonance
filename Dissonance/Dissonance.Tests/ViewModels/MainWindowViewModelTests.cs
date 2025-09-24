@@ -140,6 +140,33 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal(1, testEnvironment.SettingsService.SaveCurrentSettingsAsDefaultCalls);
                 }
 
+                [WindowsFact]
+                public void NavigateToSectionCommand_SetsAndClearsSelection()
+                {
+                        var testEnvironment = CreateTestEnvironment(useDarkTheme: false);
+                        if (testEnvironment is null)
+                        {
+                                return;
+                        }
+
+                        var viewModel = testEnvironment.ViewModel;
+                        Assert.True(viewModel.IsHomeSelected);
+                        Assert.Null(viewModel.SelectedSection);
+
+                        var targetSection = viewModel.NavigationSections.FirstOrDefault();
+                        Assert.NotNull(targetSection);
+
+                        viewModel.NavigateToSectionCommand.Execute(targetSection);
+
+                        Assert.Same(targetSection, viewModel.SelectedSection);
+                        Assert.False(viewModel.IsHomeSelected);
+
+                        viewModel.NavigateToSectionCommand.Execute(null);
+
+                        Assert.Null(viewModel.SelectedSection);
+                        Assert.True(viewModel.IsHomeSelected);
+                }
+
                 private static TestEnvironment? CreateTestEnvironment(bool useDarkTheme)
                 {
                         var synthesizer = new SpeechSynthesizer();

@@ -24,173 +24,8 @@
                              GlassFrameThickness="0"
                              ResizeBorderThickness="6"/>
     </shell:WindowChrome.WindowChrome>
-    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-
-        <Border Grid.Row="0"
-                Margin="-6,0,-6,12"
-                Padding="16,0"
-                CornerRadius="0,0,18,18"
-                Background="{DynamicResource TitleBarBackgroundBrush}"
-                SnapsToDevicePixels="True"
-                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal"
-                            VerticalAlignment="Center"
-                            Margin="0,0,16,0">
-                    <Border Width="8"
-                            Height="8"
-                            CornerRadius="4"
-                            Background="{DynamicResource AccentBrush}"
-                            VerticalAlignment="Center"
-                            Margin="0,0,8,0"/>
-                    <TextBlock Text="Dissonance"
-                               Style="{StaticResource WindowTitleTextStyle}"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <Button Style="{StaticResource WindowControlButtonStyle}"
-                            Margin="0"
-                            Content="{StaticResource MinimizeIconGeometry}"
-                            ToolTip="Minimize"
-                            AutomationProperties.Name="Minimize window"
-                            AutomationProperties.HelpText="Minimizes the application window"
-                            Click="MinimizeButton_Click"/>
-                    <Button Style="{StaticResource MaximizeWindowControlButtonStyle}"
-                            ToolTip="Maximize or restore"
-                            Click="MaximizeButton_Click"/>
-                    <Button Style="{StaticResource CloseWindowControlButtonStyle}"
-                            Content="{StaticResource CloseIconGeometry}"
-                            ToolTip="Close"
-                            Click="CloseButton_Click"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="1"
-                Margin="24,6,24,0"
-                Padding="20,10"
-                CornerRadius="{StaticResource HeaderCornerRadius}"
-                Background="{DynamicResource HeaderBackgroundBrush}">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="Dissonance"
-                               Style="{StaticResource HeaderTitleTextStyle}"/>
-                    <TextBlock Text="Accessibility-first speech control center"
-                               Style="{StaticResource HeaderSubtitleTextStyle}"
-                               Margin="0,10,0,0"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1"
-                            Orientation="Horizontal"
-                            VerticalAlignment="Center">
-                    <Button x:Name="SettingsButton"
-                            Style="{StaticResource PrimaryButtonStyle}"
-                            Content="Settings"
-                            Height="36"
-                            MinWidth="110"
-                            Margin="0,0,12,0"
-                            TabIndex="0"
-                            AutomationProperties.Name="Open settings menu"
-                            AutomationProperties.HelpText="Opens a list of actions related to configuration and saving settings"
-                            Click="SettingsButton_Click"/>
-                    <Popup x:Name="SettingsMenuPopup"
-                           PlacementTarget="{Binding ElementName=SettingsButton}"
-                           Placement="Bottom"
-                           AllowsTransparency="True"
-                           StaysOpen="False"
-                           PopupAnimation="Fade"
-                           DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
-                           Opened="SettingsMenuPopup_Opened"
-                           Closed="SettingsMenuPopup_Closed">
-                        <Border Background="{DynamicResource CardBackgroundBrush}"
-                                BorderBrush="{DynamicResource CardBorderBrush}"
-                                BorderThickness="1"
-                                CornerRadius="12"
-                                Padding="12">
-                            <Border.Effect>
-                                <DropShadowEffect BlurRadius="18"
-                                                  ShadowDepth="0"
-                                                  Opacity="0.4"
-                                                  Color="#99000000"/>
-                            </Border.Effect>
-                            <StackPanel FocusManager.IsFocusScope="True"
-                                        FocusManager.FocusedElement="{Binding ElementName=SaveSettingsAsDefaultMenuButton}"
-                                        KeyboardNavigation.TabNavigation="Cycle"
-                                        KeyboardNavigation.ControlTabNavigation="Cycle"
-                                        KeyboardNavigation.DirectionalNavigation="Cycle">
-                                <Button x:Name="SaveSettingsAsDefaultMenuButton"
-                                        Style="{StaticResource DropdownMenuButtonStyle}"
-                                        Content="Save current settings as default"
-                                        Command="{Binding SaveDefaultSettingsCommand}"
-                                        Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"
-                                        TabIndex="0"
-                                        AutomationProperties.Name="Save current settings as default"
-                                        AutomationProperties.HelpText="Saves the configuration so it loads automatically next time"/>
-                                <Border Height="1"
-                                        Background="{DynamicResource CardBorderBrush}"
-                                        Margin="0,4,0,6"/>
-                                <CheckBox Style="{StaticResource MenuCheckBoxStyle}"
-                                         Content="Auto-save default on close"
-                                         IsChecked="{Binding SaveConfigAsDefaultOnClose, Mode=TwoWay}"
-                                         Click="SettingsMenuAutoSave_Click"
-                                         Margin="0,0,0,6"
-                                         TabIndex="1"
-                                         AutomationProperties.Name="Auto-save default on close"
-                                         AutomationProperties.HelpText="Automatically write the current configuration as the default when the app is closed"/>
-                                <Border Height="1"
-                                        Background="{DynamicResource CardBorderBrush}"
-                                        Margin="0,4,0,6"/>
-                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
-                                        Content="Export settings..."
-                                        Command="{Binding ExportSettingsCommand}"
-                                        Click="SettingsMenuItem_Click"
-                                        Margin="0,0,0,6"
-                                        TabIndex="2"
-                                        AutomationProperties.Name="Export settings"
-                                        AutomationProperties.HelpText="Exports the current configuration to a file"/>
-                                <Button Style="{StaticResource DropdownMenuButtonStyle}"
-                                        Content="Import settings..."
-                                        Command="{Binding ImportSettingsCommand}"
-                                        Click="SettingsMenuItem_Click"
-                                        TabIndex="3"
-                                        AutomationProperties.Name="Import settings"
-                                        AutomationProperties.HelpText="Imports a configuration from a saved file"/>
-                            </StackPanel>
-                        </Border>
-                    </Popup>
-                    <TextBlock Text="{Binding CurrentThemeName}"
-                               Foreground="{DynamicResource HeaderForegroundBrush}"
-                               FontWeight="SemiBold"
-                               Margin="0,0,12,0"
-                               VerticalAlignment="Center"/>
-                    <ToggleButton Style="{StaticResource ThemeToggleButtonStyle}"
-                                  IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
-                                  ToolTip="Toggle between light and dark themes"
-                                  TabIndex="1"
-                                  AutomationProperties.Name="Toggle between light and dark theme"/>
-                </StackPanel>
-            </Grid>
-        </Border>
-
-        <Border Grid.Row="2"
-                Margin="24,12,24,24"
-                Padding="24"
-                CornerRadius="{StaticResource SurfaceCornerRadius}"
-                Background="{DynamicResource SurfaceBackgroundBrush}">
+    <Window.Resources>
+        <DataTemplate DataType="{x:Type local:MainWindowViewModel}">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
@@ -331,6 +166,388 @@
                         </StackPanel>
                     </StackPanel>
                 </Border>
+            </Grid>
+        </DataTemplate>
+    </Window.Resources>
+    <Grid Background="{DynamicResource PrimaryBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <Border Grid.Row="0"
+                Margin="-6,0,-6,12"
+                Padding="16,0"
+                CornerRadius="0,0,18,18"
+                Background="{DynamicResource TitleBarBackgroundBrush}"
+                SnapsToDevicePixels="True"
+                MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal"
+                            VerticalAlignment="Center"
+                            Margin="0,0,16,0">
+                    <Border Width="8"
+                            Height="8"
+                            CornerRadius="4"
+                            Background="{DynamicResource AccentBrush}"
+                            VerticalAlignment="Center"
+                            Margin="0,0,8,0"/>
+                    <TextBlock Text="Dissonance"
+                               Style="{StaticResource WindowTitleTextStyle}"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1"
+                            Orientation="Horizontal"
+                            VerticalAlignment="Center">
+                    <Button Style="{StaticResource WindowControlButtonStyle}"
+                            Margin="0"
+                            Content="{StaticResource MinimizeIconGeometry}"
+                            ToolTip="Minimize"
+                            AutomationProperties.Name="Minimize window"
+                            AutomationProperties.HelpText="Minimizes the application window"
+                            Click="MinimizeButton_Click"/>
+                    <Button Style="{StaticResource MaximizeWindowControlButtonStyle}"
+                            ToolTip="Maximize or restore"
+                            Click="MaximizeButton_Click"/>
+                    <Button Style="{StaticResource CloseWindowControlButtonStyle}"
+                            Content="{StaticResource CloseIconGeometry}"
+                            ToolTip="Close"
+                            Click="CloseButton_Click"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <Border Grid.Row="1"
+                Margin="24,6,24,0"
+                Padding="20,10"
+                CornerRadius="{StaticResource HeaderCornerRadius}"
+                Background="{DynamicResource HeaderBackgroundBrush}">
+            <StackPanel>
+                <TextBlock Text="Dissonance"
+                           Style="{StaticResource HeaderTitleTextStyle}"/>
+                <TextBlock Text="Accessibility-first speech control center"
+                           Style="{StaticResource HeaderSubtitleTextStyle}"
+                           Margin="0,10,0,0"/>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="2"
+                Margin="24,12,24,24"
+                Padding="24"
+                CornerRadius="{StaticResource SurfaceCornerRadius}"
+                Background="{DynamicResource SurfaceBackgroundBrush}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <Grid Grid.Row="0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <ToggleButton x:Name="NavigationToggleButton"
+                                      Style="{StaticResource NavigationToggleButtonStyle}"
+                                      IsChecked="{Binding IsNavigationMenuOpen, Mode=TwoWay}"
+                                      Margin="0,0,12,0"
+                                      ToolTip="Open navigation menu"
+                                      AutomationProperties.Name="Open navigation menu"
+                                      AutomationProperties.HelpText="Shows the available Dissonance tools"/>
+                        <Popup x:Name="NavigationMenuPopup"
+                               PlacementTarget="{Binding ElementName=NavigationToggleButton}"
+                               Placement="Bottom"
+                               AllowsTransparency="True"
+                               StaysOpen="False"
+                               PopupAnimation="Fade"
+                               IsOpen="{Binding IsNavigationMenuOpen, Mode=TwoWay}"
+                               DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                               Opened="NavigationMenuPopup_Opened"
+                               Closed="NavigationMenuPopup_Closed">
+                            <Border Background="{DynamicResource CardBackgroundBrush}"
+                                    BorderBrush="{DynamicResource CardBorderBrush}"
+                                    BorderThickness="1"
+                                    CornerRadius="12"
+                                    Padding="12">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="18"
+                                                      ShadowDepth="0"
+                                                      Opacity="0.4"
+                                                      Color="#99000000"/>
+                                </Border.Effect>
+                                <StackPanel FocusManager.IsFocusScope="True"
+                                            FocusManager.FocusedElement="{Binding ElementName=NavigationListBox}"
+                                            KeyboardNavigation.TabNavigation="Cycle"
+                                            KeyboardNavigation.ControlTabNavigation="Cycle"
+                                            KeyboardNavigation.DirectionalNavigation="Cycle">
+                                    <TextBlock Text="Choose a section"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Margin="0,0,0,8"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                    <ListBox x:Name="NavigationListBox"
+                                             ItemsSource="{Binding NavigationSections}"
+                                             SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                                             MinWidth="260"
+                                             MaxHeight="320"
+                                             BorderThickness="0"
+                                             Background="Transparent"
+                                             Foreground="{DynamicResource PrimaryForegroundBrush}"
+                                             ScrollViewer.VerticalScrollBarVisibility="Auto"
+                                             SelectionMode="Single"
+                                             HorizontalContentAlignment="Stretch">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+                                                <StackPanel Margin="0,4">
+                                                    <TextBlock Text="{Binding Title}"
+                                                               FontWeight="SemiBold"
+                                                               FontSize="15"
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
+                                                    <TextBlock Text="{Binding Description}"
+                                                               TextWrapping="Wrap"
+                                                               FontSize="13"
+                                                               Margin="0,4,0,0"
+                                                               Opacity="0.85"
+                                                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                        <ListBox.ItemContainerStyle>
+                                            <Style TargetType="ListBoxItem">
+                                                <Setter Property="Padding" Value="12"/>
+                                                <Setter Property="Background" Value="Transparent"/>
+                                                <Setter Property="BorderThickness" Value="0"/>
+                                                <Setter Property="Cursor" Value="Hand"/>
+                                                <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+                                                <Setter Property="SnapsToDevicePixels" Value="True"/>
+                                                <Setter Property="Template">
+                                                    <Setter.Value>
+                                                        <ControlTemplate TargetType="ListBoxItem">
+                                                            <Border x:Name="ItemBorder"
+                                                                    Background="{TemplateBinding Background}"
+                                                                    CornerRadius="10">
+                                                                <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                                                                  VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                                                            </Border>
+                                                            <ControlTemplate.Triggers>
+                                                                <Trigger Property="IsMouseOver" Value="True">
+                                                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                                                                </Trigger>
+                                                                <Trigger Property="IsSelected" Value="True">
+                                                                    <Setter TargetName="ItemBorder" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                                                    <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+                                                                </Trigger>
+                                                            </ControlTemplate.Triggers>
+                                                        </ControlTemplate>
+                                                    </Setter.Value>
+                                                </Setter>
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsSelected" Value="True">
+                                                        <Setter Property="Foreground" Value="{DynamicResource ButtonForegroundBrush}"/>
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ListBox.ItemContainerStyle>
+                                    </ListBox>
+                                </StackPanel>
+                            </Border>
+                        </Popup>
+                        <TextBlock Text="{Binding SelectedSection.Title, TargetNullValue=Navigation menu}"
+                                   VerticalAlignment="Center"
+                                   FontSize="15"
+                                   FontWeight="SemiBold"
+                                   Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                    </StackPanel>
+
+                    <Grid Grid.Column="1"
+                          Margin="24,0,0,0">
+                        <Grid.Style>
+                            <Style TargetType="Grid">
+                                <Setter Property="Visibility" Value="Visible"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Grid.Style>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+
+                        <StackPanel>
+                            <TextBlock Text="{Binding SelectedSection.BannerTitle}"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                            <TextBlock Text="{Binding SelectedSection.BannerSubtitle}"
+                                       FontSize="14"
+                                       Margin="0,6,0,0"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <Trigger Property="Text" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </Trigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <StackPanel Grid.Column="1"
+                                    Orientation="Horizontal"
+                                    VerticalAlignment="Center">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding SelectedSection.ShowSettingsControls}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Button x:Name="SettingsButton"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Content="Settings"
+                                    Height="36"
+                                    MinWidth="110"
+                                    Margin="0,0,12,0"
+                                    TabIndex="0"
+                                    AutomationProperties.Name="Open settings menu"
+                                    AutomationProperties.HelpText="Opens a list of configuration options"
+                                    Click="SettingsButton_Click"/>
+                            <Popup x:Name="SettingsMenuPopup"
+                                   PlacementTarget="{Binding ElementName=SettingsButton}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   StaysOpen="False"
+                                   PopupAnimation="Fade"
+                                   DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Opened="SettingsMenuPopup_Opened"
+                                   Closed="SettingsMenuPopup_Closed">
+                                <Border Background="{DynamicResource CardBackgroundBrush}"
+                                        BorderBrush="{DynamicResource CardBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="12"
+                                        Padding="12">
+                                    <Border.Effect>
+                                        <DropShadowEffect BlurRadius="18"
+                                                          ShadowDepth="0"
+                                                          Opacity="0.4"
+                                                          Color="#99000000"/>
+                                    </Border.Effect>
+                                    <StackPanel FocusManager.IsFocusScope="True"
+                                                FocusManager.FocusedElement="{Binding ElementName=SaveSettingsAsDefaultMenuButton}"
+                                                KeyboardNavigation.TabNavigation="Cycle"
+                                                KeyboardNavigation.ControlTabNavigation="Cycle"
+                                                KeyboardNavigation.DirectionalNavigation="Cycle">
+                                        <Button x:Name="SaveSettingsAsDefaultMenuButton"
+                                                Style="{StaticResource DropdownMenuButtonStyle}"
+                                                Content="Save current settings as default"
+                                                Command="{Binding SaveDefaultSettingsCommand}"
+                                                Click="SettingsMenuItem_Click"
+                                                Margin="0,0,0,6"
+                                                TabIndex="0"
+                                                AutomationProperties.Name="Save current settings as default"
+                                                AutomationProperties.HelpText="Saves the configuration so it loads automatically next time"/>
+                                        <Border Height="1"
+                                                Background="{DynamicResource CardBorderBrush}"
+                                                Margin="0,4,0,6"/>
+                                        <CheckBox Style="{StaticResource MenuCheckBoxStyle}"
+                                                 Content="Auto-save default on close"
+                                                 IsChecked="{Binding SaveConfigAsDefaultOnClose, Mode=TwoWay}"
+                                                 Click="SettingsMenuAutoSave_Click"
+                                                 Margin="0,0,0,6"
+                                                 TabIndex="1"
+                                                 AutomationProperties.Name="Auto-save default on close"
+                                                 AutomationProperties.HelpText="Automatically write the current configuration as the default when the app is closed"/>
+                                        <Border Height="1"
+                                                Background="{DynamicResource CardBorderBrush}"
+                                                Margin="0,4,0,6"/>
+                                        <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                                Content="Export settings..."
+                                                Command="{Binding ExportSettingsCommand}"
+                                                Click="SettingsMenuItem_Click"
+                                                Margin="0,0,0,6"
+                                                TabIndex="2"
+                                                AutomationProperties.Name="Export settings"
+                                                AutomationProperties.HelpText="Exports the current configuration to a file"/>
+                                        <Button Style="{StaticResource DropdownMenuButtonStyle}"
+                                                Content="Import settings..."
+                                                Command="{Binding ImportSettingsCommand}"
+                                                Click="SettingsMenuItem_Click"
+                                                TabIndex="3"
+                                                AutomationProperties.Name="Import settings"
+                                                AutomationProperties.HelpText="Imports a configuration from a saved file"/>
+                                    </StackPanel>
+                                </Border>
+                            </Popup>
+                            <TextBlock Text="{Binding CurrentThemeName}"
+                                       Foreground="{DynamicResource HeaderForegroundBrush}"
+                                       FontWeight="SemiBold"
+                                       Margin="0,0,12,0"
+                                       VerticalAlignment="Center"/>
+                            <ToggleButton Style="{StaticResource ThemeToggleButtonStyle}"
+                                          IsChecked="{Binding IsDarkTheme, Mode=TwoWay}"
+                                          ToolTip="Toggle between light and dark themes"
+                                          TabIndex="1"
+                                          AutomationProperties.Name="Toggle between light and dark theme"/>
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+
+                <ContentControl Grid.Row="1"
+                                Content="{Binding SelectedSection.ContentViewModel}">
+                    <ContentControl.Style>
+                        <Style TargetType="ContentControl">
+                            <Setter Property="Visibility" Value="Visible"/>
+                            <Style.Triggers>
+                                <Trigger Property="Content" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
+                    </ContentControl.Style>
+                </ContentControl>
+
+                <StackPanel Grid.Row="1"
+                            HorizontalAlignment="Center"
+                            VerticalAlignment="Center">
+                    <StackPanel.Style>
+                        <Style TargetType="StackPanel">
+                            <Setter Property="Visibility" Value="Collapsed"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
+                                    <Setter Property="Visibility" Value="Visible"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </StackPanel.Style>
+                    <TextBlock Text="Welcome to Dissonance"
+                               FontSize="20"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource PrimaryForegroundBrush}"
+                               HorizontalAlignment="Center"/>
+                    <TextBlock Text="Use the navigation menu above to open a tool and manage its settings."
+                               FontSize="14"
+                               TextAlignment="Center"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"
+                               Width="360"
+                               Margin="0,12,0,0"
+                               TextWrapping="Wrap"/>
+                </StackPanel>
             </Grid>
         </Border>
     </Grid>

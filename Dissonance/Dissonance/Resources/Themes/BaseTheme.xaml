@@ -13,6 +13,7 @@
     <Geometry x:Key="MaximizeIconGeometry">M 3 3 H 13 V 13 H 3 Z</Geometry>
     <Geometry x:Key="RestoreIconGeometry">M 5 5 H 13 V 13 H 5 Z M 3 3 H 11 V 11 H 3 Z</Geometry>
     <Geometry x:Key="CloseIconGeometry">M 4 4 L 12 12 M 12 4 L 4 12</Geometry>
+    <Geometry x:Key="HamburgerIconGeometry">M 3 4 H 13 M 3 8 H 13 M 3 12 H 13</Geometry>
 
     <Style x:Key="CardContainerStyle" TargetType="Border">
         <Setter Property="Background" Value="{DynamicResource CardBackgroundBrush}"/>
@@ -168,6 +169,53 @@
                         </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="Border" Property="Opacity" Value="0.6"/>
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="NavigationToggleButtonStyle" TargetType="ToggleButton">
+        <Setter Property="Width" Value="44"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Border x:Name="Border"
+                            Background="{TemplateBinding Background}"
+                            CornerRadius="{StaticResource ButtonCornerRadius}"
+                            SnapsToDevicePixels="True">
+                        <Viewbox Width="18"
+                                 Height="18"
+                                 HorizontalAlignment="Center"
+                                 VerticalAlignment="Center">
+                            <Path x:Name="IconPath"
+                                  Data="{StaticResource HamburgerIconGeometry}"
+                                  Stroke="{DynamicResource PrimaryForegroundBrush}"
+                                  StrokeThickness="1.6"
+                                  StrokeStartLineCap="Round"
+                                  StrokeEndLineCap="Round"
+                                  StrokeLineJoin="Round"/>
+                        </Viewbox>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource ControlPressedBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Border" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                            <Setter TargetName="IconPath" Property="Stroke" Value="{DynamicResource ButtonForegroundBrush}"/>
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter Property="Opacity" Value="0.6"/>
                         </Trigger>
                     </ControlTemplate.Triggers>
                 </ControlTemplate>

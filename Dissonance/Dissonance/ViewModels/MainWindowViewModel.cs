@@ -29,9 +29,12 @@ namespace Dissonance.ViewModels
                 private readonly ISettingsService _settingsService;
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
+                private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
+                private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
                 private string _lastAppliedHotkeyCombination = string.Empty;
+                private NavigationSectionViewModel? _selectedSection;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService )
                 {
@@ -77,11 +80,22 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
+
+                        _navigationSections.Add ( new NavigationSectionViewModel (
+                                "clipboard-reader",
+                                "Clipboard Reader",
+                                "Instantly speak the text you've copied to the clipboard.",
+                                "Clipboard Reader",
+                                "Fine-tune speech playback, volume, and shortcuts for the clipboard narration experience.",
+                                this,
+                                showSettingsControls: true ) );
                 }
 
                 public event PropertyChangedEventHandler PropertyChanged;
 
                 public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
+
+                public ObservableCollection<NavigationSectionViewModel> NavigationSections => _navigationSections;
 
                 public ICommand ApplyHotkeyCommand { get; }
 
@@ -90,6 +104,36 @@ namespace Dissonance.ViewModels
                 public ICommand ImportSettingsCommand { get; }
 
                 public ICommand SaveDefaultSettingsCommand { get; }
+
+                public bool IsNavigationMenuOpen
+                {
+                        get => _isNavigationMenuOpen;
+                        set
+                        {
+                                if ( _isNavigationMenuOpen == value )
+                                        return;
+
+                                _isNavigationMenuOpen = value;
+                                OnPropertyChanged ( nameof ( IsNavigationMenuOpen ) );
+                        }
+                }
+
+                public NavigationSectionViewModel? SelectedSection
+                {
+                        get => _selectedSection;
+                        set
+                        {
+                                if ( _selectedSection == value )
+                                        return;
+
+                                _selectedSection = value;
+                                OnPropertyChanged ( nameof ( SelectedSection ) );
+                                if ( value != null )
+                                {
+                                        IsNavigationMenuOpen = false;
+                                }
+                        }
+                }
 
                 public bool IsDarkTheme
                 {

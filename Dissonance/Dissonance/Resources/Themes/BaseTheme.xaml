@@ -292,6 +292,9 @@
         <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
         <Setter Property="Cursor" Value="Hand"/>
         <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="ToolTipService.ToolTip" Value="{Binding Description, FallbackValue=Open this section}"/>
+        <Setter Property="AutomationProperties.Name" Value="{Binding Title}"/>
+        <Setter Property="AutomationProperties.HelpText" Value="{Binding Description, FallbackValue=Open this section}"/>
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ListBoxItem">

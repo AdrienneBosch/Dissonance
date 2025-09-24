@@ -2,6 +2,7 @@
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Interop;
+using System.Windows.Threading;
 
 using Dissonance.Infrastructure.Constants;
 
@@ -9,21 +10,28 @@ using Microsoft.Extensions.Logging;
 
 namespace Dissonance.Services.HotkeyService
 {
-	internal class HotkeyService : IHotkeyService, IDisposable
-	{
-		private readonly object _lock = new object ( );
-		private readonly ILogger<HotkeyService> _logger;
-		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
-		private int? _currentHotkeyId;
-		private int _nextHotkeyId = 0;
-		private HwndSource _source;
-		private IntPtr _windowHandle;
+        internal class HotkeyService : IHotkeyService, IDisposable
+        {
+                private readonly object _lock = new object ( );
+                private readonly ILogger<HotkeyService> _logger;
+                private readonly Dissonance.Services.MessageService.IMessageService _messageService;
+                private readonly Action<Action> _dispatcherInvoker;
+                private int? _currentHotkeyId;
+                private int _nextHotkeyId = 0;
+                private HwndSource _source;
+                private IntPtr _windowHandle;
 
-		public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
-		{
-			_logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
-			_messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
-		}
+                public HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService )
+                        : this ( logger, messageService, null )
+                {
+                }
+
+                internal HotkeyService ( ILogger<HotkeyService> logger, Dissonance.Services.MessageService.IMessageService messageService, Action<Action> dispatcherInvoker )
+                {
+                        _logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+                        _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
+                        _dispatcherInvoker = dispatcherInvoker ?? InvokeOnApplicationDispatcher;
+                }
 
 		public event Action HotkeyPressed;
 
@@ -60,20 +68,21 @@ namespace Dissonance.Services.HotkeyService
 			return mod;
 		}
 
-		private IntPtr WndProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )
-		{
-			if ( msg == WindowsMessages.Hotkey )
-			{
-				_logger.LogInformation ( "Hotkey pressed." );
-				var handler = HotkeyPressed;
-				if ( handler != null )
-				{
-					Application.Current.Dispatcher.BeginInvoke ( handler );
-				}
-				handled = true;
-			}
-			return IntPtr.Zero;
-		}
+                private IntPtr WndProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )
+                {
+                        if ( msg == WindowsMessages.Hotkey )
+                        {
+                                _logger.LogInformation ( "Hotkey pressed." );
+                                var handler = HotkeyPressed;
+                                if ( handler != null )
+                                {
+                                        _dispatcherInvoker ( handler );
+                                }
+                                handled = true;
+                        }
+
+                        return IntPtr.Zero;
+                }
 
 		public void Dispose ( )
 		{
@@ -139,24 +148,40 @@ namespace Dissonance.Services.HotkeyService
 			}
 		}
 
-		public void UnregisterHotkey ( )
-		{
-			lock ( _lock )
-			{
-				if ( _currentHotkeyId.HasValue )
-				{
-					var hotkeyId = _currentHotkeyId.Value;
-					if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
-					{
-						_logger.LogDebug ( $"Hotkey unregistered with Id: {hotkeyId}" );
-					}
-					else
-					{
-						_logger.LogWarning ( $"Failed to unregister hotkey with id: {hotkeyId}" );
-					}
-					_currentHotkeyId = null;
-				}
-			}
-		}
+                public void UnregisterHotkey ( )
+                {
+                        lock ( _lock )
+                        {
+                                if ( _currentHotkeyId.HasValue )
+                                {
+                                        var hotkeyId = _currentHotkeyId.Value;
+                                        if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
+                                        {
+                                                _logger.LogDebug ( $"Hotkey unregistered with Id: {hotkeyId}" );
+                                        }
+                                        else
+                                        {
+                                                _logger.LogWarning ( $"Failed to unregister hotkey with id: {hotkeyId}" );
+                                        }
+                                        _currentHotkeyId = null;
+                                }
+                        }
+                }
+
+                private static void InvokeOnApplicationDispatcher ( Action action )
+                {
+                        if ( action == null )
+                                throw new ArgumentNullException ( nameof ( action ) );
+
+                        var dispatcher = Application.Current?.Dispatcher;
+                        if ( dispatcher != null && !dispatcher.HasShutdownStarted )
+                        {
+                                dispatcher.BeginInvoke ( action, DispatcherPriority.Normal );
+                        }
+                        else
+                        {
+                                action ( );
+                        }
+                }
 	}
 }

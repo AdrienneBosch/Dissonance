@@ -13,6 +13,8 @@ namespace Dissonance.ViewModels
         {
                 private readonly DissonanceMessageBox _messageBox;
 
+                internal static Func<string, string, bool, TimeSpan?, bool?>? ShowOverride { get; set; }
+
                 public DissonanceMessageBoxViewModel ( DissonanceMessageBox messageBox )
                 {
                         _messageBox = messageBox;
@@ -44,6 +46,12 @@ namespace Dissonance.ViewModels
 
                 public static bool? Show ( string title, string message, bool showCancelButton = false, TimeSpan? autoCloseDelay = null )
                 {
+                        var overrideHandler = ShowOverride;
+                        if ( overrideHandler != null )
+                        {
+                                return overrideHandler ( title, message, showCancelButton, autoCloseDelay );
+                        }
+
                         var messageBox = new DissonanceMessageBox();
                         var viewModel = new DissonanceMessageBoxViewModel(messageBox)
                         {

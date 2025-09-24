@@ -131,12 +131,15 @@ namespace Dissonance.ViewModels
 
                                 _selectedSection = value;
                                 OnPropertyChanged ( nameof ( SelectedSection ) );
+                                OnPropertyChanged ( nameof ( IsHomeSelected ) );
                                 if ( value != null )
                                 {
                                         IsNavigationMenuOpen = false;
                                 }
                         }
                 }
+
+                public bool IsHomeSelected => SelectedSection == null;
 
                 public bool IsDarkTheme
                 {

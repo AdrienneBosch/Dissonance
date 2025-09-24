@@ -14,9 +14,9 @@ namespace Dissonance.Services.ThemeService
                 });
 
                 private readonly object _syncLock = new object ( );
-                private readonly Uri _baseThemeUri = new Uri ( "Resources/Themes/BaseTheme.xaml", UriKind.Relative );
-                private readonly Uri _darkThemeUri = new Uri ( "Resources/Themes/DarkTheme.xaml", UriKind.Relative );
-                private readonly Uri _lightThemeUri = new Uri ( "Resources/Themes/LightTheme.xaml", UriKind.Relative );
+                private readonly Uri _baseThemeUri = new Uri ( "pack://application:,,,/Dissonance;component/Resources/Themes/BaseTheme.xaml", UriKind.Absolute );
+                private readonly Uri _darkThemeUri = new Uri ( "pack://application:,,,/Dissonance;component/Resources/Themes/DarkTheme.xaml", UriKind.Absolute );
+                private readonly Uri _lightThemeUri = new Uri ( "pack://application:,,,/Dissonance;component/Resources/Themes/LightTheme.xaml", UriKind.Absolute );
 
                 public IReadOnlyCollection<AppTheme> AvailableThemes => ThemeValues;
 

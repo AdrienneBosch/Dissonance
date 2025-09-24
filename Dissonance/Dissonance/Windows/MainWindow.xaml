@@ -25,6 +25,9 @@
                              ResizeBorderThickness="6"/>
     </shell:WindowChrome.WindowChrome>
     <Window.Resources>
+        <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+            <ContentPresenter Content="{Binding ContentViewModel}"/>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type local:MainWindowViewModel}">
             <Grid>
                 <Grid.RowDefinitions>
@@ -475,7 +478,7 @@
                 CornerRadius="{StaticResource SurfaceCornerRadius}"
                 Background="{DynamicResource SurfaceBackgroundBrush}">
             <Grid>
-                <ContentControl Content="{Binding SelectedSection.ContentViewModel}">
+                <ContentControl Content="{Binding SelectedSection}">
                     <ContentControl.Style>
                         <Style TargetType="ContentControl">
                             <Setter Property="Visibility" Value="Visible"/>

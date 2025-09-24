@@ -211,7 +211,13 @@ namespace Dissonance
 
                 private void NavigationMenuPopup_Opened ( object? sender, EventArgs e )
                 {
-                        Dispatcher.BeginInvoke ( new Action ( ( ) => NavigationListBox.Focus ( ) ), DispatcherPriority.Input );
+                        Dispatcher.BeginInvoke ( new Action ( ( ) =>
+                        {
+                                if ( NavigationHomeButton.IsVisible )
+                                        NavigationHomeButton.Focus ( );
+                                else
+                                        NavigationListBox.Focus ( );
+                        } ), DispatcherPriority.Input );
                 }
 
                 private void NavigationMenuPopup_Closed ( object? sender, EventArgs e )

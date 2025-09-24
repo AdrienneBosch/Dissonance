@@ -48,6 +48,7 @@ namespace Dissonance.ViewModels
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
+                        NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
 
                         var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer ( ).GetInstalledVoices ( );
                         foreach ( var voice in installedVoices )
@@ -104,6 +105,8 @@ namespace Dissonance.ViewModels
                 public ICommand ImportSettingsCommand { get; }
 
                 public ICommand SaveDefaultSettingsCommand { get; }
+
+                public ICommand NavigateToSectionCommand { get; }
 
                 public bool IsNavigationMenuOpen
                 {
@@ -492,6 +495,23 @@ namespace Dissonance.ViewModels
                         return TryParseHotkeyCombination ( candidate, out var modifiers, out var parsedKey )
                                 ? string.Join ( "+", modifiers ) + "+" + parsedKey.ToString ( )
                                 : candidate;
+                }
+
+                private void NavigateToSection ( object parameter )
+                {
+                        if ( parameter is NavigationSectionViewModel section )
+                        {
+                                if ( SelectedSection != section )
+                                        SelectedSection = section;
+                        }
+                        else
+                        {
+                                if ( SelectedSection != null )
+                                        SelectedSection = null;
+                        }
+
+                        if ( IsNavigationMenuOpen )
+                                IsNavigationMenuOpen = false;
                 }
 
                 protected void OnPropertyChanged ( string propertyName )

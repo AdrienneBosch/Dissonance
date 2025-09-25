@@ -355,7 +355,7 @@
                                    Style="{StaticResource HeaderSubtitleTextStyle}"
                                    Margin="0,10,0,0"/>
                     </StackPanel>
-                    <StackPanel DataContext="{Binding SelectedSection}">
+                    <StackPanel>
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Visible"/>
@@ -366,11 +366,11 @@
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="{Binding BannerTitle}"
+                        <TextBlock Text="{Binding SelectedSection.BannerTitle}"
                                    FontSize="24"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding Description}"
+                        <TextBlock Text="{Binding SelectedSection.Description}"
                                    FontSize="14"
                                    Margin="0,6,0,0"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -389,7 +389,7 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock Text="{Binding BannerSubtitle}"
+                        <TextBlock Text="{Binding SelectedSection.BannerSubtitle}"
                                    FontSize="14"
                                    Margin="0,6,0,0"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}">
@@ -398,6 +398,9 @@
                                     <Setter Property="Visibility" Value="Visible"/>
                                     <Style.Triggers>
                                         <Trigger Property="Text" Value="">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                        </Trigger>
+                                        <Trigger Property="Text" Value="{x:Null}">
                                             <Setter Property="Visibility" Value="Collapsed"/>
                                         </Trigger>
                                     </Style.Triggers>

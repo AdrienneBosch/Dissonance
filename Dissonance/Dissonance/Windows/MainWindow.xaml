@@ -128,11 +128,24 @@
                                 Minimum="0"
                                 Maximum="100"
                                 Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                ToolTip="Set the output volume for text-to-speech"
+                                SmallChange="1"
+                                LargeChange="10"
                                 AutomationProperties.Name="Voice volume"
                                 AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeading}"
                                 AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
-                                TabIndex="4"/>
+                                Focusable="True"
+                                IsTabStop="True"
+                                TabIndex="4"
+                                KeyDown="VoiceVolumeSlider_KeyDown">
+                            <Slider.ToolTip>
+                                <ToolTip>
+                                    <StackPanel>
+                                        <TextBlock Text="Set the output volume for text-to-speech"/>
+                                        <TextBlock Text="{Binding Value, RelativeSource={RelativeSource AncestorType=Slider}, StringFormat=Current volume: {0}%}"/>
+                                    </StackPanel>
+                                </ToolTip>
+                            </Slider.ToolTip>
+                        </Slider>
                     </StackPanel>
                 </Border>
 

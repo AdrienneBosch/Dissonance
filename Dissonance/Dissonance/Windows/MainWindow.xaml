@@ -128,11 +128,15 @@
                                 Minimum="0"
                                 Maximum="100"
                                 Value="{Binding Volume, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                SmallChange="1"
+                                LargeChange="10"
                                 AutomationProperties.Name="Voice volume"
                                 AutomationProperties.LabeledBy="{Binding ElementName=VolumeHeading}"
                                 AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
+                                Focusable="True"
+                                IsTabStop="True"
                                 TabIndex="4"
-                                PreviewKeyDown="VoiceVolumeSlider_PreviewKeyDown">
+                                KeyDown="VoiceVolumeSlider_KeyDown">
                             <Slider.ToolTip>
                                 <ToolTip>
                                     <StackPanel>

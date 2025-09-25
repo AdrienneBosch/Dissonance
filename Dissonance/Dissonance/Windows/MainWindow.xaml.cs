@@ -315,7 +315,7 @@ namespace Dissonance
                         return modifiers;
                 }
 
-                private void VoiceVolumeSlider_PreviewKeyDown ( object sender, KeyEventArgs e )
+                private void VoiceVolumeSlider_KeyDown ( object sender, KeyEventArgs e )
                 {
                         if ( sender is not Slider slider )
                         {

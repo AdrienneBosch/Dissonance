@@ -314,5 +314,52 @@ namespace Dissonance
 
                         return modifiers;
                 }
+
+                private void VoiceVolumeSlider_PreviewKeyDown ( object sender, KeyEventArgs e )
+                {
+                        if ( sender is not Slider slider )
+                        {
+                                return;
+                        }
+
+                        if ( Keyboard.Modifiers != ModifierKeys.None )
+                        {
+                                return;
+                        }
+
+                        double change;
+
+                        switch ( e.Key )
+                        {
+                                case Key.Left:
+                                case Key.Down:
+                                        change = -slider.SmallChange;
+                                        break;
+                                case Key.Right:
+                                case Key.Up:
+                                        change = slider.SmallChange;
+                                        break;
+                                case Key.PageDown:
+                                        change = -slider.LargeChange;
+                                        break;
+                                case Key.PageUp:
+                                        change = slider.LargeChange;
+                                        break;
+                                case Key.Home:
+                                        slider.Value = slider.Minimum;
+                                        e.Handled = true;
+                                        return;
+                                case Key.End:
+                                        slider.Value = slider.Maximum;
+                                        e.Handled = true;
+                                        return;
+                                default:
+                                        return;
+                        }
+
+                        var updatedValue = slider.Value + change;
+                        slider.Value = Math.Max ( slider.Minimum, Math.Min ( slider.Maximum, updatedValue ) );
+                        e.Handled = true;
+                }
         }
 }

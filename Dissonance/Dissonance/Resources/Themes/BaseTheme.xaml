@@ -428,7 +428,7 @@
                     <Border x:Name="SwitchBackground"
                             Background="{DynamicResource ToggleBackgroundBrush}"
                             CornerRadius="18"
-                            Padding="6"
+                            Padding="6,4"
                             SnapsToDevicePixels="True">
                         <Grid>
                             <TextBlock Text="☀"

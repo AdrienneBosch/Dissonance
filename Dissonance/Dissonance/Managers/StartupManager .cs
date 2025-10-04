@@ -34,11 +34,14 @@ namespace Dissonance.Managers
 		{
 			if ( mainWindow == null ) throw new ArgumentNullException ( nameof ( mainWindow ) );
 
-			mainWindow.Loaded += ( s, e ) =>
-			{
-				var hotkeyManager = _serviceProvider.GetRequiredService<HotkeyManager>();
-				hotkeyManager.Initialize ( mainWindow );
-			};
+                        mainWindow.Loaded += ( s, e ) =>
+                        {
+                                var clipboardManager = _serviceProvider.GetRequiredService<ClipboardManager>();
+                                clipboardManager.Initialize ( mainWindow );
+
+                                var hotkeyManager = _serviceProvider.GetRequiredService<HotkeyManager>();
+                                hotkeyManager.Initialize ( mainWindow );
+                        };
 
 			_logger.LogInformation ( "StartupManager subscribed to MainWindow Loaded event." );
 		}

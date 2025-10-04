@@ -29,6 +29,8 @@ namespace Dissonance
                         public string Key { get; set; }
 
                         public string Modifiers { get; set; }
+
+                        public bool AutoReadClipboard { get; set; }
                 }
         }
 }

@@ -176,7 +176,7 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = null,
                                 WindowHeight = null,
                                 IsWindowMaximized = false,
-                                Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E" },
+                                Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                         };
                 }
 
@@ -198,6 +198,7 @@ namespace Dissonance.Services.SettingsService
                                 {
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
                                         Key = settings.Hotkey?.Key ?? string.Empty,
+                                        AutoReadClipboard = settings.Hotkey?.AutoReadClipboard ?? false,
                                 }
                         };
                 }
@@ -224,6 +225,7 @@ namespace Dissonance.Services.SettingsService
                                 {
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,
                                         Key = string.IsNullOrWhiteSpace ( settings.Hotkey?.Key ) ? reference.Hotkey.Key : settings.Hotkey.Key,
+                                        AutoReadClipboard = settings.Hotkey?.AutoReadClipboard ?? reference.Hotkey.AutoReadClipboard,
                                 }
                         };
 

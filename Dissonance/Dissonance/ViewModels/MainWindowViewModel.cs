@@ -2,8 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Infrastructure.Constants;
@@ -31,6 +33,7 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private readonly ClipboardManager _clipboardManager;
+                private readonly RelayCommandNoParam _previewVoiceCommand;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
@@ -38,6 +41,16 @@ namespace Dissonance.ViewModels
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private bool _autoReadClipboard;
                 private NavigationSectionViewModel? _selectedSection;
+                private bool _isPreviewingVoice;
+                private Prompt? _activePreviewPrompt;
+                private readonly Dispatcher _dispatcher;
+                private readonly string _previewStartLabel;
+                private readonly string _previewStopLabel;
+                private readonly string _previewStartToolTip;
+                private readonly string _previewStopToolTip;
+                private readonly string _previewStartHelpText;
+                private readonly string _previewStopHelpText;
+                private readonly string _previewSampleText;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
                 {
@@ -53,6 +66,19 @@ namespace Dissonance.ViewModels
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
                         NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
+
+                        _previewStartLabel = GetResourceString ( "PreviewVoiceStartLabel", "Preview Voice" );
+                        _previewStopLabel = GetResourceString ( "PreviewVoiceStopLabel", "Stop Preview" );
+                        _previewStartToolTip = GetResourceString ( "PreviewVoiceStartToolTip", "Hear how the selected voice sounds." );
+                        _previewStopToolTip = GetResourceString ( "PreviewVoiceStopToolTip", "Stop the current preview." );
+                        _previewStartHelpText = GetResourceString ( "PreviewVoiceStartHelpText", "Preview the selected voice and playback speed." );
+                        _previewStopHelpText = GetResourceString ( "PreviewVoiceStopHelpText", "Stop the voice preview." );
+                        _previewSampleText = GetResourceString ( "PreviewVoiceSampleText", "This is how your voice settings sound." );
+                        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+
+                        _previewVoiceCommand = new RelayCommandNoParam ( PreviewVoice );
+                        PreviewVoiceCommand = _previewVoiceCommand;
+                        _ttsService.SpeechCompleted += OnSpeechCompleted;
 
                         var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer ( ).GetInstalledVoices ( );
                         foreach ( var voice in installedVoices )
@@ -114,6 +140,8 @@ namespace Dissonance.ViewModels
 
                 public ICommand NavigateToSectionCommand { get; }
 
+                public ICommand PreviewVoiceCommand { get; }
+
                 public bool IsNavigationMenuOpen
                 {
                         get => _isNavigationMenuOpen;
@@ -146,6 +174,14 @@ namespace Dissonance.ViewModels
                 }
 
                 public bool IsHomeSelected => SelectedSection == null;
+
+                public bool IsPreviewingVoice => _isPreviewingVoice;
+
+                public string PreviewVoiceButtonLabel => _isPreviewingVoice ? _previewStopLabel : _previewStartLabel;
+
+                public string PreviewVoiceButtonToolTip => _isPreviewingVoice ? _previewStopToolTip : _previewStartToolTip;
+
+                public string PreviewVoiceButtonHelpText => _isPreviewingVoice ? _previewStopHelpText : _previewStartHelpText;
 
                 public bool IsDarkTheme
                 {
@@ -274,6 +310,15 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        if ( _isPreviewingVoice )
+                        {
+                                _ttsService.Stop ( );
+                                ClearActivePreview ( );
+                        }
+
+                        _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        _activePreviewPrompt = null;
+
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( settings.SaveConfigAsDefaultOnClose )
                         {
@@ -340,6 +385,12 @@ namespace Dissonance.ViewModels
 
                 private void ReloadSettingsFromService ( bool reapplyHotkey )
                 {
+                        if ( _isPreviewingVoice )
+                        {
+                                _ttsService.Stop ( );
+                                ClearActivePreview ( );
+                        }
+
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( !string.IsNullOrWhiteSpace ( settings.Voice ) && !AvailableVoices.Contains ( settings.Voice ) && AvailableVoices.Any ( ) )
                         {
@@ -400,6 +451,7 @@ namespace Dissonance.ViewModels
                         {
                                 relay.RaiseCanExecuteChanged ( );
                         }
+                        UpdatePreviewVoiceState ( );
                 }
 
                 private void SaveCurrentConfigurationAsDefault ( )
@@ -548,6 +600,94 @@ namespace Dissonance.ViewModels
 
                         if ( IsNavigationMenuOpen )
                                 IsNavigationMenuOpen = false;
+                }
+
+                private void PreviewVoice ( )
+                {
+                        _ttsService.Stop ( );
+
+                        if ( _isPreviewingVoice )
+                        {
+                                ClearActivePreview ( );
+                                return;
+                        }
+
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+                        var prompt = _ttsService.Speak ( _previewSampleText );
+
+                        _activePreviewPrompt = prompt;
+                        _isPreviewingVoice = prompt != null;
+                        UpdatePreviewVoiceState ( );
+                }
+
+                private void OnSpeechCompleted ( object? sender, SpeakCompletedEventArgs e )
+                {
+                        var completedPrompt = e.Prompt;
+                        if ( completedPrompt == null )
+                                return;
+
+                        if ( !ReferenceEquals ( completedPrompt, _activePreviewPrompt ) )
+                                return;
+
+                        RunOnDispatcher ( ( ) =>
+                        {
+                                if ( ReferenceEquals ( _activePreviewPrompt, completedPrompt ) )
+                                {
+                                        _activePreviewPrompt = null;
+                                        _isPreviewingVoice = false;
+                                        UpdatePreviewVoiceState ( );
+                                }
+                        } );
+                }
+
+                private void ClearActivePreview ( )
+                {
+                        _activePreviewPrompt = null;
+                        if ( _isPreviewingVoice )
+                        {
+                                _isPreviewingVoice = false;
+                                UpdatePreviewVoiceState ( );
+                        }
+                }
+
+                private void UpdatePreviewVoiceState ( )
+                {
+                        OnPropertyChanged ( nameof ( IsPreviewingVoice ) );
+                        OnPropertyChanged ( nameof ( PreviewVoiceButtonLabel ) );
+                        OnPropertyChanged ( nameof ( PreviewVoiceButtonToolTip ) );
+                        OnPropertyChanged ( nameof ( PreviewVoiceButtonHelpText ) );
+                        _previewVoiceCommand.RaiseCanExecuteChanged ( );
+                }
+
+                private void RunOnDispatcher ( Action action )
+                {
+                        if ( action == null )
+                                return;
+
+                        if ( _dispatcher.CheckAccess ( ) )
+                        {
+                                action ( );
+                                return;
+                        }
+
+                        if ( !_dispatcher.HasShutdownStarted && !_dispatcher.HasShutdownFinished )
+                        {
+                                _dispatcher.BeginInvoke ( action );
+                        }
+                }
+
+                private static string GetResourceString ( string key, string fallback )
+                {
+                        if ( Application.Current != null )
+                        {
+                                if ( Application.Current.TryFindResource ( key ) is string value && !string.IsNullOrWhiteSpace ( value ) )
+                                {
+                                        return value;
+                                }
+                        }
+
+                        return fallback;
                 }
 
                 protected void OnPropertyChanged ( string propertyName )

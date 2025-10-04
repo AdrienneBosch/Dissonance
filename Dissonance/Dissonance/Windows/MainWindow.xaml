@@ -97,6 +97,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock x:Name="VoiceSelectionHeading"
                                    Grid.Row="0"
@@ -116,6 +117,17 @@
                                   HorizontalAlignment="Stretch"
                                   MinWidth="220"
                                   MinHeight="34"/>
+                        <Button Grid.Row="3"
+                                Content="{Binding PreviewVoiceButtonLabel}"
+                                Command="{Binding PreviewVoiceCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Left"
+                                MinWidth="160"
+                                TabIndex="5"
+                                ToolTip="{Binding PreviewVoiceButtonToolTip}"
+                                AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
+                                AutomationProperties.HelpText="{Binding PreviewVoiceButtonHelpText}"/>
                     </Grid>
                 </Border>
 

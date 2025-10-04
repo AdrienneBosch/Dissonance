@@ -4,6 +4,8 @@ using System.Linq;
 using System.Speech.Synthesis;
 
 using Dissonance;
+using Dissonance.Managers;
+using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -11,6 +13,8 @@ using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
+
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Xunit;
 
@@ -198,12 +202,15 @@ namespace Dissonance.Tests.ViewModels
                         var themeService = new TestThemeService();
                         var messageService = new FakeMessageService();
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService);
+                        var clipboardService = new TestClipboardService();
+                        var clipboardManager = new ClipboardManager(clipboardService, NullLogger<ClipboardManager>.Instance);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager);
+
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager);
 
                 private sealed class TestSettingsService : ISettingsService
                 {
@@ -275,7 +282,7 @@ namespace Dissonance.Tests.ViewModels
 
                         public int LastVolume { get; private set; }
 
-                        public event EventHandler? SpeechCompleted
+                        public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
                         {
                                 add { }
                                 remove { }
@@ -288,13 +295,21 @@ namespace Dissonance.Tests.ViewModels
                                 LastVolume = volume;
                         }
 
-                        public void Speak(string text)
+                        public Prompt? Speak(string text)
                         {
+                                return new Prompt(text);
                         }
 
                         public void Stop()
                         {
                         }
+                }
+
+                private sealed class TestClipboardService : IClipboardService
+                {
+                        public string? GetClipboardText() => null;
+
+                        public bool IsTextAvailable() => false;
                 }
 
                 private sealed class TestHotkeyService : IHotkeyService

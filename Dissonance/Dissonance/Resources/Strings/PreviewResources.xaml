@@ -1,0 +1,11 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="PreviewVoiceStartLabel">Preview Voice</sys:String>
+    <sys:String x:Key="PreviewVoiceStopLabel">Stop Preview</sys:String>
+    <sys:String x:Key="PreviewVoiceStartToolTip">Hear how the selected voice sounds with the current rate and volume.</sys:String>
+    <sys:String x:Key="PreviewVoiceStopToolTip">Stop the current voice preview.</sys:String>
+    <sys:String x:Key="PreviewVoiceStartHelpText">Press to preview the selected voice using the sample sentence.</sys:String>
+    <sys:String x:Key="PreviewVoiceStopHelpText">Press to stop the active voice preview.</sys:String>
+    <sys:String x:Key="PreviewVoiceSampleText">The quick brown fox jumps over the lazy dog.</sys:String>
+</ResourceDictionary>

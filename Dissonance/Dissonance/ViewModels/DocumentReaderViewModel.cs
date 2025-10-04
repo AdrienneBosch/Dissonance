@@ -72,7 +72,7 @@ namespace Dissonance.ViewModels
                 public string? FilePath
                 {
                         get => _filePath;
-                        private set
+                        set
                         {
                                 if (_filePath == value)
                                         return;

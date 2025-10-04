@@ -6,6 +6,8 @@ namespace Dissonance
 
                 public DocumentReaderHotkeySettings DocumentReaderHotkey { get; set; }
 
+                public string? DocumentReaderHighlightColor { get; set; }
+
                 public string Voice { get; set; }
 
                 public double VoiceRate { get; set; }

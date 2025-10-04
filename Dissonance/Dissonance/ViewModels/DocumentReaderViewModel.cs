@@ -3,10 +3,14 @@ using System.ComponentModel;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Input;
+using System.Windows.Media;
 using System.Speech.Synthesis;
 
 using Dissonance.Infrastructure.Commands;
@@ -54,8 +58,14 @@ namespace Dissonance.ViewModels
                 private Key _playbackHotkeyKey = Key.None;
                 private ModifierKeys _playbackHotkeyModifiers = ModifierKeys.None;
                 private bool _playbackHotkeyTogglesPause;
+                private readonly IReadOnlyList<HighlightColorOption> _highlightColorOptions;
+                private HighlightColorOption _selectedHighlightColor = null!;
+                private Brush _highlightBrush = Brushes.Transparent;
+                private int _highlightStartIndex;
+                private int _highlightLength;
 
                 private const double DefaultCharactersPerSecond = 15d;
+                private const string ThemeAccentHighlightId = "ThemeAccent";
 
                 public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService)
                 {
@@ -74,6 +84,8 @@ namespace Dissonance.ViewModels
                         _ttsService.SpeechProgress += OnSpeechProgress;
 
                         InitializePlaybackHotkeyFromSettings();
+                        _highlightColorOptions = CreateHighlightColorOptions();
+                        InitializeHighlightSettings();
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -87,10 +99,10 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _document = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(IsDocumentLoaded));
-                                OnPropertyChanged(nameof(CanReadDocument));
-                                OnPropertyChanged(nameof(FileName));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(IsDocumentLoaded));
+                                RaisePropertyChanged(nameof(CanReadDocument));
+                                RaisePropertyChanged(nameof(FileName));
                                 UpdateCommandStates();
                         }
                 }
@@ -104,11 +116,11 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _plainText = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(HasPlainText));
-                                OnPropertyChanged(nameof(WordCount));
-                                OnPropertyChanged(nameof(CharacterCount));
-                                OnPropertyChanged(nameof(CanReadDocument));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(HasPlainText));
+                                RaisePropertyChanged(nameof(WordCount));
+                                RaisePropertyChanged(nameof(CharacterCount));
+                                RaisePropertyChanged(nameof(CanReadDocument));
                                 UpdateCommandStates();
                         }
                 }
@@ -122,8 +134,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _filePath = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(FileName));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(FileName));
                         }
                 }
 
@@ -145,7 +157,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _playbackHotkeyCombination = newValue;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -159,7 +171,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _playbackHotkeyTogglesPause = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 SavePlaybackHotkeySettings();
                         }
                 }
@@ -177,8 +189,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isPlaying = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(PlayPauseLabel));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(PlayPauseLabel));
                                 _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -192,8 +204,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isPaused = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(PlayPauseLabel));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(PlayPauseLabel));
                                 _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -207,7 +219,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _currentAudioPosition = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -220,7 +232,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _currentCharacterIndex = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -229,6 +241,54 @@ namespace Dissonance.ViewModels
                 public int WordCount => _plainText?.Split(new[] { ' ', '\t', '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length ?? 0;
 
                 public int CharacterCount => _plainText?.Length ?? 0;
+
+                public IReadOnlyList<HighlightColorOption> HighlightColorOptions => _highlightColorOptions;
+
+                public HighlightColorOption SelectedHighlightColor
+                {
+                        get => _selectedHighlightColor;
+                        set
+                        {
+                                if (value == null)
+                                        value = _highlightColorOptions.First();
+
+                                if (ReferenceEquals(_selectedHighlightColor, value))
+                                {
+                                        UpdateHighlightBrush();
+                                        return;
+                                }
+
+                                SetSelectedHighlightColor(value, true);
+                        }
+                }
+
+                public Brush HighlightBrush => _highlightBrush;
+
+                public int HighlightStartIndex
+                {
+                        get => _highlightStartIndex;
+                        private set
+                        {
+                                if (_highlightStartIndex == value)
+                                        return;
+
+                                _highlightStartIndex = value;
+                                RaisePropertyChanged();
+                        }
+                }
+
+                public int HighlightLength
+                {
+                        get => _highlightLength;
+                        private set
+                        {
+                                if (_highlightLength == value)
+                                        return;
+
+                                _highlightLength = value;
+                                RaisePropertyChanged();
+                        }
+                }
 
                 public bool IsBusy
                 {
@@ -239,7 +299,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isBusy = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 UpdateCommandStates();
                         }
                 }
@@ -253,8 +313,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _statusMessage = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(HasStatusMessage));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(HasStatusMessage));
                                 UpdateCommandStates();
                         }
                 }
@@ -270,7 +330,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _lastError = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -409,12 +469,22 @@ namespace Dissonance.ViewModels
                         _playbackHotkeyModifiers = modifiers;
                         _playbackHotkeyKey = key;
 
-                        OnPropertyChanged(nameof(PlaybackHotkeyCombination));
-                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
-                        OnPropertyChanged(nameof(PlaybackHotkeyTogglesPause));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyTogglesPause));
                         _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                }
+
+                private void InitializeHighlightSettings()
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+                        var selectedId = settings.DocumentReaderHighlightColor;
+                        var option = _highlightColorOptions.FirstOrDefault(o => string.Equals(o.Id, selectedId, StringComparison.Ordinal))
+                                     ?? _highlightColorOptions.First();
+
+                        SetSelectedHighlightColor(option, false);
                 }
 
                 private bool CanApplyPlaybackHotkey()
@@ -444,9 +514,9 @@ namespace Dissonance.ViewModels
                                 _playbackHotkeyCombination = string.Empty;
                                 _lastAppliedPlaybackHotkeyCombination = string.Empty;
 
-                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
-                                OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                                OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
 
                                 SavePlaybackHotkeySettings();
                                 _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
@@ -461,15 +531,15 @@ namespace Dissonance.ViewModels
                         if (_playbackHotkeyCombination != canonical)
                         {
                                 _playbackHotkeyCombination = canonical;
-                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
                         }
 
                         _playbackHotkeyModifiers = modifiers;
                         _playbackHotkeyKey = key;
                         _lastAppliedPlaybackHotkeyCombination = canonical;
 
-                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
 
                         SavePlaybackHotkeySettings();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
@@ -635,27 +705,12 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-                {
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-                }
-
                 private static FlowDocument CreateFlowDocument(string content)
                 {
                         var document = new FlowDocument();
-                        if (string.IsNullOrEmpty(content))
-                        {
-                                document.Blocks.Add(new Paragraph(new Run(string.Empty)));
-                                return document;
-                        }
-
-                        var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
-                        var lines = normalized.Split('\n');
-                        foreach (var line in lines)
-                        {
-                                document.Blocks.Add(new Paragraph(new Run(line)));
-                        }
-
+                        var paragraph = new Paragraph();
+                        paragraph.Inlines.Add(new Run(content ?? string.Empty));
+                        document.Blocks.Add(paragraph);
                         return document;
                 }
 
@@ -727,6 +782,7 @@ namespace Dissonance.ViewModels
                         var textToSpeak = PlainText.Substring(CurrentCharacterIndex);
                         _playbackStartCharacterIndex = CurrentCharacterIndex;
                         _playbackStartAudioPosition = EstimateTimeFromCharacterIndex(CurrentCharacterIndex);
+                        SetHighlightRange(CurrentCharacterIndex, 0);
                         _currentPrompt = _ttsService.Speak(textToSpeak);
                         _pendingSeekCharacterIndex = null;
                         _pendingSeekAudioPosition = TimeSpan.Zero;
@@ -767,6 +823,7 @@ namespace Dissonance.ViewModels
 
                         CurrentCharacterIndex = targetIndex;
                         CurrentAudioPosition = targetTime;
+                        SetHighlightRange(CurrentCharacterIndex, 0);
 
                         if (IsPlaying)
                         {
@@ -794,6 +851,7 @@ namespace Dissonance.ViewModels
                         _pendingSeekAudioPosition = TimeSpan.Zero;
                         CurrentCharacterIndex = 0;
                         CurrentAudioPosition = TimeSpan.Zero;
+                        SetHighlightRange(0, 0);
                         IsPlaying = false;
                         IsPaused = false;
                 }
@@ -842,6 +900,10 @@ namespace Dissonance.ViewModels
 
                         if (_progressHistory.Count == 0 || _progressHistory[^1].CharacterIndex != CurrentCharacterIndex)
                                 _progressHistory.Add((CurrentAudioPosition, CurrentCharacterIndex));
+
+                        var highlightStart = Math.Clamp(_playbackStartCharacterIndex + e.CharacterPosition, 0, PlainText.Length);
+                        var highlightLength = Math.Clamp(e.CharacterCount, 0, PlainText.Length - highlightStart);
+                        SetHighlightRange(highlightStart, highlightLength);
                 }
 
                 private void OnSpeechCompleted(object? sender, SpeakCompletedEventArgs e)
@@ -875,6 +937,7 @@ namespace Dissonance.ViewModels
                         if (e.Cancelled)
                         {
                                 IsPlaying = false;
+                                SetHighlightRange(CurrentCharacterIndex, 0);
                                 return;
                         }
 
@@ -885,7 +948,129 @@ namespace Dissonance.ViewModels
                         {
                                 CurrentCharacterIndex = PlainText.Length;
                                 CurrentAudioPosition = EstimateTimeFromCharacterIndex(CurrentCharacterIndex);
+                                SetHighlightRange(CurrentCharacterIndex, 0);
                         }
+                }
+
+                public void RefreshHighlightBrush()
+                {
+                        UpdateHighlightBrush();
+                }
+
+                public void ReloadHighlightSettings()
+                {
+                        InitializeHighlightSettings();
+                }
+
+                private IReadOnlyList<HighlightColorOption> CreateHighlightColorOptions()
+                {
+                        return new ReadOnlyCollection<HighlightColorOption>(new List<HighlightColorOption>
+                        {
+                                new HighlightColorOption(ThemeAccentHighlightId, "Theme accent", null, "AccentBrush"),
+                                new HighlightColorOption("Warm", "Warm orange", Color.FromRgb(0xFF, 0x9E, 0x57)),
+                                new HighlightColorOption("Cool", "Cool blue", Color.FromRgb(0x42, 0xA5, 0xF5)),
+                                new HighlightColorOption("Calm", "Calm green", Color.FromRgb(0x66, 0xBB, 0x6A)),
+                                new HighlightColorOption("Violet", "Vibrant violet", Color.FromRgb(0xAB, 0x47, 0xBC)),
+                        });
+                }
+
+                private void SetSelectedHighlightColor(HighlightColorOption option, bool persist)
+                {
+                        var newOption = option ?? _highlightColorOptions.First();
+
+                        if (!ReferenceEquals(_selectedHighlightColor, newOption))
+                        {
+                                _selectedHighlightColor = newOption;
+                                RaisePropertyChanged(nameof(SelectedHighlightColor));
+                        }
+
+                        UpdateHighlightBrush();
+
+                        if (persist)
+                        {
+                                var settings = _settingsService.GetCurrentSettings();
+                                if (!string.Equals(settings.DocumentReaderHighlightColor, newOption.Id, StringComparison.Ordinal))
+                                {
+                                        settings.DocumentReaderHighlightColor = newOption.Id;
+                                        _settingsService.SaveCurrentSettings();
+                                }
+                        }
+                }
+
+                private void UpdateHighlightBrush()
+                {
+                        var brush = ResolveBrushForOption(_selectedHighlightColor);
+
+                        if (!ReferenceEquals(_highlightBrush, brush))
+                        {
+                                _highlightBrush = brush;
+                                RaisePropertyChanged(nameof(HighlightBrush));
+                        }
+                        else
+                        {
+                                RaisePropertyChanged(nameof(HighlightBrush));
+                        }
+                }
+
+                private static Brush ResolveBrushForOption(HighlightColorOption option)
+                {
+                        if (option != null && !string.IsNullOrWhiteSpace(option.ResourceKey))
+                        {
+                                if (Application.Current?.TryFindResource(option.ResourceKey) is Brush resourceBrush)
+                                        return resourceBrush;
+                        }
+
+                        if (option != null && option.Color.HasValue)
+                        {
+                                var solid = new SolidColorBrush(option.Color.Value);
+                                if (solid.CanFreeze)
+                                        solid.Freeze();
+                                return solid;
+                        }
+
+                        return Brushes.Transparent;
+                }
+
+                private void SetHighlightRange(int startIndex, int length)
+                {
+                        var totalLength = PlainText?.Length ?? 0;
+                        if (totalLength <= 0)
+                        {
+                                HighlightStartIndex = 0;
+                                HighlightLength = 0;
+                                return;
+                        }
+
+                        var clampedStart = Math.Clamp(startIndex, 0, totalLength);
+                        var available = totalLength - clampedStart;
+                        var clampedLength = Math.Clamp(length, 0, available);
+
+                        HighlightStartIndex = clampedStart;
+                        HighlightLength = clampedLength;
+                }
+
+                private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
+                {
+                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                }
+
+                public sealed class HighlightColorOption
+                {
+                        public HighlightColorOption(string id, string displayName, Color? color = null, string? resourceKey = null)
+                        {
+                                Id = id ?? throw new ArgumentNullException(nameof(id));
+                                DisplayName = displayName ?? throw new ArgumentNullException(nameof(displayName));
+                                Color = color;
+                                ResourceKey = resourceKey;
+                        }
+
+                        public string Id { get; }
+
+                        public string DisplayName { get; }
+
+                        public Color? Color { get; }
+
+                        public string? ResourceKey { get; }
                 }
         }
 }

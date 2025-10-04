@@ -178,6 +178,7 @@ namespace Dissonance.Services.SettingsService
                                 IsWindowMaximized = false,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                                 DocumentReaderHotkey = new DocumentReaderHotkeySettings { Modifiers = string.Empty, Key = "MediaPlayPause", UsePlayPauseToggle = false },
+                                DocumentReaderHighlightColor = "ThemeAccent",
                         };
                 }
 
@@ -206,7 +207,8 @@ namespace Dissonance.Services.SettingsService
                                         Modifiers = settings.DocumentReaderHotkey?.Modifiers ?? string.Empty,
                                         Key = settings.DocumentReaderHotkey?.Key ?? string.Empty,
                                         UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? false,
-                                }
+                                },
+                                DocumentReaderHighlightColor = settings.DocumentReaderHighlightColor
                         };
                 }
 
@@ -239,7 +241,8 @@ namespace Dissonance.Services.SettingsService
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.DocumentReaderHotkey?.Modifiers ) ? reference.DocumentReaderHotkey.Modifiers : settings.DocumentReaderHotkey.Modifiers,
                                         Key = string.IsNullOrWhiteSpace ( settings.DocumentReaderHotkey?.Key ) ? reference.DocumentReaderHotkey.Key : settings.DocumentReaderHotkey.Key,
                                         UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? reference.DocumentReaderHotkey.UsePlayPauseToggle,
-                                }
+                                },
+                                DocumentReaderHighlightColor = string.IsNullOrWhiteSpace ( settings.DocumentReaderHighlightColor ) ? reference.DocumentReaderHighlightColor : settings.DocumentReaderHighlightColor,
                         };
 
                         return normalized;

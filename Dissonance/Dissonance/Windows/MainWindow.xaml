@@ -127,58 +127,121 @@
 
                     <Border Grid.Column="0"
                             Style="{StaticResource CardContainerStyle}">
-                        <StackPanel>
-                            <TextBlock Text="Document details"
-                                       Style="{StaticResource CardTitleTextStyle}"/>
-                            <TextBlock Text="Supported format: plain text (.txt)"
-                                       Style="{StaticResource CardDescriptionTextStyle}"
-                                       Margin="0,6,0,0"/>
-                            <TextBlock Text="Selected file"
-                                       FontWeight="SemiBold"
-                                       Margin="0,16,0,0"/>
-                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                                     Text="{Binding FilePath, Mode=OneWay, TargetNullValue=No document selected}"
-                                     IsReadOnly="True"
-                                     Margin="0,8,0,0"
-                                     HorizontalAlignment="Stretch"
-                                     TextWrapping="Wrap"
-                                     MinHeight="34"/>
-                            <Grid Margin="0,16,0,0">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="*"/>
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0">
-                                    <TextBlock Text="Words"
-                                               Style="{StaticResource CardDescriptionTextStyle}"/>
-                                    <TextBlock Text="{Binding WordCount, StringFormat={}{0:N0}}"
-                                               Style="{StaticResource ValueBadgeTextStyle}"
-                                               Margin="0,6,0,0"/>
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <StackPanel Grid.Row="0">
+                                <TextBlock Text="Document details"
+                                           Style="{StaticResource CardTitleTextStyle}"/>
+                                <TextBlock Text="Supported format: plain text (.txt)"
+                                           Style="{StaticResource CardDescriptionTextStyle}"
+                                           Margin="0,6,0,0"/>
+                                <TextBlock Text="Selected file"
+                                           FontWeight="SemiBold"
+                                           Margin="0,16,0,0"/>
+                                <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                         Text="{Binding FilePath, Mode=OneWay, TargetNullValue=No document selected}"
+                                         IsReadOnly="True"
+                                         Margin="0,8,0,0"
+                                         HorizontalAlignment="Stretch"
+                                         TextWrapping="Wrap"
+                                         MinHeight="34"/>
+                                <Grid Margin="0,16,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Grid.Column="0">
+                                        <TextBlock Text="Words"
+                                                   Style="{StaticResource CardDescriptionTextStyle}"/>
+                                        <TextBlock Text="{Binding WordCount, StringFormat={}{0:N0}}"
+                                                   Style="{StaticResource ValueBadgeTextStyle}"
+                                                   Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Characters"
+                                                   Style="{StaticResource CardDescriptionTextStyle}"/>
+                                        <TextBlock Text="{Binding CharacterCount, StringFormat={}{0:N0}}"
+                                                   Style="{StaticResource ValueBadgeTextStyle}"
+                                                   Margin="0,6,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                            <ScrollViewer Grid.Row="1"
+                                          Margin="0,24,0,0"
+                                          VerticalScrollBarVisibility="Auto"
+                                          HorizontalScrollBarVisibility="Disabled">
+                                <StackPanel>
+                                    <TextBlock x:Name="PlaybackHotkeyHeading"
+                                               Text="Playback hotkey"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                    <TextBlock Margin="0,4,0,0"
+                                               Text="Assign a shortcut to control document narration while reviewing the preview."
+                                               Style="{StaticResource CardDescriptionTextStyle}"
+                                               TextWrapping="Wrap"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,8,0,0">
+                                        <TextBox x:Name="DocumentPlaybackHotkeyTextBox"
+                                                 Width="180"
+                                                 Style="{StaticResource ModernTextBoxStyle}"
+                                                 Text="{Binding PlaybackHotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                                 IsReadOnly="True"
+                                                 PreviewKeyDown="DocumentPlaybackHotkeyTextBox_PreviewKeyDown"
+                                                 AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
+                                                 AutomationProperties.Name="Document playback hotkey"
+                                                 AutomationProperties.HelpText="Set the hotkey used to play or stop document narration"/>
+                                        <Button Content="Apply"
+                                                Style="{StaticResource PrimaryButtonStyle}"
+                                                Command="{Binding ApplyPlaybackHotkeyCommand}"
+                                                Margin="12,0,0,0"
+                                                MinWidth="96"
+                                                AutomationProperties.Name="Apply document playback hotkey"
+                                                AutomationProperties.HelpText="Applies the document playback hotkey combination"/>
+                                    </StackPanel>
+                                    <CheckBox Margin="0,12,0,0"
+                                              Content="Use the hotkey to play and pause instead of stopping"
+                                              Style="{StaticResource MenuCheckBoxStyle}"
+                                              IsChecked="{Binding PlaybackHotkeyTogglesPause, Mode=TwoWay}"
+                                              ToolTip="When enabled, pressing the hotkey toggles between play and pause."
+                                              AutomationProperties.Name="Toggle playback hotkey pause behavior"
+                                              AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
+                                    <StackPanel Orientation="Horizontal"
+                                                Margin="0,16,0,0"
+                                                VerticalAlignment="Center">
+                                        <TextBlock Text="Highlight color"
+                                                   Margin="0,0,12,0"
+                                                   VerticalAlignment="Center"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                        <ComboBox ItemsSource="{Binding HighlightColorOptions}"
+                                                  SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
+                                                  DisplayMemberPath="DisplayName"
+                                                  MinWidth="200"
+                                                  Style="{StaticResource HighlightColorComboBoxStyle}"
+                                                  AutomationProperties.Name="Document highlight color"
+                                                  AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
+                                    </StackPanel>
+                                    <TextBlock Text="{Binding StatusMessage}"
+                                               Margin="0,20,0,0"
+                                               TextWrapping="Wrap"
+                                               Foreground="{DynamicResource AccentBrush}">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
+                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
-                                <StackPanel Grid.Column="1">
-                                    <TextBlock Text="Characters"
-                                               Style="{StaticResource CardDescriptionTextStyle}"/>
-                                    <TextBlock Text="{Binding CharacterCount, StringFormat={}{0:N0}}"
-                                               Style="{StaticResource ValueBadgeTextStyle}"
-                                               Margin="0,6,0,0"/>
-                                </StackPanel>
-                            </Grid>
-                            <TextBlock Text="{Binding StatusMessage}"
-                                       Margin="0,20,0,0"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource AccentBrush}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
+                            </ScrollViewer>
+                        </Grid>
                     </Border>
 
                     <Border Grid.Column="1"
@@ -189,7 +252,6 @@
                                 <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
                             </Grid.Resources>
                             <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
@@ -224,60 +286,7 @@
                                         IsEnabled="{Binding IsDocumentLoaded}"
                                         AutomationProperties.Name="Fast forward 10 seconds"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="2"
-                                        Margin="0,16,0,0">
-                                <TextBlock x:Name="PlaybackHotkeyHeading"
-                                           Text="Playback hotkey"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                                <TextBlock Margin="0,4,0,0"
-                                           Text="Assign a shortcut to control document narration while reviewing the preview."
-                                           Style="{StaticResource CardDescriptionTextStyle}"
-                                           TextWrapping="Wrap"/>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,8,0,0">
-                                    <TextBox x:Name="DocumentPlaybackHotkeyTextBox"
-                                             Width="180"
-                                             Style="{StaticResource ModernTextBoxStyle}"
-                                             Text="{Binding PlaybackHotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             IsReadOnly="True"
-                                             PreviewKeyDown="DocumentPlaybackHotkeyTextBox_PreviewKeyDown"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
-                                             AutomationProperties.Name="Document playback hotkey"
-                                             AutomationProperties.HelpText="Set the hotkey used to play or stop document narration"/>
-                                    <Button Content="Apply"
-                                            Style="{StaticResource PrimaryButtonStyle}"
-                                            Command="{Binding ApplyPlaybackHotkeyCommand}"
-                                            Margin="12,0,0,0"
-                                            MinWidth="96"
-                                            AutomationProperties.Name="Apply document playback hotkey"
-                                            AutomationProperties.HelpText="Applies the document playback hotkey combination"/>
-                                </StackPanel>
-                                <CheckBox Margin="0,12,0,0"
-                                          Content="Use the hotkey to play and pause instead of stopping"
-                                          Style="{StaticResource MenuCheckBoxStyle}"
-                                          IsChecked="{Binding PlaybackHotkeyTogglesPause, Mode=TwoWay}"
-                                          ToolTip="When enabled, pressing the hotkey toggles between play and pause."
-                                          AutomationProperties.Name="Toggle playback hotkey pause behavior"
-                                          AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,16,0,0"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="Highlight color"
-                                               Margin="0,0,12,0"
-                                               VerticalAlignment="Center"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                                    <ComboBox ItemsSource="{Binding HighlightColorOptions}"
-                                              SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
-                                              DisplayMemberPath="DisplayName"
-                                              Width="200"
-                                              Style="{StaticResource ModernComboBoxStyle}"
-                                              AutomationProperties.Name="Document highlight color"
-                                              AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="3"
+                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="2"
                                                                               Margin="0,12,0,0"
                                                                               Document="{Binding Document}"
                                                                               HighlightStartIndex="{Binding HighlightStartIndex}"
@@ -295,7 +304,7 @@
                                     </Style>
                                 </controls:HighlightingFlowDocumentScrollViewer.Style>
                             </controls:HighlightingFlowDocumentScrollViewer>
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="2"
                                        Margin="0,20,0,0"
                                        Text="Open a document to preview its contents here."
                                        HorizontalAlignment="Center"

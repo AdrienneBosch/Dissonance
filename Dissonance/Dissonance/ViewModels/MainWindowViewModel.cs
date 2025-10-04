@@ -36,8 +36,8 @@ namespace Dissonance.ViewModels
                 private string _hotkeyCombination = string.Empty;
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private NavigationSectionViewModel? _selectedSection;
-private bool _isVoicePreviewing;
-private Prompt? _activePreviewPrompt;
+                private bool _isVoicePreviewing;
+                private Prompt? _activePreviewPrompt;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService )
                 {
@@ -335,7 +335,7 @@ private Prompt? _activePreviewPrompt;
                 {
                         if ( Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess ( ) )
                         {
-                                Application.Current.Dispatcher.BeginInvoke ( (Action) ( ) => SetPreviewState ( isPreviewing ) );
+                                Application.Current.Dispatcher.BeginInvoke((Action)(() => SetPreviewState(isPreviewing)));
                                 return;
                         }
 

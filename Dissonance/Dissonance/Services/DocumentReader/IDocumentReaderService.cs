@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 
 namespace Dissonance.Services.DocumentReader
 {
@@ -13,14 +14,22 @@ namespace Dissonance.Services.DocumentReader
         public sealed class DocumentReadResult
         {
                 public DocumentReadResult(string filePath, string plainText)
+                        : this(filePath, null, plainText)
+                {
+                }
+
+                public DocumentReadResult(string filePath, FlowDocument? document, string plainText)
                 {
                         FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
+                        Document = document;
                         PlainText = plainText ?? string.Empty;
                 }
 
                 public string FilePath { get; }
 
                 public string FileName => Path.GetFileName(FilePath);
+
+                public FlowDocument? Document { get; }
 
                 public string PlainText { get; }
 

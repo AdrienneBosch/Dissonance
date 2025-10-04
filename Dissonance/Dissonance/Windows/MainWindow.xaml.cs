@@ -18,10 +18,17 @@ namespace Dissonance
         {
                 private readonly MainWindowViewModel _viewModel;
                 private readonly ISettingsService _settingsService;
+                private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private bool _isWindowPlacementInitialized;
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
                 private bool _isWindowPlacementDirty;
                 private KeyBinding? _documentPlaybackKeyBinding;
+                private static readonly HashSet<int> PlaybackAppCommands = new()
+                {
+                        14, // APPCOMMAND_MEDIA_PLAY_PAUSE
+                        46, // APPCOMMAND_MEDIA_PLAY
+                        47, // APPCOMMAND_MEDIA_PAUSE
+                };
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {
                         Key.LeftCtrl,
@@ -41,9 +48,9 @@ namespace Dissonance
                         InitializeComponent ( );
                         DataContext = _viewModel;
 
-                        var documentReaderViewModel = _viewModel.DocumentReader;
-                        documentReaderViewModel.PropertyChanged += OnDocumentReaderPropertyChanged;
-                        UpdateDocumentPlaybackHotkeyBinding ( documentReaderViewModel );
+                        _documentReaderViewModel = _viewModel.DocumentReader;
+                        _documentReaderViewModel.PropertyChanged += OnDocumentReaderPropertyChanged;
+                        UpdateDocumentPlaybackHotkeyBinding ( _documentReaderViewModel );
 
                         SourceInitialized += OnSourceInitialized;
                         LocationChanged += OnWindowLocationChanged;
@@ -53,8 +60,7 @@ namespace Dissonance
 
                 protected override void OnClosing ( CancelEventArgs e )
                 {
-                        var documentReaderViewModel = _viewModel.DocumentReader;
-                        documentReaderViewModel.PropertyChanged -= OnDocumentReaderPropertyChanged;
+                        _documentReaderViewModel.PropertyChanged -= OnDocumentReaderPropertyChanged;
 
                         PersistWindowPlacement ( );
                         if ( _isWindowPlacementDirty )
@@ -81,6 +87,13 @@ namespace Dissonance
                         {
                                 WmGetMinMaxInfo ( hwnd, lParam );
                                 handled = true;
+                        }
+                        else if ( msg == WM_APPCOMMAND )
+                        {
+                                if ( TryHandleAppCommand ( lParam ) )
+                                {
+                                        handled = true;
+                                }
                         }
 
                         return IntPtr.Zero;
@@ -508,7 +521,31 @@ namespace Dissonance
                         e.Handled = true;
                 }
 
+                private bool TryHandleAppCommand ( IntPtr lParam )
+                {
+                        var command = GetAppCommand ( lParam );
+                        if ( !PlaybackAppCommands.Contains ( command ) )
+                        {
+                                return false;
+                        }
+
+                        var playbackCommand = _documentReaderViewModel.PlaybackHotkeyCommand;
+                        if ( !playbackCommand.CanExecute ( null ) )
+                        {
+                                return false;
+                        }
+
+                        playbackCommand.Execute ( null );
+                        return true;
+                }
+
+                private static int GetAppCommand ( IntPtr lParam )
+                {
+                        return ( ( int ) ( ( long ) lParam >> 16 ) ) & 0x0FFF;
+                }
+
                 private const int WM_GETMINMAXINFO = 0x0024;
+                private const int WM_APPCOMMAND = 0x0319;
                 private const int MONITOR_DEFAULTTONEAREST = 0x00000002;
 
                 [DllImport ( "user32.dll" )]

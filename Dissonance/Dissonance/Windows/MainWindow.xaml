@@ -20,10 +20,10 @@
         d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
     <Window.InputBindings>
         <KeyBinding Key="S"
-                    Modifiers="Control,Shift"
+                    Modifiers="Control+Shift"
                     Command="{Binding SpeakClipboardCommand}"/>
         <KeyBinding Key="X"
-                    Modifiers="Control,Shift"
+                    Modifiers="Control+Shift"
                     Command="{Binding StopSpeechCommand}"/>
     </Window.InputBindings>
     <shell:WindowChrome.WindowChrome>

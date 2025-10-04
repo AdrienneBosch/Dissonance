@@ -25,6 +25,54 @@
                              ResizeBorderThickness="6"/>
     </shell:WindowChrome.WindowChrome>
     <Window.Resources>
+        <Style x:Key="SettingsToggleSwitchStyle" TargetType="ToggleButton">
+            <Setter Property="Width" Value="52"/>
+            <Setter Property="Height" Value="28"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Track"
+                                Background="{DynamicResource SurfaceBackgroundBrush}"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="14"
+                                Padding="3"
+                                SnapsToDevicePixels="True">
+                            <Grid>
+                                <Border x:Name="Thumb"
+                                        Width="22"
+                                        Height="22"
+                                        Background="{DynamicResource ButtonForegroundBrush}"
+                                        CornerRadius="11"
+                                        HorizontalAlignment="Left"
+                                        SnapsToDevicePixels="True"/>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Track" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right"/>
+                                <Setter TargetName="Thumb" Property="Background" Value="{DynamicResource PrimaryBackgroundBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Thumb" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="Track" Property="BorderThickness" Value="2"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.6"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
         <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
             <ContentPresenter Content="{Binding ContentViewModel}"/>
         </DataTemplate>
@@ -154,34 +202,89 @@
                         Grid.Row="1"
                         Grid.Column="1"
                         Margin="12,12,0,0">
-                    <StackPanel>
-                        <TextBlock x:Name="HotkeyHeading"
-                                   Text="Speak Selection Hotkey"
-                                   Style="{StaticResource CardTitleTextStyle}"/>
-                        <TextBlock Text="Define the shortcut that copies your current selection and speaks it aloud."
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="HotkeyHeading"
+                                       Text="Speak Selection Hotkey"
+                                       Style="{StaticResource CardTitleTextStyle}"/>
+                            <TextBlock Grid.Column="1"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource ValueBadgeTextStyle}">
+                                        <Setter Property="Text" Value="{Binding HotkeyCombination}"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HotkeyCombination}" Value="">
+                                                <Setter Property="Text" Value="Unassigned"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <TextBlock Grid.Row="1"
+                                   Text="Choose the shortcut that copies your current selection, speaks it aloud, and stops narration with a second press."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
-                        <StackPanel Orientation="Horizontal">
+                        <Border Grid.Row="2"
+                                Margin="0,8,0,0"
+                                Padding="12"
+                                Background="{DynamicResource SubtleBackgroundBrush}"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                            <StackPanel>
+                                <TextBlock Text="Tip"
+                                           FontSize="13"
+                                           FontWeight="SemiBold"
+                                           Foreground="{DynamicResource AccentBrush}"/>
+                                <TextBlock Text="Press the hotkey once to copy and narrate your selection. Press it again to stop playback immediately."
+                                           Margin="0,4,0,0"
+                                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                           TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                        <Grid Grid.Row="3"
+                              Margin="0,16,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
                             <TextBox x:Name="ReadClipboardHotkeyTextBox"
+                                     Grid.Column="0"
                                      Style="{StaticResource ModernTextBoxStyle}"
                                      Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
                                      ToolTip="Set the hotkey used to copy the current selection and speak it aloud"
-                                     Width="170"
+                                     MinWidth="170"
+                                     HorizontalAlignment="Stretch"
                                      TabIndex="6"
                                      IsReadOnly="True"
                                      PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                      AutomationProperties.HelpText="Specify the key combination that copies the current selection and speaks it aloud"/>
-                            <Button Content="Apply"
+                            <Button Grid.Column="1"
+                                    Content="Apply"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding ApplyHotkeyCommand}"
                                     Margin="12,0,0,0"
-                                    MinWidth="72"
+                                    MinWidth="88"
                                     ToolTip="Apply the new hotkey immediately"
                                     TabIndex="7"
                                     AutomationProperties.Name="Apply hotkey"
                                     AutomationProperties.HelpText="Applies the entered hotkey combination"/>
-                        </StackPanel>
-                    </StackPanel>
+                        </Grid>
+                    </Grid>
                 </Border>
 
                 <Border Style="{StaticResource CardContainerStyle}"
@@ -189,20 +292,75 @@
                         Grid.Column="0"
                         Grid.ColumnSpan="2"
                         Margin="0,12,0,0">
-                    <StackPanel>
-                        <TextBlock x:Name="AutoReadHeading"
-                                   Text="Automatic Clipboard Narration"
-                                   Style="{StaticResource CardTitleTextStyle}"/>
-                        <TextBlock Text="Toggle whether newly copied clipboard text should be spoken without using the hotkey."
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
+                        </Grid.RowDefinitions>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock x:Name="AutoReadHeading"
+                                       Text="Automatic Clipboard Narration"
+                                       Style="{StaticResource CardTitleTextStyle}"/>
+                            <TextBlock Grid.Column="1"
+                                       Margin="12,0,0,0"
+                                       VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock" BasedOn="{StaticResource ValueBadgeTextStyle}">
+                                        <Setter Property="Text" Value="Disabled"/>
+                                        <Setter Property="Foreground" Value="{DynamicResource SecondaryForegroundBrush}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding AutoReadClipboard}" Value="True">
+                                                <Setter Property="Text" Value="Enabled"/>
+                                                <Setter Property="Foreground" Value="{DynamicResource AccentBrush}"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                        <TextBlock Grid.Row="1"
+                                   Text="Have Dissonance narrate new clipboard text automatically as soon as it's copied."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
-                        <CheckBox Content="Automatically speak new clipboard text"
-                                  IsChecked="{Binding AutoReadClipboard, Mode=TwoWay}"
-                                  Margin="0,12,0,0"
-                                  AutomationProperties.Name="Automatically speak new clipboard text"
-                                  AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
-                                  AutomationProperties.LabeledBy="{Binding ElementName=AutoReadHeading}"
-                                  TabIndex="5"/>
-                    </StackPanel>
+                        <Border Grid.Row="2"
+                                Margin="0,12,0,0"
+                                Padding="16"
+                                Background="{DynamicResource SubtleBackgroundBrush}"
+                                BorderBrush="{DynamicResource CardBorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="10">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <ToggleButton x:Name="AutoReadToggle"
+                                              Style="{StaticResource SettingsToggleSwitchStyle}"
+                                              IsChecked="{Binding AutoReadClipboard, Mode=TwoWay}"
+                                              VerticalAlignment="Center"
+                                              AutomationProperties.Name="Automatically speak new clipboard text"
+                                              AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
+                                              AutomationProperties.LabeledBy="{Binding ElementName=AutoReadToggleLabel}"
+                                              TabIndex="5"/>
+                                <StackPanel Grid.Column="1"
+                                            Margin="12,0,0,0"
+                                            VerticalAlignment="Center">
+                                    <TextBlock x:Name="AutoReadToggleLabel"
+                                               Text="Automatically speak new clipboard text"
+                                               FontSize="14"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                    <TextBlock Text="Dissonance will listen for clipboard updates and narrate the cleaned text when available."
+                                               Style="{StaticResource CardDescriptionTextStyle}"
+                                               Margin="0,4,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                        </Border>
+                    </Grid>
                 </Border>
             </Grid>
         </DataTemplate>

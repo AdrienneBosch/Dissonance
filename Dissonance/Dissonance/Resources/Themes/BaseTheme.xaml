@@ -177,6 +177,14 @@
         </Setter>
     </Style>
 
+    <Style x:Key="PrimaryCompactButtonStyle"
+           TargetType="Button"
+           BasedOn="{StaticResource PrimaryButtonStyle}">
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="MinHeight" Value="32"/>
+    </Style>
+
     <Style x:Key="NavigationToggleButtonStyle" TargetType="ToggleButton">
         <Setter Property="Width" Value="44"/>
         <Setter Property="Height" Value="40"/>

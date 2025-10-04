@@ -198,6 +198,12 @@ namespace Dissonance.Tests.ViewModels
                                 {
                                         Modifiers = "Alt",
                                         Key = "E"
+                                },
+                                DocumentReaderHotkey = new AppSettings.DocumentReaderHotkeySettings
+                                {
+                                        Key = "MediaPlayPause",
+                                        Modifiers = string.Empty,
+                                        UsePlayPauseToggle = false,
                                 }
                         };
 
@@ -209,7 +215,7 @@ namespace Dissonance.Tests.ViewModels
                         var clipboardService = new TestClipboardService();
                         var statusService = new TestStatusAnnouncementService();
                         var documentReaderService = new TestDocumentReaderService();
-                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService);
+                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService, settingsService);
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
                         var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService, documentReaderViewModel);
@@ -316,6 +322,12 @@ namespace Dissonance.Tests.ViewModels
                                         {
                                                 Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
                                                 Key = settings.Hotkey?.Key ?? string.Empty
+                                        },
+                                        DocumentReaderHotkey = new AppSettings.DocumentReaderHotkeySettings
+                                        {
+                                                Modifiers = settings.DocumentReaderHotkey?.Modifiers ?? string.Empty,
+                                                Key = settings.DocumentReaderHotkey?.Key ?? string.Empty,
+                                                UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? false,
                                         }
                                 };
                         }

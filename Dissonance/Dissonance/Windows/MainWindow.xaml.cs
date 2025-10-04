@@ -333,6 +333,53 @@ namespace Dissonance
                         _viewModel.HotkeyCombination = string.Join ( "+", hotkeyParts );
                 }
 
+                private void DocumentPlaybackHotkeyTextBox_PreviewKeyDown ( object sender, KeyEventArgs e )
+                {
+                        if ( sender is not TextBox textBox )
+                                return;
+
+                        if ( textBox.DataContext is not DocumentReaderViewModel documentReaderViewModel )
+                                return;
+
+                        var key = e.Key == Key.System ? e.SystemKey : e.Key;
+
+                        if ( key == Key.Tab )
+                        {
+                                var modifiersState = Keyboard.Modifiers;
+                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
+                                {
+                                        e.Handled = false;
+                                        return;
+                                }
+                        }
+
+                        if ( key == Key.Back || key == Key.Delete || key == Key.Escape )
+                        {
+                                e.Handled = true;
+                                documentReaderViewModel.PlaybackHotkeyCombination = string.Empty;
+                                return;
+                        }
+
+                        e.Handled = true;
+
+                        if ( key == Key.None )
+                        {
+                                documentReaderViewModel.PlaybackHotkeyCombination = string.Empty;
+                                return;
+                        }
+
+                        var modifiers = GetActiveModifiers ( );
+
+                        if ( IsModifierKey ( key ) )
+                        {
+                                documentReaderViewModel.PlaybackHotkeyCombination = string.Join ( "+", modifiers );
+                                return;
+                        }
+
+                        modifiers.Add ( key.ToString ( ) );
+                        documentReaderViewModel.PlaybackHotkeyCombination = string.Join ( "+", modifiers );
+                }
+
                 private static bool IsModifierKey ( Key key )
                 {
                         return ModifierKeySet.Contains ( key );

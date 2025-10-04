@@ -11,6 +11,7 @@ using System.Speech.Synthesis;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Services.DocumentReader;
+using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 
 using Microsoft.Win32;
@@ -25,7 +26,10 @@ namespace Dissonance.ViewModels
                 private readonly RelayCommandNoParam _playPauseCommand;
                 private readonly RelayCommandNoParam _seekBackwardCommand;
                 private readonly RelayCommandNoParam _seekForwardCommand;
+                private readonly RelayCommandNoParam _applyPlaybackHotkeyCommand;
+                private readonly RelayCommandNoParam _playbackHotkeyCommand;
                 private readonly ITTSService _ttsService;
+                private readonly ISettingsService _settingsService;
                 private FlowDocument? _document;
                 private string? _plainText;
                 private string? _filePath;
@@ -45,21 +49,31 @@ namespace Dissonance.ViewModels
                 private TimeSpan _pendingSeekAudioPosition;
                 private double _charactersPerSecond;
                 private readonly List<(TimeSpan Time, int CharacterIndex)> _progressHistory = new();
+                private string _playbackHotkeyCombination = string.Empty;
+                private string _lastAppliedPlaybackHotkeyCombination = string.Empty;
+                private Key _playbackHotkeyKey = Key.None;
+                private ModifierKeys _playbackHotkeyModifiers = ModifierKeys.None;
+                private bool _playbackHotkeyTogglesPause;
 
                 private const double DefaultCharactersPerSecond = 15d;
 
-                public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService)
+                public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService)
                 {
                         _documentReaderService = documentReaderService ?? throw new ArgumentNullException(nameof(documentReaderService));
                         _ttsService = ttsService ?? throw new ArgumentNullException(nameof(ttsService));
+                        _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
                         _clearDocumentCommand = new RelayCommandNoParam(ClearDocument, () => !IsBusy && (IsDocumentLoaded || HasStatusMessage));
                         _browseForDocumentCommand = new RelayCommandNoParam(BrowseForDocument, () => !IsBusy);
                         _playPauseCommand = new RelayCommandNoParam(TogglePlayback, () => !IsBusy && CanReadDocument);
                         _seekBackwardCommand = new RelayCommandNoParam(() => SeekBy(TimeSpan.FromSeconds(-10)), () => !IsBusy && CanReadDocument);
                         _seekForwardCommand = new RelayCommandNoParam(() => SeekBy(TimeSpan.FromSeconds(10)), () => !IsBusy && CanReadDocument);
+                        _playbackHotkeyCommand = new RelayCommandNoParam(ExecutePlaybackHotkey, () => !IsBusy && CanReadDocument);
+                        _applyPlaybackHotkeyCommand = new RelayCommandNoParam(ApplyPlaybackHotkey, CanApplyPlaybackHotkey);
 
                         _ttsService.SpeechCompleted += OnSpeechCompleted;
                         _ttsService.SpeechProgress += OnSpeechProgress;
+
+                        InitializePlaybackHotkeyFromSettings();
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -119,6 +133,39 @@ namespace Dissonance.ViewModels
                 public bool HasPlainText => !string.IsNullOrWhiteSpace(PlainText);
 
                 public bool CanReadDocument => IsDocumentLoaded && HasPlainText;
+
+                public string PlaybackHotkeyCombination
+                {
+                        get => _playbackHotkeyCombination;
+                        set
+                        {
+                                var newValue = value ?? string.Empty;
+                                if (_playbackHotkeyCombination == newValue)
+                                        return;
+
+                                _playbackHotkeyCombination = newValue;
+                                OnPropertyChanged();
+                                _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                        }
+                }
+
+                public bool PlaybackHotkeyTogglesPause
+                {
+                        get => _playbackHotkeyTogglesPause;
+                        set
+                        {
+                                if (_playbackHotkeyTogglesPause == value)
+                                        return;
+
+                                _playbackHotkeyTogglesPause = value;
+                                OnPropertyChanged();
+                                SavePlaybackHotkeySettings();
+                        }
+                }
+
+                public Key PlaybackHotkeyKey => _playbackHotkeyKey;
+
+                public ModifierKeys PlaybackHotkeyModifiers => _playbackHotkeyModifiers;
 
                 public bool IsPlaying
                 {
@@ -234,6 +281,10 @@ namespace Dissonance.ViewModels
 
                 public ICommand SeekForwardCommand => _seekForwardCommand;
 
+                public ICommand ApplyPlaybackHotkeyCommand => _applyPlaybackHotkeyCommand;
+
+                public ICommand PlaybackHotkeyCommand => _playbackHotkeyCommand;
+
                 public async Task<bool> LoadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                 {
                         if (string.IsNullOrWhiteSpace(filePath))
@@ -331,6 +382,254 @@ namespace Dissonance.ViewModels
                         _playPauseCommand.RaiseCanExecuteChanged();
                         _seekBackwardCommand.RaiseCanExecuteChanged();
                         _seekForwardCommand.RaiseCanExecuteChanged();
+                        _playbackHotkeyCommand.RaiseCanExecuteChanged();
+                        _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                }
+
+                private void InitializePlaybackHotkeyFromSettings()
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+                        settings.DocumentReaderHotkey ??= new AppSettings.DocumentReaderHotkeySettings();
+
+                        _playbackHotkeyTogglesPause = settings.DocumentReaderHotkey.UsePlayPauseToggle;
+
+                        var combination = ComposePlaybackHotkeyString(settings.DocumentReaderHotkey);
+                        _playbackHotkeyCombination = combination;
+                        _lastAppliedPlaybackHotkeyCombination = combination;
+
+                        if (!TryParsePlaybackHotkey(combination, out var modifiers, out var key))
+                        {
+                                modifiers = ModifierKeys.None;
+                                key = Key.None;
+                        }
+
+                        _playbackHotkeyModifiers = modifiers;
+                        _playbackHotkeyKey = key;
+
+                        OnPropertyChanged(nameof(PlaybackHotkeyCombination));
+                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
+                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+                        OnPropertyChanged(nameof(PlaybackHotkeyTogglesPause));
+                        _playbackHotkeyCommand.RaiseCanExecuteChanged();
+                        _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                }
+
+                private bool CanApplyPlaybackHotkey()
+                {
+                        if (IsBusy)
+                                return false;
+
+                        var combination = _playbackHotkeyCombination?.Trim() ?? string.Empty;
+                        if (string.IsNullOrEmpty(combination))
+                                return !string.IsNullOrEmpty(_lastAppliedPlaybackHotkeyCombination);
+
+                        if (!TryParsePlaybackHotkey(combination, out var modifiers, out var key))
+                                return false;
+
+                        var canonical = FormatHotkey(modifiers, key);
+                        return !string.Equals(canonical, _lastAppliedPlaybackHotkeyCombination, StringComparison.Ordinal);
+                }
+
+                private void ApplyPlaybackHotkey()
+                {
+                        var combination = _playbackHotkeyCombination?.Trim() ?? string.Empty;
+
+                        if (string.IsNullOrEmpty(combination))
+                        {
+                                _playbackHotkeyKey = Key.None;
+                                _playbackHotkeyModifiers = ModifierKeys.None;
+                                _playbackHotkeyCombination = string.Empty;
+                                _lastAppliedPlaybackHotkeyCombination = string.Empty;
+
+                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
+                                OnPropertyChanged(nameof(PlaybackHotkeyKey));
+                                OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+
+                                SavePlaybackHotkeySettings();
+                                _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                                return;
+                        }
+
+                        if (!TryParsePlaybackHotkey(combination, out var modifiers, out var key))
+                                return;
+
+                        var canonical = FormatHotkey(modifiers, key);
+
+                        if (_playbackHotkeyCombination != canonical)
+                        {
+                                _playbackHotkeyCombination = canonical;
+                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
+                        }
+
+                        _playbackHotkeyModifiers = modifiers;
+                        _playbackHotkeyKey = key;
+                        _lastAppliedPlaybackHotkeyCombination = canonical;
+
+                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
+                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+
+                        SavePlaybackHotkeySettings();
+                        _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                }
+
+                private void ExecutePlaybackHotkey()
+                {
+                        if (!CanReadDocument)
+                                return;
+
+                        if (PlaybackHotkeyTogglesPause)
+                        {
+                                TogglePlayback();
+                                return;
+                        }
+
+                        if (IsPlaying || IsPaused)
+                        {
+                                ResetPlaybackState();
+                        }
+                        else
+                        {
+                                StartPlaybackFromCurrentPosition();
+                        }
+                }
+
+                private void SavePlaybackHotkeySettings()
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+                        settings.DocumentReaderHotkey ??= new AppSettings.DocumentReaderHotkeySettings();
+
+                        settings.DocumentReaderHotkey.Modifiers = ComposeModifierString(_playbackHotkeyModifiers);
+                        settings.DocumentReaderHotkey.Key = _playbackHotkeyKey == Key.None ? string.Empty : _playbackHotkeyKey.ToString();
+                        settings.DocumentReaderHotkey.UsePlayPauseToggle = _playbackHotkeyTogglesPause;
+
+                        _settingsService.SaveCurrentSettings();
+                }
+
+                private static string ComposeModifierString(ModifierKeys modifiers)
+                {
+                        var parts = new List<string>();
+
+                        if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                                parts.Add("Ctrl");
+
+                        if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                                parts.Add("Shift");
+
+                        if ((modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+                                parts.Add("Alt");
+
+                        if ((modifiers & ModifierKeys.Windows) == ModifierKeys.Windows)
+                                parts.Add("Win");
+
+                        return string.Join("+", parts);
+                }
+
+                private static string FormatHotkey(ModifierKeys modifiers, Key key)
+                {
+                        var parts = new List<string>();
+
+                        if ((modifiers & ModifierKeys.Control) == ModifierKeys.Control)
+                                parts.Add("Ctrl");
+
+                        if ((modifiers & ModifierKeys.Shift) == ModifierKeys.Shift)
+                                parts.Add("Shift");
+
+                        if ((modifiers & ModifierKeys.Alt) == ModifierKeys.Alt)
+                                parts.Add("Alt");
+
+                        if ((modifiers & ModifierKeys.Windows) == ModifierKeys.Windows)
+                                parts.Add("Win");
+
+                        parts.Add(key.ToString());
+
+                        return string.Join("+", parts);
+                }
+
+                private static string ComposePlaybackHotkeyString(AppSettings.DocumentReaderHotkeySettings? hotkey)
+                {
+                        if (hotkey == null || string.IsNullOrWhiteSpace(hotkey.Key))
+                                return string.Empty;
+
+                        var keyPart = hotkey.Key.Trim();
+                        if (string.IsNullOrWhiteSpace(hotkey.Modifiers))
+                                return keyPart;
+
+                        var candidate = hotkey.Modifiers.Trim() + "+" + keyPart;
+                        return TryParsePlaybackHotkey(candidate, out var modifiers, out var key)
+                                ? FormatHotkey(modifiers, key)
+                                : candidate;
+                }
+
+                private static bool TryParsePlaybackHotkey(string combination, out ModifierKeys modifiers, out Key key)
+                {
+                        modifiers = ModifierKeys.None;
+                        key = Key.None;
+
+                        if (string.IsNullOrWhiteSpace(combination))
+                                return false;
+
+                        var rawParts = combination.Split(new[] { '+' }, StringSplitOptions.RemoveEmptyEntries);
+                        if (rawParts.Length == 0)
+                                return false;
+
+                        var parts = new List<string>();
+                        foreach (var raw in rawParts)
+                        {
+                                var trimmed = raw.Trim();
+                                if (!string.IsNullOrEmpty(trimmed))
+                                        parts.Add(trimmed);
+                        }
+
+                        if (parts.Count == 0)
+                                return false;
+
+                        var keyCandidate = parts[parts.Count - 1];
+                        if (!Enum.TryParse(keyCandidate, true, out key) || key == Key.None)
+                                return false;
+
+                        modifiers = ModifierKeys.None;
+                        for (var i = 0; i < parts.Count - 1; i++)
+                        {
+                                if (!TryParseModifier(parts[i], out var modifier))
+                                        return false;
+
+                                modifiers |= modifier;
+                        }
+
+                        return true;
+                }
+
+                private static bool TryParseModifier(string candidate, out ModifierKeys modifier)
+                {
+                        if (string.IsNullOrWhiteSpace(candidate))
+                        {
+                                modifier = ModifierKeys.None;
+                                return false;
+                        }
+
+                        switch (candidate.Trim().ToLowerInvariant())
+                        {
+                                case "ctrl":
+                                case "control":
+                                        modifier = ModifierKeys.Control;
+                                        return true;
+                                case "shift":
+                                        modifier = ModifierKeys.Shift;
+                                        return true;
+                                case "alt":
+                                        modifier = ModifierKeys.Alt;
+                                        return true;
+                                case "win":
+                                case "windows":
+                                case "cmd":
+                                case "command":
+                                case "meta":
+                                        modifier = ModifierKeys.Windows;
+                                        return true;
+                                default:
+                                        modifier = ModifierKeys.None;
+                                        return false;
+                        }
                 }
 
                 private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

@@ -74,6 +74,158 @@
                 </Setter.Value>
             </Setter>
         </Style>
+        <DataTemplate DataType="{x:Type local:DocumentReaderViewModel}">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+
+                <StackPanel Grid.Row="0"
+                            Margin="0,0,0,20">
+                    <TextBlock Text="Open a text document to review it before narration."
+                               Style="{StaticResource CardDescriptionTextStyle}"/>
+                    <StackPanel Orientation="Horizontal"
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Left">
+                        <Button Content="Open document…"
+                                Command="{Binding BrowseForDocumentCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                MinWidth="160"
+                                AutomationProperties.Name="Open document"/>
+                        <Button Content="Clear"
+                                Command="{Binding ClearDocumentCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                MinWidth="120"
+                                Margin="12,0,0,0"
+                                AutomationProperties.Name="Clear loaded document"/>
+                    </StackPanel>
+                    <ProgressBar Height="4"
+                                 Margin="0,16,0,0"
+                                 IsIndeterminate="True">
+                        <ProgressBar.Style>
+                            <Style TargetType="ProgressBar">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </ProgressBar.Style>
+                    </ProgressBar>
+                </StackPanel>
+
+                <Grid Grid.Row="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="320"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <Border Grid.Column="0"
+                            Style="{StaticResource CardContainerStyle}">
+                        <StackPanel>
+                            <TextBlock Text="Document details"
+                                       Style="{StaticResource CardTitleTextStyle}"/>
+                            <TextBlock Text="Supported format: plain text (.txt)"
+                                       Style="{StaticResource CardDescriptionTextStyle}"
+                                       Margin="0,6,0,0"/>
+                            <TextBlock Text="Selected file"
+                                       FontWeight="SemiBold"
+                                       Margin="0,16,0,0"/>
+                            <TextBox Style="{StaticResource ModernTextBoxStyle}"
+                                     Text="{Binding FilePath, Mode=OneWay, TargetNullValue=No document selected}"
+                                     IsReadOnly="True"
+                                     Margin="0,8,0,0"
+                                     HorizontalAlignment="Stretch"
+                                     TextWrapping="Wrap"
+                                     MinHeight="34"/>
+                            <Grid Margin="0,16,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel Grid.Column="0">
+                                    <TextBlock Text="Words"
+                                               Style="{StaticResource CardDescriptionTextStyle}"/>
+                                    <TextBlock Text="{Binding WordCount, StringFormat={}{0:N0}}"
+                                               Style="{StaticResource ValueBadgeTextStyle}"
+                                               Margin="0,6,0,0"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1">
+                                    <TextBlock Text="Characters"
+                                               Style="{StaticResource CardDescriptionTextStyle}"/>
+                                    <TextBlock Text="{Binding CharacterCount, StringFormat={}{0:N0}}"
+                                               Style="{StaticResource ValueBadgeTextStyle}"
+                                               Margin="0,6,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       Margin="0,20,0,0"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource AccentBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            Margin="24,0,0,0"
+                            Style="{StaticResource CardContainerStyle}">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Document preview"
+                                       Style="{StaticResource CardTitleTextStyle}"/>
+                            <FlowDocumentScrollViewer Grid.Row="1"
+                                                      Margin="0,12,0,0"
+                                                      Document="{Binding Document}"
+                                                      VerticalScrollBarVisibility="Auto">
+                                <FlowDocumentScrollViewer.Style>
+                                    <Style TargetType="FlowDocumentScrollViewer">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDocumentLoaded}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </FlowDocumentScrollViewer.Style>
+                            </FlowDocumentScrollViewer>
+                            <TextBlock Grid.Row="1"
+                                       Margin="0,20,0,0"
+                                       Text="Open a document to preview its contents here."
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"
+                                       TextAlignment="Center"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDocumentLoaded}" Value="True">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </Grid>
+                    </Border>
+                </Grid>
+            </Grid>
+        </DataTemplate>
         <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
             <ContentPresenter Content="{Binding ContentViewModel}"/>
         </DataTemplate>
@@ -480,7 +632,7 @@
                                      HorizontalContentAlignment="Stretch"
                                      ItemContainerStyle="{StaticResource NavigationMenuListBoxItemStyle}">
                                 <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+                                    <DataTemplate>
                                         <TextBlock Text="{Binding Title}"
                                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
                                     </DataTemplate>
@@ -814,7 +966,7 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+                            <DataTemplate>
                                 <Button Style="{StaticResource HomeTileButtonStyle}"
                                         Margin="0,0,24,24"
                                         Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"

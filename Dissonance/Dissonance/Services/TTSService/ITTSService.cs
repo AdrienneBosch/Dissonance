@@ -12,5 +12,7 @@ namespace Dissonance.Services.TTSService
                 void Stop ( );
 
                 event EventHandler<SpeakCompletedEventArgs> SpeechCompleted;
+
+                event EventHandler<SpeakProgressEventArgs> SpeechProgress;
         }
 }

@@ -3,8 +3,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
+using System.Speech.Synthesis;
 
 using Dissonance.Services.DocumentReader;
+using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
 
 using Xunit;
@@ -18,7 +20,7 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
-                        var viewModel = new DocumentReaderViewModel(service);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
 
                         var success = await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -44,7 +46,7 @@ namespace Dissonance.Tests.ViewModels
                 public async Task LoadDocumentAsync_WhenServiceThrows_ReturnsFalseAndSetsError()
                 {
                         var service = new FailingDocumentReaderService(new InvalidOperationException("boom"));
-                        var viewModel = new DocumentReaderViewModel(service);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
 
                         var success = await viewModel.LoadDocumentAsync("missing.txt");
 
@@ -64,7 +66,7 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
-                        var viewModel = new DocumentReaderViewModel(service);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
 
                         viewModel.ClearDocumentCommand.Execute(null);
 
@@ -81,7 +83,7 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var tcs = new TaskCompletionSource<DocumentReadResult>();
                         var service = new PendingDocumentReaderService(tcs);
-                        var viewModel = new DocumentReaderViewModel(service);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
 
                         var loadTask = viewModel.LoadDocumentAsync("sample.txt");
 
@@ -136,6 +138,31 @@ namespace Dissonance.Tests.ViewModels
                         public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                         {
                                 return _completion.Task;
+                        }
+                }
+
+                private sealed class StubTtsService : ITTSService
+                {
+                        public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
+                        {
+                                add { }
+                                remove { }
+                        }
+
+                        public event EventHandler<SpeakProgressEventArgs>? SpeechProgress
+                        {
+                                add { }
+                                remove { }
+                        }
+
+                        public void SetTTSParameters(string voice, double rate, int volume)
+                        {
+                        }
+
+                        public Prompt? Speak(string text) => null;
+
+                        public void Stop()
+                        {
                         }
                 }
         }

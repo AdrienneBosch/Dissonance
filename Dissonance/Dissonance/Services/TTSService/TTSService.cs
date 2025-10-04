@@ -16,6 +16,7 @@ namespace Dissonance.Services.TTSService
                 private readonly SpeechSynthesizer _synthesizer;
 
                 public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted;
+                public event EventHandler<SpeakProgressEventArgs>? SpeechProgress;
 
                 public TTSService ( ILogger<TTSService> logger, IMessageService messageService )
                 {
@@ -23,6 +24,7 @@ namespace Dissonance.Services.TTSService
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _synthesizer = new SpeechSynthesizer ( );
                         _synthesizer.SpeakCompleted += OnSpeakCompleted;
+                        _synthesizer.SpeakProgress += OnSpeakProgress;
                 }
 
                 public void SetTTSParameters ( string voice, double rate, int volume )
@@ -79,6 +81,11 @@ namespace Dissonance.Services.TTSService
                 private void OnSpeakCompleted ( object? sender, SpeakCompletedEventArgs e )
                 {
                         SpeechCompleted?.Invoke ( this, e );
+                }
+
+                private void OnSpeakProgress ( object? sender, SpeakProgressEventArgs e )
+                {
+                        SpeechProgress?.Invoke ( this, e );
                 }
         }
 }

@@ -33,6 +33,22 @@
     <Color x:Key="WindowControlPressedColor">#FF51306F</Color>
     <Color x:Key="CloseControlHoverColor">#FF5A2C3C</Color>
     <Color x:Key="CloseControlPressedColor">#FF7E3448</Color>
+    <Color x:Key="StatusInfoBackgroundColor">#FF1E2F47</Color>
+    <Color x:Key="StatusInfoBorderColor">#FF305184</Color>
+    <Color x:Key="StatusInfoForegroundColor">#FFBBD4FF</Color>
+    <Color x:Key="StatusInfoIndicatorColor">#FF64B5F6</Color>
+    <Color x:Key="StatusSuccessBackgroundColor">#FF163625</Color>
+    <Color x:Key="StatusSuccessBorderColor">#FF265639</Color>
+    <Color x:Key="StatusSuccessForegroundColor">#FFB8F1CF</Color>
+    <Color x:Key="StatusSuccessIndicatorColor">#FF66BB6A</Color>
+    <Color x:Key="StatusWarningBackgroundColor">#FF392710</Color>
+    <Color x:Key="StatusWarningBorderColor">#FF7A5315</Color>
+    <Color x:Key="StatusWarningForegroundColor">#FFF9E1B3</Color>
+    <Color x:Key="StatusWarningIndicatorColor">#FFFFB74D</Color>
+    <Color x:Key="StatusErrorBackgroundColor">#FF391B1F</Color>
+    <Color x:Key="StatusErrorBorderColor">#FF722833</Color>
+    <Color x:Key="StatusErrorForegroundColor">#FFF9BDBD</Color>
+    <Color x:Key="StatusErrorIndicatorColor">#FFEF5350</Color>
 
     <SolidColorBrush x:Key="WindowBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
     <SolidColorBrush x:Key="PrimaryBackgroundBrush" Color="{StaticResource WindowBackgroundColor}"/>
@@ -67,6 +83,22 @@
     <SolidColorBrush x:Key="WindowControlPressedBrush" Color="{StaticResource WindowControlPressedColor}"/>
     <SolidColorBrush x:Key="CloseControlHoverBrush" Color="{StaticResource CloseControlHoverColor}"/>
     <SolidColorBrush x:Key="CloseControlPressedBrush" Color="{StaticResource CloseControlPressedColor}"/>
+    <SolidColorBrush x:Key="StatusInfoBackgroundBrush" Color="{StaticResource StatusInfoBackgroundColor}"/>
+    <SolidColorBrush x:Key="StatusInfoBorderBrush" Color="{StaticResource StatusInfoBorderColor}"/>
+    <SolidColorBrush x:Key="StatusInfoForegroundBrush" Color="{StaticResource StatusInfoForegroundColor}"/>
+    <SolidColorBrush x:Key="StatusInfoIndicatorBrush" Color="{StaticResource StatusInfoIndicatorColor}"/>
+    <SolidColorBrush x:Key="StatusSuccessBackgroundBrush" Color="{StaticResource StatusSuccessBackgroundColor}"/>
+    <SolidColorBrush x:Key="StatusSuccessBorderBrush" Color="{StaticResource StatusSuccessBorderColor}"/>
+    <SolidColorBrush x:Key="StatusSuccessForegroundBrush" Color="{StaticResource StatusSuccessForegroundColor}"/>
+    <SolidColorBrush x:Key="StatusSuccessIndicatorBrush" Color="{StaticResource StatusSuccessIndicatorColor}"/>
+    <SolidColorBrush x:Key="StatusWarningBackgroundBrush" Color="{StaticResource StatusWarningBackgroundColor}"/>
+    <SolidColorBrush x:Key="StatusWarningBorderBrush" Color="{StaticResource StatusWarningBorderColor}"/>
+    <SolidColorBrush x:Key="StatusWarningForegroundBrush" Color="{StaticResource StatusWarningForegroundColor}"/>
+    <SolidColorBrush x:Key="StatusWarningIndicatorBrush" Color="{StaticResource StatusWarningIndicatorColor}"/>
+    <SolidColorBrush x:Key="StatusErrorBackgroundBrush" Color="{StaticResource StatusErrorBackgroundColor}"/>
+    <SolidColorBrush x:Key="StatusErrorBorderBrush" Color="{StaticResource StatusErrorBorderColor}"/>
+    <SolidColorBrush x:Key="StatusErrorForegroundBrush" Color="{StaticResource StatusErrorForegroundColor}"/>
+    <SolidColorBrush x:Key="StatusErrorIndicatorBrush" Color="{StaticResource StatusErrorIndicatorColor}"/>
 
     <LinearGradientBrush x:Key="HeaderBackgroundBrush" StartPoint="0,0" EndPoint="1,1">
         <GradientStop Color="{StaticResource HeaderGradientStartColor}" Offset="0"/>

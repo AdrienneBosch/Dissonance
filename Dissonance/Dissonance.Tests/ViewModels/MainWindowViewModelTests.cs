@@ -10,6 +10,7 @@ using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.ThemeService;
+using Dissonance.Services.StatusAnnouncements;
 using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
@@ -202,14 +203,46 @@ namespace Dissonance.Tests.ViewModels
                         var themeService = new TestThemeService();
                         var messageService = new FakeMessageService();
                         var clipboardService = new TestClipboardService();
-                        var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>());
+                        var statusService = new TestStatusAnnouncementService();
+                        var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager);
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager, statusService);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, TestStatusAnnouncementService StatusAnnouncementService);
+
+                private sealed class TestStatusAnnouncementService : IStatusAnnouncementService
+                {
+                        private readonly List<StatusAnnouncement> _history = new List<StatusAnnouncement>();
+
+                        public StatusAnnouncement? Latest { get; private set; }
+
+                        public IReadOnlyList<StatusAnnouncement> History => _history.AsReadOnly();
+
+                        public event EventHandler<StatusAnnouncement>? StatusAnnounced;
+
+                        public void Announce(StatusAnnouncement announcement)
+                        {
+                                if (announcement == null)
+                                        throw new ArgumentNullException(nameof(announcement));
+
+                                _history.Add(announcement);
+                                Latest = announcement;
+                                StatusAnnounced?.Invoke(this, announcement);
+                        }
+
+                        public void Announce(string message, StatusSeverity severity = StatusSeverity.Info)
+                        {
+                                Announce(new StatusAnnouncement(message ?? string.Empty, severity));
+                        }
+
+                        public void AnnounceFromResource(string resourceKey, string fallbackMessage, StatusSeverity severity = StatusSeverity.Info)
+                        {
+                                Announce(fallbackMessage, severity);
+                        }
+                }
 
                 private sealed class TestSettingsService : ISettingsService
                 {

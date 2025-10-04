@@ -1,0 +1,20 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="StatusMessageClipboardEmpty">Clipboard was empty or didn't contain readable text.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardSelectionMissing">Nothing was copied. Try selecting text before using the shortcut.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardUnreadable">Copied text couldn't be read.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardCopyError">We couldn't copy the selected text.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardListenerUnavailable">Clipboard listener unavailable. Automatic reading may not work.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardListenerRegistrationFailed">Couldn't start listening for clipboard changes.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardListenerUnregisterFailed">Couldn't stop listening for clipboard changes.</sys:String>
+    <sys:String x:Key="StatusMessageClipboardUpdateError">We couldn't process the latest clipboard change.</sys:String>
+    <sys:String x:Key="StatusMessageHotkeyNothingToRead">Nothing to read. Copy some text and try again.</sys:String>
+    <sys:String x:Key="StatusMessageHotkeyRegistrationFailed">Couldn't register the selected hotkey.</sys:String>
+    <sys:String x:Key="StatusMessageHotkeyUpdated">Hotkey updated.</sys:String>
+    <sys:String x:Key="StatusMessageHotkeyConfigurationInvalid">The saved hotkey couldn't be restored.</sys:String>
+    <sys:String x:Key="StatusMessageVoiceUnavailable">The saved voice is no longer installed. A fallback voice will be used.</sys:String>
+    <sys:String x:Key="StatusMessageConfigurationExported">Configuration exported successfully.</sys:String>
+    <sys:String x:Key="StatusMessageConfigurationImported">Configuration imported successfully.</sys:String>
+    <sys:String x:Key="StatusMessageConfigurationSavedAsDefault">Configuration saved as default.</sys:String>
+</ResourceDictionary>

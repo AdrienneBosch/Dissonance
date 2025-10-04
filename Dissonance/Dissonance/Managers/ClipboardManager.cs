@@ -7,6 +7,7 @@ using System.Windows.Interop;
 
 using Dissonance.Infrastructure.Constants;
 using Dissonance.Services.ClipboardService;
+using Dissonance.Services.StatusAnnouncements;
 
 using Microsoft.Extensions.Logging;
 
@@ -16,6 +17,7 @@ namespace Dissonance.Managers
         {
                 private readonly IClipboardService _clipboardService;
                 private readonly ILogger<ClipboardManager> _logger;
+                private readonly IStatusAnnouncementService _statusAnnouncementService;
                 private HwndSource? _hwndSource;
                 private bool _autoReadEnabled;
                 private bool _isListenerRegistered;
@@ -23,21 +25,23 @@ namespace Dissonance.Managers
                 private bool _suppressNextAutoRead;
                 private DateTime? _suppressAutoReadExpiryUtc;
 
-                public ClipboardManager ( IClipboardService clipboardService, ILogger<ClipboardManager> logger )
+                public ClipboardManager ( IClipboardService clipboardService, ILogger<ClipboardManager> logger, IStatusAnnouncementService statusAnnouncementService )
                 {
                         _clipboardService = clipboardService ?? throw new ArgumentNullException ( nameof ( clipboardService ) );
                         _logger = logger ?? throw new ArgumentNullException ( nameof ( logger ) );
+                        _statusAnnouncementService = statusAnnouncementService ?? throw new ArgumentNullException ( nameof ( statusAnnouncementService ) );
                 }
 
                 public event EventHandler<string>? ClipboardTextReady;
 
                 public string? GetValidatedClipboardText ( )
                 {
-                        var text = _clipboardService.GetClipboardText();
+                        var text = _clipboardService.GetClipboardText ( );
                         var sanitized = SanitizeClipboardText ( text );
                         if ( string.IsNullOrEmpty ( sanitized ) )
                         {
                                 _logger.LogWarning ( "Clipboard is empty or contains invalid text." );
+                                _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardEmpty", "Clipboard was empty or didn't contain readable text.", StatusSeverity.Warning );
                                 return null;
                         }
 
@@ -127,10 +131,12 @@ namespace Dissonance.Managers
                                 if ( !textDetected )
                                 {
                                         _logger.LogWarning ( "No text selection was copied when the hotkey was pressed." );
+                                        _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardSelectionMissing", "Nothing was copied. Try selecting text before using the shortcut.", StatusSeverity.Warning );
                                 }
                                 else
                                 {
                                         _logger.LogWarning ( "Copied selection did not contain readable text." );
+                                        _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardUnreadable", "Copied text couldn't be read.", StatusSeverity.Warning );
                                 }
 
                                 return null;
@@ -138,6 +144,7 @@ namespace Dissonance.Managers
                         catch ( Exception ex )
                         {
                                 _logger.LogError ( ex, "Failed to copy the current selection using the clipboard hotkey." );
+                                _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardCopyError", "We couldn't copy the selected text.", StatusSeverity.Error );
                                 return null;
                         }
                         finally
@@ -176,6 +183,7 @@ namespace Dissonance.Managers
                         if ( source == null )
                         {
                                 _logger.LogWarning ( "Unable to attach clipboard listener. Window handle not available." );
+                                _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardListenerUnavailable", "Clipboard listener unavailable. Automatic reading may not work.", StatusSeverity.Warning );
                                 return;
                         }
 
@@ -217,6 +225,7 @@ namespace Dissonance.Managers
                                 else
                                 {
                                         _logger.LogWarning ( "Failed to register clipboard listener." );
+                                        _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardListenerRegistrationFailed", "Couldn't start listening for clipboard changes.", StatusSeverity.Error );
                                 }
                         }
                         else if ( !_autoReadEnabled && _isListenerRegistered )
@@ -237,6 +246,7 @@ namespace Dissonance.Managers
                         else
                         {
                                 _logger.LogWarning ( "Failed to unregister clipboard listener." );
+                                _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardListenerUnregisterFailed", "Couldn't stop listening for clipboard changes.", StatusSeverity.Warning );
                         }
 
                         _isListenerRegistered = false;
@@ -272,6 +282,7 @@ namespace Dissonance.Managers
                                 catch ( Exception ex )
                                 {
                                         _logger.LogError ( ex, "Error processing clipboard update." );
+                                        _statusAnnouncementService.AnnounceFromResource ( "StatusMessageClipboardUpdateError", "We couldn't process the latest clipboard change.", StatusSeverity.Error );
                                 }
                         }
 

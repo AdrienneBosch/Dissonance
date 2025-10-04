@@ -5,6 +5,7 @@
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="Resources/Themes/BaseTheme.xaml" />
+                <ResourceDictionary Source="Resources/Strings/StatusStrings.xaml" />
                 <ResourceDictionary Source="Resources/Strings/PreviewStrings.xaml" />
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>

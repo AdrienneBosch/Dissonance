@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Interop;
 using System.Windows.Threading;
 
 using Dissonance.Services.SettingsService;
@@ -18,6 +20,7 @@ namespace Dissonance
                 private readonly ISettingsService _settingsService;
                 private bool _isWindowPlacementInitialized;
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
+                private bool _isWindowPlacementDirty;
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {
                         Key.LeftCtrl,
@@ -46,14 +49,33 @@ namespace Dissonance
                 protected override void OnClosing ( CancelEventArgs e )
                 {
                         PersistWindowPlacement ( );
+                        if ( _isWindowPlacementDirty )
+                        {
+                                _settingsService.SaveCurrentSettings ( );
+                                _isWindowPlacementDirty = false;
+                        }
                         _viewModel.OnWindowClosing ( );
                         base.OnClosing ( e );
                 }
 
                 private void OnSourceInitialized ( object? sender, EventArgs e )
                 {
+                        if ( PresentationSource.FromVisual ( this ) is HwndSource hwndSource )
+                                hwndSource.AddHook ( WindowProc );
+
                         RestoreWindowPlacement ( );
                         _isWindowPlacementInitialized = true;
+                }
+
+                private IntPtr WindowProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )
+                {
+                        if ( msg == WM_GETMINMAXINFO )
+                        {
+                                WmGetMinMaxInfo ( hwnd, lParam );
+                                handled = true;
+                        }
+
+                        return IntPtr.Zero;
                 }
 
                 private void RestoreWindowPlacement ( )
@@ -129,6 +151,8 @@ namespace Dissonance
                                         settings.IsWindowMaximized = WindowState == WindowState.Maximized || ( WindowState == WindowState.Minimized && _lastNonMinimizedWindowState == WindowState.Maximized );
                                         break;
                         }
+
+                        _isWindowPlacementDirty = true;
                 }
 
                 private void MinimizeButton_Click ( object sender, RoutedEventArgs e )
@@ -165,6 +189,33 @@ namespace Dissonance
                 private void ToggleWindowState ( )
                 {
                         WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+                }
+
+                private void WmGetMinMaxInfo ( IntPtr hwnd, IntPtr lParam )
+                {
+                        var minMaxInfo = Marshal.PtrToStructure<MINMAXINFO> ( lParam );
+                        var monitorHandle = MonitorFromWindow ( hwnd, MONITOR_DEFAULTTONEAREST );
+
+                        if ( monitorHandle != IntPtr.Zero )
+                        {
+                                var monitorInfo = new MONITORINFO
+                                {
+                                        cbSize = Marshal.SizeOf<MONITORINFO> ( ),
+                                };
+
+                                if ( GetMonitorInfo ( monitorHandle, ref monitorInfo ) )
+                                {
+                                        var workArea = monitorInfo.rcWork;
+                                        var monitorArea = monitorInfo.rcMonitor;
+
+                                        minMaxInfo.ptMaxPosition.X = Math.Abs ( workArea.Left - monitorArea.Left );
+                                        minMaxInfo.ptMaxPosition.Y = Math.Abs ( workArea.Top - monitorArea.Top );
+                                        minMaxInfo.ptMaxSize.X = workArea.Right - workArea.Left;
+                                        minMaxInfo.ptMaxSize.Y = workArea.Bottom - workArea.Top;
+                                }
+                        }
+
+                        Marshal.StructureToPtr ( minMaxInfo, lParam, true );
                 }
 
                 private static bool IsWithinWindowControl ( DependencyObject source )
@@ -360,6 +411,51 @@ namespace Dissonance
                         var updatedValue = slider.Value + change;
                         slider.Value = Math.Max ( slider.Minimum, Math.Min ( slider.Maximum, updatedValue ) );
                         e.Handled = true;
+                }
+
+                private const int WM_GETMINMAXINFO = 0x0024;
+                private const int MONITOR_DEFAULTTONEAREST = 0x00000002;
+
+                [DllImport ( "user32.dll" )]
+                private static extern IntPtr MonitorFromWindow ( IntPtr hwnd, int dwFlags );
+
+                [DllImport ( "user32.dll", SetLastError = true )]
+                [return: MarshalAs ( UnmanagedType.Bool )]
+                private static extern bool GetMonitorInfo ( IntPtr hMonitor, ref MONITORINFO lpmi );
+
+                [StructLayout ( LayoutKind.Sequential )]
+                private struct POINT
+                {
+                        public int X;
+                        public int Y;
+                }
+
+                [StructLayout ( LayoutKind.Sequential )]
+                private struct MINMAXINFO
+                {
+                        public POINT ptReserved;
+                        public POINT ptMaxSize;
+                        public POINT ptMaxPosition;
+                        public POINT ptMinTrackSize;
+                        public POINT ptMaxTrackSize;
+                }
+
+                [StructLayout ( LayoutKind.Sequential )]
+                private struct MONITORINFO
+                {
+                        public int cbSize;
+                        public RECT rcMonitor;
+                        public RECT rcWork;
+                        public int dwFlags;
+                }
+
+                [StructLayout ( LayoutKind.Sequential )]
+                private struct RECT
+                {
+                        public int Left;
+                        public int Top;
+                        public int Right;
+                        public int Bottom;
                 }
         }
 }

@@ -18,6 +18,14 @@
         Foreground="{DynamicResource PrimaryForegroundBrush}"
         FontFamily="{DynamicResource BaseFontFamily}"
         d:DataContext="{d:DesignInstance Type=local:MainWindowViewModel}">
+    <Window.InputBindings>
+        <KeyBinding Key="S"
+                    Modifiers="Control,Shift"
+                    Command="{Binding SpeakClipboardCommand}"/>
+        <KeyBinding Key="X"
+                    Modifiers="Control,Shift"
+                    Command="{Binding StopSpeechCommand}"/>
+    </Window.InputBindings>
     <shell:WindowChrome.WindowChrome>
         <shell:WindowChrome CaptionHeight="0"
                              CornerRadius="0"
@@ -316,6 +324,49 @@
                                               TabIndex="5"/>
                             </Grid>
                         </Border>
+
+                        <StackPanel Margin="0,16,0,0">
+                            <TextBlock Text="Manual narration controls"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                            <StackPanel Orientation="Horizontal"
+                                        Margin="0,8,0,0"
+                                        HorizontalAlignment="Left">
+                                <Button Content="Speak clipboard now"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Command="{Binding SpeakClipboardCommand}"
+                                        MinWidth="190"
+                                        MinHeight="44"
+                                        Padding="18,10"
+                                        AutomationProperties.Name="Speak clipboard now"
+                                        AutomationProperties.HelpText="Copies the current selection if available, or uses the clipboard contents, and speaks it aloud"
+                                        ToolTip="Copy the current selection and start narration"
+                                        TabIndex="8">
+                                    <Button.InputBindings>
+                                        <KeyBinding Key="S"
+                                                    Modifiers="Control,Shift"
+                                                    Command="{Binding SpeakClipboardCommand}"/>
+                                    </Button.InputBindings>
+                                </Button>
+                                <Button Content="Stop narration"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        Command="{Binding StopSpeechCommand}"
+                                        Margin="12,0,0,0"
+                                        MinWidth="160"
+                                        MinHeight="44"
+                                        Padding="18,10"
+                                        AutomationProperties.Name="Stop narration"
+                                        AutomationProperties.HelpText="Stop the current clipboard narration immediately"
+                                        ToolTip="Stop speaking clipboard text"
+                                        TabIndex="9">
+                                    <Button.InputBindings>
+                                        <KeyBinding Key="X"
+                                                    Modifiers="Control,Shift"
+                                                    Command="{Binding StopSpeechCommand}"/>
+                                    </Button.InputBindings>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
 
                         <Border Margin="0,16,0,0"
                                 Padding="10"

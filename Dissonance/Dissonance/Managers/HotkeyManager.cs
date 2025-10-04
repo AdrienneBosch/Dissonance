@@ -29,6 +29,10 @@ namespace Dissonance.Managers
                         _clipboardManager.ClipboardTextReady += OnClipboardTextReady;
                 }
 
+                public event EventHandler<bool>? SpeakingStateChanged;
+
+                public bool IsSpeaking => _isSpeaking;
+
                 public void Initialize ( MainWindow mainWindow )
                 {
                         _hotkeyService.Initialize ( mainWindow );
@@ -53,17 +57,38 @@ namespace Dissonance.Managers
                         _logger.LogInformation ( "HotkeyManager disposed." );
                 }
 
+                public bool TrySpeakClipboardFromRequest ( string source )
+                {
+                        if ( _isSpeaking )
+                        {
+                                _logger.LogInformation ( "Ignoring clipboard speak request from {Source} because narration is already in progress.", source );
+                                return false;
+                        }
+
+                        return TrySpeakClipboard ( source );
+                }
+
+                public void StopSpeakingFromRequest ( string source )
+                {
+                        if ( !_isSpeaking )
+                        {
+                                return;
+                        }
+
+                        _ttsService.Stop ( );
+                        UpdateSpeakingState ( false );
+                        _logger.LogInformation ( "TTS playback stopped by {Source}.", source );
+                }
+
                 private void OnHotkeyPressed ( )
                 {
                         if ( _isSpeaking )
                         {
-                                _ttsService.Stop ( );
-                                _isSpeaking = false;
-                                _logger.LogInformation ( "TTS playback stopped by hotkey." );
+                                StopSpeakingFromRequest ( "hotkey" );
                                 return;
                         }
 
-                        SpeakClipboardContents ( );
+                        TrySpeakClipboard ( "hotkey" );
                 }
 
                 private void OnClipboardTextReady ( object? sender, string clipboardText )
@@ -79,11 +104,11 @@ namespace Dissonance.Managers
 
                 private void OnSpeechCompleted ( object? sender, SpeakCompletedEventArgs e )
                 {
-                        _isSpeaking = false;
+                        UpdateSpeakingState ( false );
                         _logger.LogInformation ( "TTS playback completed." );
                 }
 
-                private void SpeakClipboardContents ( )
+                private bool TrySpeakClipboard ( string source )
                 {
                         var clipboardText = _clipboardManager.CopySelectionAndGetValidatedText ( );
                         if ( string.IsNullOrEmpty ( clipboardText ) )
@@ -94,19 +119,30 @@ namespace Dissonance.Managers
                         if ( string.IsNullOrEmpty ( clipboardText ) )
                         {
                                 _logger.LogWarning ( "Nothing to read. The selection and clipboard are empty or invalid." );
-                                return;
+                                return false;
                         }
 
-                        StartSpeaking ( clipboardText, "hotkey" );
+                        return StartSpeaking ( clipboardText, source );
                 }
 
-                private void StartSpeaking ( string clipboardText, string source )
+                private bool StartSpeaking ( string clipboardText, string source )
                 {
                         var settings = _settingsService.GetCurrentSettings ( );
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
                         var prompt = _ttsService.Speak ( clipboardText );
-                        _isSpeaking = prompt != null;
+                        var started = prompt != null;
+                        UpdateSpeakingState ( started );
                         _logger.LogInformation ( "Speaking clipboard text triggered by {Source}.", source );
+                        return started;
+                }
+
+                private void UpdateSpeakingState ( bool isSpeaking )
+                {
+                        if ( _isSpeaking == isSpeaking )
+                                return;
+
+                        _isSpeaking = isSpeaking;
+                        SpeakingStateChanged?.Invoke ( this, _isSpeaking );
                 }
         }
 }

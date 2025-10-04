@@ -203,13 +203,14 @@ namespace Dissonance.Tests.ViewModels
                         var messageService = new FakeMessageService();
                         var clipboardService = new TestClipboardService();
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>());
+                        var hotkeyManager = new HotkeyManager(hotkeyService, settingsService, ttsService, clipboardManager, new TestLogger<HotkeyManager>());
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, hotkeyManager);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager);
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager, hotkeyManager);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, HotkeyManager HotkeyManager);
 
                 private sealed class TestSettingsService : ISettingsService
                 {

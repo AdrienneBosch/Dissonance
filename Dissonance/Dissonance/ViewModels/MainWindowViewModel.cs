@@ -33,6 +33,7 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private readonly ClipboardManager _clipboardManager;
+                private readonly HotkeyManager _hotkeyManager;
                 private readonly Dispatcher _dispatcher;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
@@ -48,8 +49,9 @@ namespace Dissonance.ViewModels
                 private readonly string _previewSampleText;
                 private Prompt? _activePreviewPrompt;
                 private bool _isPreviewing;
+                private bool _isSpeaking;
 
-                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager, HotkeyManager hotkeyManager )
                 {
                         _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
                         _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
@@ -57,6 +59,7 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
+                        _hotkeyManager = hotkeyManager ?? throw new ArgumentNullException ( nameof ( hotkeyManager ) );
 
                         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -65,6 +68,8 @@ namespace Dissonance.ViewModels
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
                         NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
+                        SpeakClipboardCommand = new RelayCommandNoParam ( SpeakClipboard, ( ) => !IsSpeaking );
+                        StopSpeechCommand = new RelayCommandNoParam ( StopSpeech, ( ) => IsSpeaking );
 
                         _previewStartLabel = GetResourceString ( "PreviewVoiceButtonLabelStart", "Preview voice" );
                         _previewStopLabel = GetResourceString ( "PreviewVoiceButtonLabelStop", "Stop preview" );
@@ -101,6 +106,8 @@ namespace Dissonance.ViewModels
 
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
                         _ttsService.SpeechCompleted += OnSpeechCompleted;
+                        _hotkeyManager.SpeakingStateChanged += OnSpeakingStateChanged;
+                        IsSpeaking = _hotkeyManager.IsSpeaking;
 
                         _isDarkTheme = settings.UseDarkTheme;
                         _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
@@ -137,6 +144,10 @@ namespace Dissonance.ViewModels
 
                 public ICommand PreviewVoiceCommand { get; }
 
+                public ICommand SpeakClipboardCommand { get; }
+
+                public ICommand StopSpeechCommand { get; }
+
                 public bool IsPreviewing
                 {
                         get => _isPreviewing;
@@ -156,6 +167,23 @@ namespace Dissonance.ViewModels
                 public string PreviewVoiceButtonToolTip => _previewToolTip;
 
                 public string PreviewVoiceHelpText => _previewHelpText;
+
+                public bool IsSpeaking
+                {
+                        get => _isSpeaking;
+                        private set
+                        {
+                                if ( _isSpeaking == value )
+                                        return;
+
+                                _isSpeaking = value;
+                                OnPropertyChanged ( nameof ( IsSpeaking ) );
+                                if ( SpeakClipboardCommand is RelayCommandNoParam speakCommand )
+                                        speakCommand.RaiseCanExecuteChanged ( );
+                                if ( StopSpeechCommand is RelayCommandNoParam stopCommand )
+                                        stopCommand.RaiseCanExecuteChanged ( );
+                        }
+                }
 
                 public bool IsNavigationMenuOpen
                 {
@@ -318,6 +346,7 @@ namespace Dissonance.ViewModels
                 public void OnWindowClosing ( )
                 {
                         _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        _hotkeyManager.SpeakingStateChanged -= OnSpeakingStateChanged;
                         SetPreviewState ( false, null );
                         _ttsService.Stop ( );
 
@@ -428,12 +457,30 @@ namespace Dissonance.ViewModels
                                 previewCommand.RaiseCanExecuteChanged ( );
                 }
 
+                private void SpeakClipboard ( )
+                {
+                        if ( _hotkeyManager.TrySpeakClipboardFromRequest ( "buttons" ) )
+                                return;
+
+                        _messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.TTSServiceWarning, "There's no readable text in the current selection or clipboard." );
+                }
+
+                private void StopSpeech ( )
+                {
+                        _hotkeyManager.StopSpeakingFromRequest ( "buttons" );
+                }
+
                 private static string GetResourceString ( string key, string fallback )
                 {
                         if ( Application.Current?.TryFindResource ( key ) is string value && !string.IsNullOrWhiteSpace ( value ) )
                                 return value;
 
                         return fallback;
+                }
+
+                private void OnSpeakingStateChanged ( object? sender, bool isSpeaking )
+                {
+                        _dispatcher.BeginInvoke ( new Action ( ( ) => IsSpeaking = isSpeaking ) );
                 }
 
                 private void ReloadSettingsFromService ( bool reapplyHotkey )

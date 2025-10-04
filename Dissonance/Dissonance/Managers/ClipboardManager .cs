@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -19,6 +20,8 @@ namespace Dissonance.Managers
                 private bool _autoReadEnabled;
                 private bool _isListenerRegistered;
                 private bool _disposed;
+                private bool _suppressNextAutoRead;
+                private DateTime? _suppressAutoReadExpiryUtc;
 
                 public ClipboardManager ( IClipboardService clipboardService, ILogger<ClipboardManager> logger )
                 {
@@ -82,6 +85,68 @@ namespace Dissonance.Managers
 
                                 _hwndSource.RemoveHook ( WndProc );
                                 _hwndSource = null;
+                        }
+                }
+
+                public string? CopySelectionAndGetValidatedText ( )
+                {
+                        var suppressionApplied = false;
+                        var copySucceeded = false;
+
+                        try
+                        {
+                                if ( _autoReadEnabled )
+                                {
+                                        _suppressNextAutoRead = true;
+                                        _suppressAutoReadExpiryUtc = DateTime.UtcNow.AddSeconds ( 2 );
+                                        suppressionApplied = true;
+                                }
+
+                                SimulateCopyShortcut ( );
+
+                                string? sanitized = null;
+                                var textDetected = false;
+
+                                for ( var attempt = 0; attempt < 10; attempt++ )
+                                {
+                                        Thread.Sleep ( 25 );
+
+                                        if ( !_clipboardService.IsTextAvailable ( ) )
+                                                continue;
+
+                                        textDetected = true;
+                                        var text = _clipboardService.GetClipboardText ( );
+                                        sanitized = SanitizeClipboardText ( text );
+                                        if ( !string.IsNullOrEmpty ( sanitized ) )
+                                        {
+                                                copySucceeded = true;
+                                                return sanitized;
+                                        }
+                                }
+
+                                if ( !textDetected )
+                                {
+                                        _logger.LogWarning ( "No text selection was copied when the hotkey was pressed." );
+                                }
+                                else
+                                {
+                                        _logger.LogWarning ( "Copied selection did not contain readable text." );
+                                }
+
+                                return null;
+                        }
+                        catch ( Exception ex )
+                        {
+                                _logger.LogError ( ex, "Failed to copy the current selection using the clipboard hotkey." );
+                                return null;
+                        }
+                        finally
+                        {
+                                if ( suppressionApplied && !copySucceeded )
+                                {
+                                        _suppressNextAutoRead = false;
+                                        _suppressAutoReadExpiryUtc = null;
+                                }
                         }
                 }
 
@@ -181,6 +246,21 @@ namespace Dissonance.Managers
                 {
                         if ( msg == WindowsMessages.ClipboardUpdate && _autoReadEnabled )
                         {
+                                if ( _suppressNextAutoRead )
+                                {
+                                        if ( !_suppressAutoReadExpiryUtc.HasValue || DateTime.UtcNow <= _suppressAutoReadExpiryUtc.Value )
+                                        {
+                                                _suppressNextAutoRead = false;
+                                                _suppressAutoReadExpiryUtc = null;
+                                                _logger.LogDebug ( "Suppressed clipboard update triggered by manual hotkey copy." );
+                                                return IntPtr.Zero;
+                                        }
+
+                                        _suppressNextAutoRead = false;
+                                        _suppressAutoReadExpiryUtc = null;
+                                        _logger.LogDebug ( "Manual copy suppression expired before a clipboard update message arrived." );
+                                }
+
                                 try
                                 {
                                         var clipboardText = GetValidatedClipboardText ( );
@@ -207,6 +287,14 @@ namespace Dissonance.Managers
                         return string.IsNullOrEmpty ( sanitized ) ? null : sanitized;
                 }
 
+                private static void SimulateCopyShortcut ( )
+                {
+                        keybd_event ( VK_CONTROL, 0, 0, UIntPtr.Zero );
+                        keybd_event ( VK_C, 0, 0, UIntPtr.Zero );
+                        keybd_event ( VK_C, 0, KEYEVENTF_KEYUP, UIntPtr.Zero );
+                        keybd_event ( VK_CONTROL, 0, KEYEVENTF_KEYUP, UIntPtr.Zero );
+                }
+
                 [DllImport ( "user32.dll", SetLastError = true )]
                 [return: MarshalAs ( UnmanagedType.Bool )]
                 private static extern bool AddClipboardFormatListener ( IntPtr hwnd );
@@ -214,5 +302,12 @@ namespace Dissonance.Managers
                 [DllImport ( "user32.dll", SetLastError = true )]
                 [return: MarshalAs ( UnmanagedType.Bool )]
                 private static extern bool RemoveClipboardFormatListener ( IntPtr hwnd );
+
+                [DllImport ( "user32.dll", SetLastError = false )]
+                private static extern void keybd_event ( byte bVk, byte bScan, uint dwFlags, UIntPtr dwExtraInfo );
+
+                private const uint KEYEVENTF_KEYUP = 0x0002;
+                private const byte VK_CONTROL = 0x11;
+                private const byte VK_C = 0x43;
         }
 }

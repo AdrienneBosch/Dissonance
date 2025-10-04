@@ -58,7 +58,7 @@ namespace Dissonance.Managers
                         {
                                 _ttsService.Stop ( );
                                 _isSpeaking = false;
-                                _logger.LogInformation ( "TTS playback stopped." );
+                                _logger.LogInformation ( "TTS playback stopped by hotkey." );
                                 return;
                         }
 
@@ -84,10 +84,15 @@ namespace Dissonance.Managers
 
                 private void SpeakClipboardContents ( )
                 {
-                        var clipboardText = _clipboardManager.GetValidatedClipboardText();
+                        var clipboardText = _clipboardManager.CopySelectionAndGetValidatedText ( );
                         if ( string.IsNullOrEmpty ( clipboardText ) )
                         {
-                                _logger.LogWarning ( "Clipboard is empty or contains invalid text." );
+                                clipboardText = _clipboardManager.GetValidatedClipboardText ( );
+                        }
+
+                        if ( string.IsNullOrEmpty ( clipboardText ) )
+                        {
+                                _logger.LogWarning ( "Nothing to read. The selection and clipboard are empty or invalid." );
                                 return;
                         }
 

@@ -33,6 +33,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="*"/>
@@ -155,27 +156,21 @@
                         Margin="12,12,0,0">
                     <StackPanel>
                         <TextBlock x:Name="HotkeyHeading"
-                                   Text="Speak Clipboard Hotkey"
+                                   Text="Speak Selection Hotkey"
                                    Style="{StaticResource CardTitleTextStyle}"/>
-                        <TextBlock Text="Define the shortcut that instantly voices your clipboard."
+                        <TextBlock Text="Define the shortcut that copies your current selection and speaks it aloud."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
-                        <CheckBox Content="Automatically speak new clipboard text"
-                                  IsChecked="{Binding AutoReadClipboard, Mode=TwoWay}"
-                                  Margin="0,12,0,0"
-                                  AutomationProperties.Name="Automatically speak new clipboard text"
-                                  AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
-                                  TabIndex="5"/>
                         <StackPanel Orientation="Horizontal">
                             <TextBox x:Name="ReadClipboardHotkeyTextBox"
                                      Style="{StaticResource ModernTextBoxStyle}"
                                      Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                      AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
-                                     ToolTip="Set the hotkey used to trigger speaking the clipboard's text"
+                                     ToolTip="Set the hotkey used to copy the current selection and speak it aloud"
                                      Width="170"
                                      TabIndex="6"
                                      IsReadOnly="True"
                                      PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
-                                     AutomationProperties.HelpText="Specify the key combination that will read clipboard contents"/>
+                                     AutomationProperties.HelpText="Specify the key combination that copies the current selection and speaks it aloud"/>
                             <Button Content="Apply"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Command="{Binding ApplyHotkeyCommand}"
@@ -186,6 +181,27 @@
                                     AutomationProperties.Name="Apply hotkey"
                                     AutomationProperties.HelpText="Applies the entered hotkey combination"/>
                         </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <Border Style="{StaticResource CardContainerStyle}"
+                        Grid.Row="2"
+                        Grid.Column="0"
+                        Grid.ColumnSpan="2"
+                        Margin="0,12,0,0">
+                    <StackPanel>
+                        <TextBlock x:Name="AutoReadHeading"
+                                   Text="Automatic Clipboard Narration"
+                                   Style="{StaticResource CardTitleTextStyle}"/>
+                        <TextBlock Text="Toggle whether newly copied clipboard text should be spoken without using the hotkey."
+                                   Style="{StaticResource CardDescriptionTextStyle}"/>
+                        <CheckBox Content="Automatically speak new clipboard text"
+                                  IsChecked="{Binding AutoReadClipboard, Mode=TwoWay}"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.Name="Automatically speak new clipboard text"
+                                  AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
+                                  AutomationProperties.LabeledBy="{Binding ElementName=AutoReadHeading}"
+                                  TabIndex="5"/>
                     </StackPanel>
                 </Border>
             </Grid>

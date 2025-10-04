@@ -1,11 +1,15 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
+using System.Windows.Input;
 using System.Speech.Synthesis;
 
+using Dissonance;
 using Dissonance.Services.DocumentReader;
+using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
 
@@ -20,7 +24,9 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
 
                         var success = await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -46,7 +52,9 @@ namespace Dissonance.Tests.ViewModels
                 public async Task LoadDocumentAsync_WhenServiceThrows_ReturnsFalseAndSetsError()
                 {
                         var service = new FailingDocumentReaderService(new InvalidOperationException("boom"));
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
 
                         var success = await viewModel.LoadDocumentAsync("missing.txt");
 
@@ -66,7 +74,9 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
 
                         viewModel.ClearDocumentCommand.Execute(null);
 
@@ -83,7 +93,9 @@ namespace Dissonance.Tests.ViewModels
                 {
                         var tcs = new TaskCompletionSource<DocumentReadResult>();
                         var service = new PendingDocumentReaderService(tcs);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService());
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
 
                         var loadTask = viewModel.LoadDocumentAsync("sample.txt");
 
@@ -94,6 +106,163 @@ namespace Dissonance.Tests.ViewModels
                         await loadTask;
 
                         Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
+                }
+
+                [Fact]
+                public void ApplyPlaybackHotkeyCommand_SavesSettingsAndUpdatesState()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        settings.DocumentReaderHotkey.Key = string.Empty;
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+
+                        viewModel.PlaybackHotkeyCombination = "MediaPlayPause";
+
+                        Assert.True(viewModel.ApplyPlaybackHotkeyCommand.CanExecute(null));
+
+                        viewModel.ApplyPlaybackHotkeyCommand.Execute(null);
+
+                        Assert.Equal("MediaPlayPause", viewModel.PlaybackHotkeyCombination);
+                        Assert.Equal(Key.MediaPlayPause, viewModel.PlaybackHotkeyKey);
+                        Assert.Equal(ModifierKeys.None, viewModel.PlaybackHotkeyModifiers);
+                        Assert.Equal("MediaPlayPause", settings.DocumentReaderHotkey.Key);
+                        Assert.Equal(string.Empty, settings.DocumentReaderHotkey.Modifiers);
+                        Assert.Equal(1, settingsService.SaveCalls);
+                }
+
+                [Fact]
+                public async Task PlaybackHotkeyCommand_StopsPlaybackWhenToggleDisabled()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        viewModel.PlaybackHotkeyCombination = "MediaPlayPause";
+                        viewModel.ApplyPlaybackHotkeyCommand.Execute(null);
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+                        Assert.True(viewModel.IsPlaying);
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+
+                        Assert.False(viewModel.IsPlaying);
+                        Assert.False(viewModel.IsPaused);
+                        Assert.Equal(1, ttsService.StopCalls);
+                        Assert.Equal(1, settingsService.SaveCalls);
+                        Assert.Equal(0, viewModel.CurrentCharacterIndex);
+                }
+
+                [Fact]
+                public async Task PlaybackHotkeyCommand_TogglesPauseWhenEnabled()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        viewModel.PlaybackHotkeyTogglesPause = true;
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+                        Assert.True(viewModel.IsPlaying);
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+                        Assert.False(viewModel.IsPlaying);
+                        Assert.True(viewModel.IsPaused);
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.True(settings.DocumentReaderHotkey.UsePlayPauseToggle);
+                        Assert.Equal(1, settingsService.SaveCalls);
+                        Assert.True(ttsService.StopCalls >= 1);
+                }
+
+                [Fact]
+                public async Task PlaybackHotkeyCommand_StartsPlaybackWhenDocumentPreviewUnavailable()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        var documentField = typeof(DocumentReaderViewModel).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic);
+                        Assert.NotNull(documentField);
+                        documentField!.SetValue(viewModel, null);
+
+                        Assert.True(viewModel.PlaybackHotkeyCommand.CanExecute(null));
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.Equal(result.PlainText.Length, viewModel.CharacterCount);
+                }
+
+                private static AppSettings CreateSettings()
+                {
+                        return new AppSettings
+                        {
+                                Hotkey = new AppSettings.HotkeySettings(),
+                                DocumentReaderHotkey = new AppSettings.DocumentReaderHotkeySettings
+                                {
+                                        Key = "MediaPlayPause",
+                                        Modifiers = string.Empty,
+                                        UsePlayPauseToggle = false,
+                                }
+                        };
+                }
+
+                private sealed class StubSettingsService : ISettingsService
+                {
+                        private AppSettings _settings;
+
+                        public StubSettingsService(AppSettings settings)
+                        {
+                                _settings = settings;
+                        }
+
+                        public int SaveCalls { get; private set; }
+
+                        public AppSettings GetCurrentSettings() => _settings;
+
+                        public AppSettings LoadSettings() => _settings;
+
+                        public void ResetToFactorySettings()
+                        {
+                        }
+
+                        public void SaveSettings(AppSettings settings)
+                        {
+                                _settings = settings;
+                        }
+
+                        public bool SaveCurrentSettings()
+                        {
+                                SaveCalls++;
+                                return true;
+                        }
+
+                        public bool SaveCurrentSettingsAsDefault()
+                        {
+                                return true;
+                        }
+
+                        public bool ExportSettings(string destinationPath) => true;
+
+                        public bool ImportSettings(string sourcePath) => true;
                 }
 
                 private sealed class StubDocumentReaderService : IDocumentReaderService
@@ -143,6 +312,13 @@ namespace Dissonance.Tests.ViewModels
 
                 private sealed class StubTtsService : ITTSService
                 {
+                        private readonly bool _returnPrompt;
+
+                        public StubTtsService(bool returnPrompt = false)
+                        {
+                                _returnPrompt = returnPrompt;
+                        }
+
                         public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
                         {
                                 add { }
@@ -155,14 +331,26 @@ namespace Dissonance.Tests.ViewModels
                                 remove { }
                         }
 
+                        public int StopCalls { get; private set; }
+
+                        public Prompt? LastPrompt { get; private set; }
+
                         public void SetTTSParameters(string voice, double rate, int volume)
                         {
                         }
 
-                        public Prompt? Speak(string text) => null;
+                        public Prompt? Speak(string text)
+                        {
+                                if (!_returnPrompt)
+                                        return null;
+
+                                LastPrompt = new Prompt(text);
+                                return LastPrompt;
+                        }
 
                         public void Stop()
                         {
+                                StopCalls++;
                         }
                 }
         }

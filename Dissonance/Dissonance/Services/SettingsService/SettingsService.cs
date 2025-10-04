@@ -177,6 +177,7 @@ namespace Dissonance.Services.SettingsService
                                 WindowHeight = null,
                                 IsWindowMaximized = false,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
+                                DocumentReaderHotkey = new DocumentReaderHotkeySettings { Modifiers = string.Empty, Key = "MediaPlayPause", UsePlayPauseToggle = false },
                         };
                 }
 
@@ -199,6 +200,12 @@ namespace Dissonance.Services.SettingsService
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
                                         Key = settings.Hotkey?.Key ?? string.Empty,
                                         AutoReadClipboard = settings.Hotkey?.AutoReadClipboard ?? false,
+                                },
+                                DocumentReaderHotkey = new DocumentReaderHotkeySettings
+                                {
+                                        Modifiers = settings.DocumentReaderHotkey?.Modifiers ?? string.Empty,
+                                        Key = settings.DocumentReaderHotkey?.Key ?? string.Empty,
+                                        UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? false,
                                 }
                         };
                 }
@@ -226,6 +233,12 @@ namespace Dissonance.Services.SettingsService
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,
                                         Key = string.IsNullOrWhiteSpace ( settings.Hotkey?.Key ) ? reference.Hotkey.Key : settings.Hotkey.Key,
                                         AutoReadClipboard = settings.Hotkey?.AutoReadClipboard ?? reference.Hotkey.AutoReadClipboard,
+                                },
+                                DocumentReaderHotkey = new DocumentReaderHotkeySettings
+                                {
+                                        Modifiers = string.IsNullOrWhiteSpace ( settings.DocumentReaderHotkey?.Modifiers ) ? reference.DocumentReaderHotkey.Modifiers : settings.DocumentReaderHotkey.Modifiers,
+                                        Key = string.IsNullOrWhiteSpace ( settings.DocumentReaderHotkey?.Key ) ? reference.DocumentReaderHotkey.Key : settings.DocumentReaderHotkey.Key,
+                                        UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? reference.DocumentReaderHotkey.UsePlayPauseToggle,
                                 }
                         };
 

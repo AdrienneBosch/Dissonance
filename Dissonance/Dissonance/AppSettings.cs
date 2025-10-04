@@ -4,6 +4,8 @@ namespace Dissonance
         {
                 public HotkeySettings Hotkey { get; set; }
 
+                public DocumentReaderHotkeySettings DocumentReaderHotkey { get; set; }
+
                 public string Voice { get; set; }
 
                 public double VoiceRate { get; set; }
@@ -31,6 +33,15 @@ namespace Dissonance
                         public string Modifiers { get; set; }
 
                         public bool AutoReadClipboard { get; set; }
+                }
+
+                public class DocumentReaderHotkeySettings
+                {
+                        public string Key { get; set; }
+
+                        public string Modifiers { get; set; }
+
+                        public bool UsePlayPauseToggle { get; set; }
                 }
         }
 }

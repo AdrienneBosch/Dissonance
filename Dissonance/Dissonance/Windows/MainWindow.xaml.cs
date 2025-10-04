@@ -18,6 +18,7 @@ namespace Dissonance
                 private readonly ISettingsService _settingsService;
                 private bool _isWindowPlacementInitialized;
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
+                private bool _isWindowPlacementDirty;
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {
                         Key.LeftCtrl,
@@ -46,6 +47,11 @@ namespace Dissonance
                 protected override void OnClosing ( CancelEventArgs e )
                 {
                         PersistWindowPlacement ( );
+                        if ( _isWindowPlacementDirty )
+                        {
+                                _settingsService.SaveCurrentSettings ( );
+                                _isWindowPlacementDirty = false;
+                        }
                         _viewModel.OnWindowClosing ( );
                         base.OnClosing ( e );
                 }
@@ -129,6 +135,8 @@ namespace Dissonance
                                         settings.IsWindowMaximized = WindowState == WindowState.Maximized || ( WindowState == WindowState.Minimized && _lastNonMinimizedWindowState == WindowState.Maximized );
                                         break;
                         }
+
+                        _isWindowPlacementDirty = true;
                 }
 
                 private void MinimizeButton_Click ( object sender, RoutedEventArgs e )

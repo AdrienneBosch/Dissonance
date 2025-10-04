@@ -70,6 +70,7 @@ namespace Dissonance.Managers
 
                 public void Dispose ( )
                 {
+                        _hotkeyService.HotkeyPressed -= OnHotkeyPressed;
                         _ttsService.SpeechCompleted -= OnSpeechCompleted;
                         _hotkeyService.Dispose ( );
                         _logger.LogInformation ( "HotkeyManager disposed." );
@@ -91,3 +92,4 @@ namespace Dissonance.Managers
                 }
         }
 }
+

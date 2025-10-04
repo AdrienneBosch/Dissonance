@@ -1,6 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
-using Dissonance.Infrastructure.Logging.Dissonance.Infrastructure.Logging;
+using Dissonance.Infrastructure.Logging;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
@@ -77,3 +78,4 @@ namespace Dissonance
 		}
 	}
 }
+

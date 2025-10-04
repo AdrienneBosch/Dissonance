@@ -371,7 +371,7 @@ namespace Dissonance.ViewModels
                         if (result == null)
                                 throw new ArgumentNullException(nameof(result));
 
-                        Document = CreateFlowDocument(result.PlainText);
+                        Document = result.Document ?? CreateFlowDocument(result.PlainText);
                         PlainText = result.PlainText;
                         FilePath = result.FilePath;
                         LastError = null;

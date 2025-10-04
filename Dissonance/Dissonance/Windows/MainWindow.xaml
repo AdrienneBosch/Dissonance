@@ -182,13 +182,40 @@
                             Margin="24,0,0,0"
                             Style="{StaticResource CardContainerStyle}">
                         <Grid>
+                            <Grid.Resources>
+                                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                            </Grid.Resources>
                             <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <TextBlock Text="Document preview"
                                        Style="{StaticResource CardTitleTextStyle}"/>
-                            <FlowDocumentScrollViewer Grid.Row="1"
+                            <StackPanel Grid.Row="1"
+                                        Orientation="Horizontal"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Left"
+                                        Visibility="{Binding IsDocumentLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                <Button Content="⏪ 10s"
+                                        Command="{Binding SeekBackwardCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="80"
+                                        AutomationProperties.Name="Rewind 10 seconds"/>
+                                <Button Content="{Binding PlayPauseLabel}"
+                                        Command="{Binding PlayPauseCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="100"
+                                        Margin="12,0,0,0"
+                                        AutomationProperties.Name="Play or pause document narration"/>
+                                <Button Content="10s ⏩"
+                                        Command="{Binding SeekForwardCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="80"
+                                        Margin="12,0,0,0"
+                                        AutomationProperties.Name="Fast forward 10 seconds"/>
+                            </StackPanel>
+                            <FlowDocumentScrollViewer Grid.Row="2"
                                                       Margin="0,12,0,0"
                                                       Document="{Binding Document}"
                                                       VerticalScrollBarVisibility="Auto">
@@ -203,7 +230,7 @@
                                     </Style>
                                 </FlowDocumentScrollViewer.Style>
                             </FlowDocumentScrollViewer>
-                            <TextBlock Grid.Row="1"
+                            <TextBlock Grid.Row="2"
                                        Margin="0,20,0,0"
                                        Text="Open a document to preview its contents here."
                                        HorizontalAlignment="Center"

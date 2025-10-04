@@ -209,7 +209,7 @@ namespace Dissonance.Tests.ViewModels
                         var clipboardService = new TestClipboardService();
                         var statusService = new TestStatusAnnouncementService();
                         var documentReaderService = new TestDocumentReaderService();
-                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService);
+                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService);
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
                         var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService, documentReaderViewModel);
@@ -332,6 +332,12 @@ namespace Dissonance.Tests.ViewModels
                         public Prompt? LastPrompt { get; private set; }
 
                         public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
+                        {
+                                add { }
+                                remove { }
+                        }
+
+                        public event EventHandler<SpeakProgressEventArgs>? SpeechProgress
                         {
                                 add { }
                                 remove { }

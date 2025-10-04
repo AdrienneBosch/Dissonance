@@ -148,6 +148,42 @@
                                          HorizontalAlignment="Stretch"
                                          TextWrapping="Wrap"
                                          MinHeight="34"/>
+                                <Border Margin="0,16,0,0"
+                                        Padding="12"
+                                        Background="{DynamicResource SurfaceBackgroundBrush}"
+                                        BorderBrush="{DynamicResource CardBorderBrush}"
+                                        BorderThickness="1"
+                                        CornerRadius="8">
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <StackPanel Grid.Column="0"
+                                                    Orientation="Vertical"
+                                                    HorizontalAlignment="Left"
+                                                    VerticalAlignment="Center"
+                                                    MaxWidth="240">
+                                            <TextBlock x:Name="RememberDocumentToggleLabel"
+                                                       Text="Remember document progress"
+                                                       FontSize="14"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                            <TextBlock Margin="0,4,0,0"
+                                                       Text="Reopen the last document and resume where you left off."
+                                                       Style="{StaticResource CardDescriptionTextStyle}"
+                                                       TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                        <ToggleButton Grid.Column="1"
+                                                      Style="{StaticResource SettingsToggleSwitchStyle}"
+                                                      IsChecked="{Binding RememberDocumentProgress, Mode=TwoWay}"
+                                                      VerticalAlignment="Center"
+                                                      Margin="16,0,0,0"
+                                                      AutomationProperties.Name="Remember the last document and position"
+                                                      AutomationProperties.HelpText="When enabled, Dissonance reopens the last document and restores the saved reading position."
+                                                      AutomationProperties.LabeledBy="{Binding ElementName=RememberDocumentToggleLabel}"/>
+                                    </Grid>
+                                </Border>
                                 <Grid Margin="0,16,0,0">
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>

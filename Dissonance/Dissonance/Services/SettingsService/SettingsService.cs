@@ -176,6 +176,9 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = null,
                                 WindowHeight = null,
                                 IsWindowMaximized = false,
+                                RememberDocumentReaderPosition = false,
+                                DocumentReaderLastFilePath = null,
+                                DocumentReaderLastCharacterIndex = 0,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                                 DocumentReaderHotkey = new DocumentReaderHotkeySettings { Modifiers = string.Empty, Key = "MediaPlayPause", UsePlayPauseToggle = false },
                                 DocumentReaderHighlightColor = "ThemeAccent",
@@ -196,6 +199,9 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = settings.WindowWidth,
                                 WindowHeight = settings.WindowHeight,
                                 IsWindowMaximized = settings.IsWindowMaximized,
+                                RememberDocumentReaderPosition = settings.RememberDocumentReaderPosition,
+                                DocumentReaderLastFilePath = settings.DocumentReaderLastFilePath,
+                                DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
@@ -230,6 +236,9 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = NormalizeDimension ( settings.WindowWidth, reference.WindowWidth ),
                                 WindowHeight = NormalizeDimension ( settings.WindowHeight, reference.WindowHeight ),
                                 IsWindowMaximized = settings.IsWindowMaximized,
+                                RememberDocumentReaderPosition = settings.RememberDocumentReaderPosition,
+                                DocumentReaderLastFilePath = string.IsNullOrWhiteSpace ( settings.DocumentReaderLastFilePath ) ? reference.DocumentReaderLastFilePath : settings.DocumentReaderLastFilePath,
+                                DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex < 0 ? reference.DocumentReaderLastCharacterIndex : settings.DocumentReaderLastCharacterIndex,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,

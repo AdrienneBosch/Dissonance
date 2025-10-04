@@ -97,6 +97,7 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock x:Name="VoiceSelectionHeading"
                                    Grid.Row="0"
@@ -116,6 +117,16 @@
                                   HorizontalAlignment="Stretch"
                                   MinWidth="220"
                                   MinHeight="34"/>
+                        <Button Grid.Row="3"
+                                Content="{Binding PreviewVoiceButtonLabel}"
+                                Command="{Binding PreviewVoiceCommand}"
+                                Style="{StaticResource PrimaryButtonStyle}"
+                                Margin="0,12,0,0"
+                                HorizontalAlignment="Left"
+                                ToolTip="{Binding PreviewVoiceButtonToolTip}"
+                                AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
+                                AutomationProperties.HelpText="{Binding PreviewVoiceHelpText}"
+                                TabIndex="3"/>
                     </Grid>
                 </Border>
 
@@ -147,7 +158,7 @@
                                  HorizontalAlignment="Left"
                                  HorizontalContentAlignment="Center"
                                   Width="140"
-                                 TabIndex="3"
+                                 TabIndex="4"
                                  AutomationProperties.HelpText="Enter a numeric value to control how fast the voice speaks"/>
                     </StackPanel>
                 </Border>
@@ -184,7 +195,7 @@
                                 AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
                                 Focusable="True"
                                 IsTabStop="True"
-                                TabIndex="4"
+                                TabIndex="5"
                                 KeyDown="VoiceVolumeSlider_KeyDown">
                             <Slider.ToolTip>
                                 <ToolTip>

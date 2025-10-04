@@ -34,9 +34,6 @@ namespace Dissonance
                         { 14, Key.MediaPlayPause },
                         { 46, Key.Play },
                         { 47, Key.Pause },
-                        { 48, Key.Record },
-                        { 49, Key.FastForward },
-                        { 50, Key.Rewind },
                 };
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {

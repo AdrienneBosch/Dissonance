@@ -50,17 +50,27 @@ namespace Dissonance.Managers
 			}
 		}
 
-		private void OnSpeechCompleted ( object sender, EventArgs e )
-		{
-			_isSpeaking = false;
-			_logger.LogInformation ( "TTS playback completed." );
-		}
+                private void OnSpeechCompleted ( object sender, EventArgs e )
+                {
+                        var wasSpeaking = _isSpeaking;
+                        _isSpeaking = false;
 
-		public void Dispose ( )
-		{
-			_hotkeyService.Dispose ( );
-			_logger.LogInformation ( "HotkeyManager disposed." );
-		}
+                        if ( wasSpeaking )
+                        {
+                                _logger.LogInformation ( "TTS playback completed." );
+                        }
+                        else
+                        {
+                                _logger.LogInformation ( "TTS playback completed outside of a hotkey read (likely a preview). Ready for the next request." );
+                        }
+                }
+
+                public void Dispose ( )
+                {
+                        _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        _hotkeyService.Dispose ( );
+                        _logger.LogInformation ( "HotkeyManager disposed." );
+                }
 
 		public void Initialize ( MainWindow mainWindow )
 		{

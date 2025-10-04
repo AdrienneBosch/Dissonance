@@ -56,17 +56,35 @@
                         <TextBlock Grid.Row="1"
                                    Text="Choose which installed voice is used for speech."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
-                        <ComboBox x:Name="VoiceSelectionComboBox"
-                                  Grid.Row="2"
-                                  Style="{StaticResource ModernComboBoxStyle}"
-                                  ItemsSource="{Binding AvailableVoices}"
-                                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
-                                  ToolTip="Select the voice used by the text-to-speech engine"
-                                  TabIndex="2"
-                                  HorizontalAlignment="Stretch"
-                                  MinWidth="220"
-                                  MinHeight="34"/>
+                        <Grid Grid.Row="2">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="VoiceSelectionComboBox"
+                                      Style="{StaticResource ModernComboBoxStyle}"
+                                      ItemsSource="{Binding AvailableVoices}"
+                                      SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
+                                      ToolTip="Select the voice used by the text-to-speech engine"
+                                      TabIndex="2"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="220"
+                                      MinHeight="34"/>
+                            <Button Grid.Column="1"
+                                    Content="Preview Voice"
+                                    Command="{Binding PreviewVoiceCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="12,0,0,0"
+                                    MinWidth="120"
+                                    Padding="16,8"
+                                    ToolTipService.ShowOnDisabled="True"
+                                    ToolTip="{StaticResource PreviewVoiceButtonToolTip}"
+                                    AutomationProperties.Name="Preview voice"
+                                    AutomationProperties.HelpText="{StaticResource PreviewVoiceButtonHelpText}"
+                                    TabIndex="3"
+                                    VerticalAlignment="Stretch"/>
+                        </Grid>
                     </Grid>
                 </Border>
 
@@ -97,8 +115,8 @@
                                  ToolTip="Set the speaking rate of the text-to-speech voice"
                                  HorizontalAlignment="Left"
                                  HorizontalContentAlignment="Center"
-                                  Width="140"
-                                 TabIndex="3"
+                                 Width="140"
+                                 TabIndex="4"
                                  AutomationProperties.HelpText="Enter a numeric value to control how fast the voice speaks"/>
                     </StackPanel>
                 </Border>
@@ -135,7 +153,7 @@
                                 AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
                                 Focusable="True"
                                 IsTabStop="True"
-                                TabIndex="4"
+                                TabIndex="5"
                                 KeyDown="VoiceVolumeSlider_KeyDown">
                             <Slider.ToolTip>
                                 <ToolTip>
@@ -166,7 +184,7 @@
                                      AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
                                      ToolTip="Set the hotkey used to trigger speaking the clipboard's text"
                                      Width="170"
-                                     TabIndex="5"
+                                     TabIndex="6"
                                      IsReadOnly="True"
                                      PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                      AutomationProperties.HelpText="Specify the key combination that will read clipboard contents"/>
@@ -176,7 +194,7 @@
                                     Margin="12,0,0,0"
                                     MinWidth="72"
                                     ToolTip="Apply the new hotkey immediately"
-                                    TabIndex="6"
+                                    TabIndex="7"
                                     AutomationProperties.Name="Apply hotkey"
                                     AutomationProperties.HelpText="Applies the entered hotkey combination"/>
                         </StackPanel>

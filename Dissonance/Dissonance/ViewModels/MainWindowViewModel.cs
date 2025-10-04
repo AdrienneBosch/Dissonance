@@ -35,6 +35,8 @@ namespace Dissonance.ViewModels
                 private string _hotkeyCombination = string.Empty;
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private NavigationSectionViewModel? _selectedSection;
+                private bool _isVoicePreviewing;
+                private readonly RelayCommandNoParam _previewVoiceCommand;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService )
                 {
@@ -49,6 +51,10 @@ namespace Dissonance.ViewModels
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
                         NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
+                        _previewVoiceCommand = new RelayCommandNoParam ( PreviewVoice, CanPreviewVoice );
+                        PreviewVoiceCommand = _previewVoiceCommand;
+
+                        _ttsService.SpeechCompleted += OnTtsSpeechCompleted;
 
                         var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer ( ).GetInstalledVoices ( );
                         foreach ( var voice in installedVoices )
@@ -107,6 +113,8 @@ namespace Dissonance.ViewModels
                 public ICommand SaveDefaultSettingsCommand { get; }
 
                 public ICommand NavigateToSectionCommand { get; }
+
+                public ICommand PreviewVoiceCommand { get; }
 
                 public bool IsNavigationMenuOpen
                 {
@@ -247,6 +255,8 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        _ttsService.SpeechCompleted -= OnTtsSpeechCompleted;
+
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( settings.SaveConfigAsDefaultOnClose )
                         {
@@ -260,6 +270,57 @@ namespace Dissonance.ViewModels
                                 return false;
 
                         return TryParseHotkeyCombination ( _hotkeyCombination, out _, out _ );
+                }
+
+                private bool CanPreviewVoice ( ) => !_isVoicePreviewing;
+
+                private void PreviewVoice ( )
+                {
+                        var previewText = GetVoicePreviewSampleText ( );
+                        if ( string.IsNullOrWhiteSpace ( previewText ) )
+                                return;
+
+                        var settings = _settingsService.GetCurrentSettings ( );
+
+                        _ttsService.Stop ( );
+                        _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+
+                        _isVoicePreviewing = true;
+                        _previewVoiceCommand.RaiseCanExecuteChanged ( );
+
+                        _ttsService.Speak ( previewText );
+                }
+
+                private void OnTtsSpeechCompleted ( object sender, EventArgs e )
+                {
+                        if ( !_isVoicePreviewing )
+                                return;
+
+                        void ResetPreviewState ( )
+                        {
+                                _isVoicePreviewing = false;
+                                _previewVoiceCommand.RaiseCanExecuteChanged ( );
+                        }
+
+                        if ( Application.Current?.Dispatcher != null && !Application.Current.Dispatcher.CheckAccess ( ) )
+                        {
+                                Application.Current.Dispatcher.BeginInvoke ( (Action) ResetPreviewState );
+                        }
+                        else
+                        {
+                                ResetPreviewState ( );
+                        }
+                }
+
+                private static string GetVoicePreviewSampleText ( )
+                {
+                        if ( Application.Current != null )
+                        {
+                                if ( Application.Current.TryFindResource ( "VoicePreviewSampleText" ) is string localizedSample && !string.IsNullOrWhiteSpace ( localizedSample ) )
+                                        return localizedSample;
+                        }
+
+                        return "This is a quick preview of the selected voice.";
                 }
 
                 private void ApplyHotkey ( )

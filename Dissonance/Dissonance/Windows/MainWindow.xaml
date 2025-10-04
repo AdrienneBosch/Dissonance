@@ -632,7 +632,7 @@
                                      HorizontalContentAlignment="Stretch"
                                      ItemContainerStyle="{StaticResource NavigationMenuListBoxItemStyle}">
                                 <ListBox.ItemTemplate>
-                                    <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+                                    <DataTemplate>
                                         <TextBlock Text="{Binding Title}"
                                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
                                     </DataTemplate>
@@ -966,7 +966,7 @@
                             </ItemsPanelTemplate>
                         </ItemsControl.ItemsPanel>
                         <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+                            <DataTemplate>
                                 <Button Style="{StaticResource HomeTileButtonStyle}"
                                         Margin="0,0,24,24"
                                         Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"

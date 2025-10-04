@@ -178,6 +178,13 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
+                            <CheckBox Margin="0,16,0,0"
+                                      Content="Remember this document and position"
+                                      Style="{StaticResource MenuCheckBoxStyle}"
+                                      IsChecked="{Binding RememberDocumentProgress, Mode=TwoWay}"
+                                      ToolTip="Automatically reopen the last document and resume from the saved location."
+                                      AutomationProperties.Name="Remember document progress toggle"
+                                      AutomationProperties.HelpText="Enable to reopen the last document automatically and continue where you stopped."/>
                         </StackPanel>
                     </Border>
 

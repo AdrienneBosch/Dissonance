@@ -33,6 +33,9 @@ namespace Dissonance.Tests.Services
                         Assert.Null(settings.WindowWidth);
                         Assert.Null(settings.WindowHeight);
                         Assert.False(settings.IsWindowMaximized);
+                        Assert.False(settings.RememberDocumentProgress);
+                        Assert.Null(settings.DocumentReaderLastFilePath);
+                        Assert.Null(settings.DocumentReaderLastCharacterIndex);
                         Assert.Equal("Alt", settings.Hotkey.Modifiers);
                         Assert.Equal("E", settings.Hotkey.Key);
 
@@ -51,6 +54,9 @@ namespace Dissonance.Tests.Services
                         Assert.Equal(settings.WindowWidth, storedSettings.WindowWidth);
                         Assert.Equal(settings.WindowHeight, storedSettings.WindowHeight);
                         Assert.Equal(settings.IsWindowMaximized, storedSettings.IsWindowMaximized);
+                        Assert.Equal(settings.RememberDocumentProgress, storedSettings.RememberDocumentProgress);
+                        Assert.Equal(settings.DocumentReaderLastFilePath, storedSettings.DocumentReaderLastFilePath);
+                        Assert.Equal(settings.DocumentReaderLastCharacterIndex, storedSettings.DocumentReaderLastCharacterIndex);
                         Assert.Equal(settings.Hotkey.Modifiers, storedSettings.Hotkey!.Modifiers);
                         Assert.Equal(settings.Hotkey.Key, storedSettings.Hotkey.Key);
 
@@ -82,7 +88,10 @@ namespace Dissonance.Tests.Services
                                 {
                                         Modifiers = string.Empty,
                                         Key = string.Empty,
-                                }
+                                },
+                                RememberDocumentProgress = true,
+                                DocumentReaderLastFilePath = " ",
+                                DocumentReaderLastCharacterIndex = -10,
                         };
 
                         service.SaveSettings(invalidSettings);
@@ -99,6 +108,9 @@ namespace Dissonance.Tests.Services
                         Assert.Null(current.WindowWidth);
                         Assert.Null(current.WindowHeight);
                         Assert.True(current.IsWindowMaximized);
+                        Assert.True(current.RememberDocumentProgress);
+                        Assert.Null(current.DocumentReaderLastFilePath);
+                        Assert.Null(current.DocumentReaderLastCharacterIndex);
                         Assert.Equal("Alt", current.Hotkey.Modifiers);
                         Assert.Equal("E", current.Hotkey.Key);
 
@@ -115,6 +127,9 @@ namespace Dissonance.Tests.Services
                         Assert.Equal(current.WindowWidth, storedSettings.WindowWidth);
                         Assert.Equal(current.WindowHeight, storedSettings.WindowHeight);
                         Assert.Equal(current.IsWindowMaximized, storedSettings.IsWindowMaximized);
+                        Assert.Equal(current.RememberDocumentProgress, storedSettings.RememberDocumentProgress);
+                        Assert.Equal(current.DocumentReaderLastFilePath, storedSettings.DocumentReaderLastFilePath);
+                        Assert.Equal(current.DocumentReaderLastCharacterIndex, storedSettings.DocumentReaderLastCharacterIndex);
                         Assert.Equal(current.Hotkey.Modifiers, storedSettings.Hotkey!.Modifiers);
                         Assert.Equal(current.Hotkey.Key, storedSettings.Hotkey.Key);
 
@@ -145,7 +160,10 @@ namespace Dissonance.Tests.Services
                                 {
                                         Modifiers = "Ctrl+Shift",
                                         Key = "H",
-                                }
+                                },
+                                RememberDocumentProgress = true,
+                                DocumentReaderLastFilePath = "notes.txt",
+                                DocumentReaderLastCharacterIndex = 42,
                         };
 
                         service.SaveSettings(desiredSettings);
@@ -164,6 +182,9 @@ namespace Dissonance.Tests.Services
                         Assert.Equal(desiredSettings.WindowWidth, current.WindowWidth);
                         Assert.Equal(desiredSettings.WindowHeight, current.WindowHeight);
                         Assert.Equal(desiredSettings.IsWindowMaximized, current.IsWindowMaximized);
+                        Assert.Equal(desiredSettings.RememberDocumentProgress, current.RememberDocumentProgress);
+                        Assert.Equal(desiredSettings.DocumentReaderLastFilePath, current.DocumentReaderLastFilePath);
+                        Assert.Equal(desiredSettings.DocumentReaderLastCharacterIndex, current.DocumentReaderLastCharacterIndex);
                         Assert.Equal(desiredSettings.Hotkey!.Modifiers, current.Hotkey.Modifiers);
                         Assert.Equal(desiredSettings.Hotkey.Key, current.Hotkey.Key);
 
@@ -181,6 +202,9 @@ namespace Dissonance.Tests.Services
                         Assert.Equal(desiredSettings.WindowWidth, defaultSettings.WindowWidth);
                         Assert.Equal(desiredSettings.WindowHeight, defaultSettings.WindowHeight);
                         Assert.Equal(desiredSettings.IsWindowMaximized, defaultSettings.IsWindowMaximized);
+                        Assert.Equal(desiredSettings.RememberDocumentProgress, defaultSettings.RememberDocumentProgress);
+                        Assert.Equal(desiredSettings.DocumentReaderLastFilePath, defaultSettings.DocumentReaderLastFilePath);
+                        Assert.Equal(desiredSettings.DocumentReaderLastCharacterIndex, defaultSettings.DocumentReaderLastCharacterIndex);
                         Assert.Equal(desiredSettings.Hotkey.Modifiers, defaultSettings.Hotkey!.Modifiers);
                         Assert.Equal(desiredSettings.Hotkey.Key, defaultSettings.Hotkey.Key);
 
@@ -197,6 +221,9 @@ namespace Dissonance.Tests.Services
                         Assert.Equal(desiredSettings.WindowWidth, storedSettings.WindowWidth);
                         Assert.Equal(desiredSettings.WindowHeight, storedSettings.WindowHeight);
                         Assert.Equal(desiredSettings.IsWindowMaximized, storedSettings.IsWindowMaximized);
+                        Assert.Equal(desiredSettings.RememberDocumentProgress, storedSettings.RememberDocumentProgress);
+                        Assert.Equal(desiredSettings.DocumentReaderLastFilePath, storedSettings.DocumentReaderLastFilePath);
+                        Assert.Equal(desiredSettings.DocumentReaderLastCharacterIndex, storedSettings.DocumentReaderLastCharacterIndex);
                         Assert.Equal(desiredSettings.Hotkey.Modifiers, storedSettings.Hotkey!.Modifiers);
                         Assert.Equal(desiredSettings.Hotkey.Key, storedSettings.Hotkey.Key);
 
@@ -228,7 +255,10 @@ namespace Dissonance.Tests.Services
                                 {
                                         Modifiers = "Ctrl",
                                         Key = "K",
-                                }
+                                },
+                                RememberDocumentProgress = true,
+                                DocumentReaderLastFilePath = "custom.txt",
+                                DocumentReaderLastCharacterIndex = 10,
                         };
 
                         service.SaveSettings(customSettings);
@@ -246,6 +276,9 @@ namespace Dissonance.Tests.Services
                         Assert.Null(current.WindowWidth);
                         Assert.Null(current.WindowHeight);
                         Assert.False(current.IsWindowMaximized);
+                        Assert.False(current.RememberDocumentProgress);
+                        Assert.Null(current.DocumentReaderLastFilePath);
+                        Assert.Null(current.DocumentReaderLastCharacterIndex);
                         Assert.Equal("Alt", current.Hotkey.Modifiers);
                         Assert.Equal("E", current.Hotkey.Key);
 
@@ -262,6 +295,9 @@ namespace Dissonance.Tests.Services
                         Assert.Null(storedSettings.WindowWidth);
                         Assert.Null(storedSettings.WindowHeight);
                         Assert.False(storedSettings.IsWindowMaximized);
+                        Assert.False(storedSettings.RememberDocumentProgress);
+                        Assert.Null(storedSettings.DocumentReaderLastFilePath);
+                        Assert.Null(storedSettings.DocumentReaderLastCharacterIndex);
                         Assert.Equal("Alt", storedSettings.Hotkey!.Modifiers);
                         Assert.Equal("E", storedSettings.Hotkey.Key);
 

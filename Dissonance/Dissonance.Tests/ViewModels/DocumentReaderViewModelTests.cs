@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -211,6 +212,96 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal(result.PlainText.Length, viewModel.CharacterCount);
                 }
 
+                [Fact]
+                public void RememberDocumentProgress_TogglePersistsSetting()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+
+                        viewModel.RememberDocumentProgress = true;
+
+                        Assert.True(viewModel.RememberDocumentProgress);
+                        Assert.True(settings.RememberDocumentProgress);
+                        Assert.Equal(1, settingsService.SaveCalls);
+
+                        viewModel.RememberDocumentProgress = false;
+
+                        Assert.False(viewModel.RememberDocumentProgress);
+                        Assert.False(settings.RememberDocumentProgress);
+                        Assert.Equal(2, settingsService.SaveCalls);
+                }
+
+                [Fact]
+                public async Task RememberDocumentProgress_SavesPathAndIndex()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(returnPrompt: true), settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+                        viewModel.RememberDocumentProgress = true;
+
+                        var property = typeof(DocumentReaderViewModel).GetProperty("CurrentCharacterIndex", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        Assert.NotNull(property);
+                        property!.SetValue(viewModel, 5);
+
+                        Assert.Equal(result.FilePath, settings.DocumentReaderLastFilePath);
+                        Assert.Equal(5, settings.DocumentReaderLastCharacterIndex);
+                }
+
+                [Fact]
+                public async Task RememberDocumentProgress_ClearDocumentClearsStoredState()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(returnPrompt: true), settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+                        viewModel.RememberDocumentProgress = true;
+
+                        var property = typeof(DocumentReaderViewModel).GetProperty("CurrentCharacterIndex", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                        property!.SetValue(viewModel, result.PlainText.Length);
+
+                        viewModel.ClearDocument();
+
+                        Assert.Null(settings.DocumentReaderLastFilePath);
+                        Assert.Null(settings.DocumentReaderLastCharacterIndex);
+                }
+
+                [Fact]
+                public async Task RememberDocumentProgress_RestoresPositionWhenLoadingDocument()
+                {
+                        var tempFile = Path.GetTempFileName();
+                        try
+                        {
+                                File.WriteAllText(tempFile, "Hello world");
+                                var result = new DocumentReadResult(tempFile, "Hello world");
+                                var service = new StubDocumentReaderService(result);
+                                var settings = CreateSettings();
+                                settings.RememberDocumentProgress = true;
+                                settings.DocumentReaderLastFilePath = tempFile;
+                                settings.DocumentReaderLastCharacterIndex = 4;
+                                var settingsService = new StubSettingsService(settings);
+                                var viewModel = new DocumentReaderViewModel(service, new StubTtsService(returnPrompt: true), settingsService);
+
+                                await viewModel.LoadDocumentAsync(tempFile);
+
+                                Assert.Equal(4, viewModel.CurrentCharacterIndex);
+                        }
+                        finally
+                        {
+                                if (File.Exists(tempFile))
+                                        File.Delete(tempFile);
+                        }
+                }
+
                 private static AppSettings CreateSettings()
                 {
                         return new AppSettings
@@ -221,7 +312,10 @@ namespace Dissonance.Tests.ViewModels
                                         Key = "MediaPlayPause",
                                         Modifiers = string.Empty,
                                         UsePlayPauseToggle = false,
-                                }
+                                },
+                                RememberDocumentProgress = false,
+                                DocumentReaderLastFilePath = null,
+                                DocumentReaderLastCharacterIndex = null,
                         };
                 }
 

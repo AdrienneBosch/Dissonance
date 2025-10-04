@@ -202,7 +202,10 @@ namespace Dissonance.Tests.ViewModels
                                         Key = "MediaPlayPause",
                                         Modifiers = string.Empty,
                                         UsePlayPauseToggle = false,
-                                }
+                                },
+                                RememberDocumentProgress = false,
+                                DocumentReaderLastFilePath = null,
+                                DocumentReaderLastCharacterIndex = null,
                         };
 
                         var settingsService = new TestSettingsService(settings);
@@ -325,7 +328,10 @@ namespace Dissonance.Tests.ViewModels
                                                 Modifiers = settings.DocumentReaderHotkey?.Modifiers ?? string.Empty,
                                                 Key = settings.DocumentReaderHotkey?.Key ?? string.Empty,
                                                 UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? false,
-                                        }
+                                        },
+                                        RememberDocumentProgress = settings.RememberDocumentProgress,
+                                        DocumentReaderLastFilePath = settings.DocumentReaderLastFilePath,
+                                        DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex,
                                 };
                         }
                 }

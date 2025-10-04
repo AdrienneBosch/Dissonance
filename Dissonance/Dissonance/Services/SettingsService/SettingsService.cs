@@ -179,6 +179,9 @@ namespace Dissonance.Services.SettingsService
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                                 DocumentReaderHotkey = new DocumentReaderHotkeySettings { Modifiers = string.Empty, Key = "MediaPlayPause", UsePlayPauseToggle = false },
                                 DocumentReaderHighlightColor = "ThemeAccent",
+                                RememberDocumentProgress = false,
+                                DocumentReaderLastFilePath = null,
+                                DocumentReaderLastCharacterIndex = null,
                         };
                 }
 
@@ -208,7 +211,10 @@ namespace Dissonance.Services.SettingsService
                                         Key = settings.DocumentReaderHotkey?.Key ?? string.Empty,
                                         UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? false,
                                 },
-                                DocumentReaderHighlightColor = settings.DocumentReaderHighlightColor
+                                DocumentReaderHighlightColor = settings.DocumentReaderHighlightColor,
+                                RememberDocumentProgress = settings.RememberDocumentProgress,
+                                DocumentReaderLastFilePath = settings.DocumentReaderLastFilePath,
+                                DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex,
                         };
                 }
 
@@ -243,9 +249,20 @@ namespace Dissonance.Services.SettingsService
                                         UsePlayPauseToggle = settings.DocumentReaderHotkey?.UsePlayPauseToggle ?? reference.DocumentReaderHotkey.UsePlayPauseToggle,
                                 },
                                 DocumentReaderHighlightColor = string.IsNullOrWhiteSpace ( settings.DocumentReaderHighlightColor ) ? reference.DocumentReaderHighlightColor : settings.DocumentReaderHighlightColor,
+                                RememberDocumentProgress = settings.RememberDocumentProgress,
+                                DocumentReaderLastFilePath = string.IsNullOrWhiteSpace ( settings.DocumentReaderLastFilePath ) ? null : settings.DocumentReaderLastFilePath,
+                                DocumentReaderLastCharacterIndex = NormalizeCharacterIndex ( settings.DocumentReaderLastCharacterIndex, reference.DocumentReaderLastCharacterIndex ),
                         };
 
                         return normalized;
+                }
+
+                private static int? NormalizeCharacterIndex ( int? value, int? fallback )
+                {
+                        if ( value.HasValue && value.Value >= 0 )
+                                return value.Value;
+
+                        return fallback;
                 }
 
                 private static double? NormalizeDimension ( double? value, double? fallback )

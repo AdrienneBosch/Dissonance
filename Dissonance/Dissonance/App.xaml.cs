@@ -4,6 +4,7 @@ using System.Windows;
 using Dissonance.Infrastructure.Logging;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
+using Dissonance.Services.DocumentReader;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -34,6 +35,7 @@ namespace Dissonance
                 {
                         services.AddSingleton<ISettingsService, SettingsService> ( );
                         services.AddSingleton<IClipboardService, ClipboardService> ( );
+                        services.AddSingleton<IDocumentReaderService, DocumentReaderService> ( );
                         services.AddSingleton<ITTSService, TTSService> ( );
                         services.AddSingleton<IThemeService, ThemeService> ( );
                         services.AddSingleton<IStatusAnnouncementService, StatusAnnouncementService> ( );
@@ -42,6 +44,7 @@ namespace Dissonance
                         services.AddSingleton<ClipboardManager> ( );
                         services.AddSingleton<HotkeyManager> ( );
                         services.AddSingleton<StartupManager> ( );
+                        services.AddSingleton<DocumentReaderViewModel> ( );
                         services.AddSingleton<MainWindowViewModel> ( );
                         services.AddSingleton<MainWindow> ( );
                 }

@@ -39,6 +39,7 @@ namespace Dissonance.ViewModels
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private readonly ObservableCollection<StatusAnnouncement> _statusHistory = new ObservableCollection<StatusAnnouncement> ( );
                 private readonly ReadOnlyObservableCollection<StatusAnnouncement> _statusHistoryView;
+                private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
@@ -56,7 +57,7 @@ namespace Dissonance.ViewModels
 
                 private const int MaxStatusItems = 100;
 
-                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager, IStatusAnnouncementService statusAnnouncementService )
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager, IStatusAnnouncementService statusAnnouncementService, DocumentReaderViewModel documentReaderViewModel )
                 {
                         _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
                         _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
@@ -65,6 +66,7 @@ namespace Dissonance.ViewModels
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
                         _statusAnnouncementService = statusAnnouncementService ?? throw new ArgumentNullException ( nameof ( statusAnnouncementService ) );
+                        _documentReaderViewModel = documentReaderViewModel ?? throw new ArgumentNullException ( nameof ( documentReaderViewModel ) );
 
                         _statusHistoryView = new ReadOnlyObservableCollection<StatusAnnouncement> ( _statusHistory );
 
@@ -144,6 +146,14 @@ namespace Dissonance.ViewModels
                                 "Fine-tune speech playback, volume, and shortcuts for the clipboard narration experience.",
                                 this,
                                 showSettingsControls: true ) );
+
+                        _navigationSections.Add ( new NavigationSectionViewModel (
+                                "document-reader",
+                                "Document Reader",
+                                "Load saved documents and prepare them for narration.",
+                                "Document Reader",
+                                "Open text files and review their contents before listening.",
+                                _documentReaderViewModel ) );
                 }
 
                 public event PropertyChangedEventHandler PropertyChanged;
@@ -151,6 +161,8 @@ namespace Dissonance.ViewModels
                 public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
 
                 public ObservableCollection<NavigationSectionViewModel> NavigationSections => _navigationSections;
+
+                public DocumentReaderViewModel DocumentReader => _documentReaderViewModel;
 
                 public ReadOnlyObservableCollection<StatusAnnouncement> StatusHistory => _statusHistoryView;
 

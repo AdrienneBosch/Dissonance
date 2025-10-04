@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Speech.Synthesis;
+using System.Threading;
+using System.Windows.Documents;
 
 using Dissonance;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
+using Dissonance.Services.DocumentReader;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -204,14 +207,25 @@ namespace Dissonance.Tests.ViewModels
                         var messageService = new FakeMessageService();
                         var clipboardService = new TestClipboardService();
                         var statusService = new TestStatusAnnouncementService();
+                        var documentReaderService = new TestDocumentReaderService();
+                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService);
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService, documentReaderViewModel);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager, statusService);
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager, statusService, documentReaderViewModel);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, TestStatusAnnouncementService StatusAnnouncementService);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, TestStatusAnnouncementService StatusAnnouncementService, DocumentReaderViewModel DocumentReaderViewModel);
+
+                private sealed class TestDocumentReaderService : IDocumentReaderService
+                {
+                        public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
+                        {
+                                var document = new FlowDocument(new Paragraph(new Run("Sample")));
+                                return Task.FromResult(new DocumentReadResult(filePath, document, "Sample"));
+                        }
+                }
 
                 private sealed class TestStatusAnnouncementService : IStatusAnnouncementService
                 {

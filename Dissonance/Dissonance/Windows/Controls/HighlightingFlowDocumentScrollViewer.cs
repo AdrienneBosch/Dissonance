@@ -41,9 +41,9 @@ namespace Dissonance.Windows.Controls
                         set => SetValue(HighlightBrushProperty, value);
                 }
 
-                protected override void OnDocumentChanged(FlowDocument oldDocument, FlowDocument newDocument)
+                protected override void OnDocumentChanged(DependencyPropertyChangedEventArgs e)
                 {
-                        base.OnDocumentChanged(oldDocument, newDocument);
+                        base.OnDocumentChanged(e);
                         ClearHighlight();
                         _appliedStartIndex = -1;
                         _appliedLength = 0;

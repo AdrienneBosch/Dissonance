@@ -705,11 +705,6 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
-                {
-                        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
-                }
-
                 private static FlowDocument CreateFlowDocument(string content)
                 {
                         var document = new FlowDocument();

@@ -4,8 +4,6 @@ using System.Linq;
 using System.Speech.Synthesis;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
-
 using Dissonance;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
@@ -229,8 +227,7 @@ namespace Dissonance.Tests.ViewModels
                 {
                         public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                         {
-                                var document = new FlowDocument(new Paragraph(new Run("Sample")));
-                                return Task.FromResult(new DocumentReadResult(filePath, document, "Sample"));
+                                return Task.FromResult(new DocumentReadResult(filePath, "Sample"));
                         }
                 }
 

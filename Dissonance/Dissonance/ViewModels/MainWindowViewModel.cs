@@ -40,6 +40,7 @@ namespace Dissonance.ViewModels
                 private readonly ObservableCollection<StatusAnnouncement> _statusHistory = new ObservableCollection<StatusAnnouncement> ( );
                 private readonly ReadOnlyObservableCollection<StatusAnnouncement> _statusHistoryView;
                 private readonly DocumentReaderViewModel _documentReaderViewModel;
+                private readonly ReaderSettingsViewModel _readerSettingsViewModel;
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
@@ -138,12 +139,23 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
 
+                        _readerSettingsViewModel = new ReaderSettingsViewModel ( this );
+
+                        _navigationSections.Add ( new NavigationSectionViewModel (
+                                "reader-settings",
+                                "Reader Settings",
+                                "Control the voice, speed, and volume shared across narration tools.",
+                                "Reader Settings",
+                                "Adjust text-to-speech preferences used throughout Dissonance.",
+                                _readerSettingsViewModel,
+                                showSettingsControls: true ) );
+
                         _navigationSections.Add ( new NavigationSectionViewModel (
                                 "clipboard-reader",
                                 "Clipboard Reader",
                                 "Instantly speak the text you've copied to the clipboard.",
                                 "Clipboard Reader",
-                                "Fine-tune speech playback, volume, and shortcuts for the clipboard narration experience.",
+                                "Customize shortcuts and playback behavior for clipboard narration.",
                                 this,
                                 showSettingsControls: true ) );
 
@@ -161,6 +173,8 @@ namespace Dissonance.ViewModels
                 public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
 
                 public ObservableCollection<NavigationSectionViewModel> NavigationSections => _navigationSections;
+
+                public ReaderSettingsViewModel ReaderSettings => _readerSettingsViewModel;
 
                 public DocumentReaderViewModel DocumentReader => _documentReaderViewModel;
 
@@ -367,6 +381,7 @@ namespace Dissonance.ViewModels
                 {
                         _statusAnnouncementService.StatusAnnounced -= OnStatusAnnounced;
                         _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        _readerSettingsViewModel.Dispose ( );
                         SetPreviewState ( false, null );
                         _ttsService.Stop ( );
 

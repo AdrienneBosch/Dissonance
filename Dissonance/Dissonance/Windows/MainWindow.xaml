@@ -327,13 +327,9 @@
                 </Grid>
             </Grid>
         </DataTemplate>
-        <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
-            <ContentPresenter Content="{Binding ContentViewModel}"/>
-        </DataTemplate>
-        <DataTemplate DataType="{x:Type local:MainWindowViewModel}">
+        <DataTemplate DataType="{x:Type local:ReaderSettingsViewModel}">
             <Grid>
                 <Grid.RowDefinitions>
-                    <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
@@ -371,7 +367,7 @@
                                       SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                       AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
                                       ToolTip="Select the voice used by the text-to-speech engine"
-                                      TabIndex="2"
+                                      TabIndex="0"
                                       HorizontalAlignment="Stretch"
                                       MinWidth="220"
                                       MinHeight="34"/>
@@ -384,7 +380,7 @@
                                     ToolTip="{Binding PreviewVoiceButtonToolTip}"
                                     AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
                                     AutomationProperties.HelpText="{Binding PreviewVoiceHelpText}"
-                                    TabIndex="3"/>
+                                    TabIndex="1"/>
                         </Grid>
                     </Grid>
                 </Border>
@@ -416,8 +412,8 @@
                                  ToolTip="Set the speaking rate of the text-to-speech voice"
                                  HorizontalAlignment="Left"
                                  HorizontalContentAlignment="Center"
-                                  Width="140"
-                                 TabIndex="4"
+                                 Width="140"
+                                 TabIndex="2"
                                  AutomationProperties.HelpText="Enter a numeric value to control how fast the voice speaks"/>
                     </StackPanel>
                 </Border>
@@ -425,7 +421,8 @@
                 <Border Style="{StaticResource CardContainerStyle}"
                         Grid.Row="1"
                         Grid.Column="0"
-                        Margin="0,12,12,0">
+                        Grid.ColumnSpan="2"
+                        Margin="0,12,0,0">
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -454,7 +451,7 @@
                                 AutomationProperties.HelpText="Use the arrow keys to adjust the speech output volume"
                                 Focusable="True"
                                 IsTabStop="True"
-                                TabIndex="5"
+                                TabIndex="3"
                                 KeyDown="VoiceVolumeSlider_KeyDown">
                             <Slider.ToolTip>
                                 <ToolTip>
@@ -467,11 +464,15 @@
                         </Slider>
                     </StackPanel>
                 </Border>
-
+            </Grid>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
+            <ContentPresenter Content="{Binding ContentViewModel}"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:MainWindowViewModel}">
+            <Grid>
                 <Border Style="{StaticResource CardContainerStyle}"
-                        Grid.Row="1"
-                        Grid.Column="1"
-                        Margin="12,12,0,0">
+                        Margin="0">
                     <StackPanel>
                         <Grid>
                             <Grid.ColumnDefinitions>
@@ -516,7 +517,7 @@
                                          Text="{Binding HotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                          AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
                                          ToolTip="Set the hotkey used to copy the current selection and speak it aloud"
-                                         TabIndex="6"
+                                         TabIndex="0"
                                          IsReadOnly="True"
                                          PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                          AutomationProperties.HelpText="Specify the key combination that copies the current selection and speaks it aloud"/>
@@ -526,7 +527,7 @@
                                         Margin="12,0,0,0"
                                         MinWidth="96"
                                         ToolTip="Apply the new hotkey immediately"
-                                        TabIndex="7"
+                                        TabIndex="1"
                                         AutomationProperties.Name="Apply hotkey"
                                         AutomationProperties.HelpText="Applies the entered hotkey combination"/>
                             </StackPanel>
@@ -567,7 +568,7 @@
                                               AutomationProperties.Name="Automatically speak new clipboard text"
                                               AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
                                               AutomationProperties.LabeledBy="{Binding ElementName=AutoReadToggleLabel}"
-                                              TabIndex="5"/>
+                                              TabIndex="2"/>
                             </Grid>
                         </Border>
 

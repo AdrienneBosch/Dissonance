@@ -249,7 +249,7 @@
                                            FontSize="13"
                                            FontWeight="SemiBold"
                                            Foreground="{DynamicResource AccentBrush}"/>
-                                <TextBlock Text="Press the hotkey once to copy and narrate your selection. Press it again to stop playback immediately."
+                                <TextBlock Text="Press the hotkey once to copy and narrate your selection. Press it again to stop playback immediately. It uses the same clipboard reader hotkey shown above."
                                            Margin="0,4,0,0"
                                            Foreground="{DynamicResource SecondaryForegroundBrush}"
                                            TextWrapping="Wrap"/>

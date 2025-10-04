@@ -41,14 +41,18 @@ namespace Dissonance.Windows.Controls
                         set => SetValue(HighlightBrushProperty, value);
                 }
 
-                protected override void OnDocumentChanged(DependencyPropertyChangedEventArgs e)
+                protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
                 {
-                        base.OnDocumentChanged(e);
-                        ClearHighlight();
-                        _appliedStartIndex = -1;
-                        _appliedLength = 0;
-                        _appliedBrush = null;
-                        UpdateHighlight();
+                        base.OnPropertyChanged(e);
+
+                        if (e.Property == FlowDocumentScrollViewer.DocumentProperty)
+                        {
+                                ClearHighlight();
+                                _appliedStartIndex = -1;
+                                _appliedLength = 0;
+                                _appliedBrush = null;
+                                UpdateHighlight();
+                        }
                 }
 
                 private static void OnHighlightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)

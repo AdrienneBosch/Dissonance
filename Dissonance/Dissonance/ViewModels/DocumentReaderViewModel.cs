@@ -99,10 +99,10 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _document = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(IsDocumentLoaded));
-                                OnPropertyChanged(nameof(CanReadDocument));
-                                OnPropertyChanged(nameof(FileName));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(IsDocumentLoaded));
+                                RaisePropertyChanged(nameof(CanReadDocument));
+                                RaisePropertyChanged(nameof(FileName));
                                 UpdateCommandStates();
                         }
                 }
@@ -116,11 +116,11 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _plainText = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(HasPlainText));
-                                OnPropertyChanged(nameof(WordCount));
-                                OnPropertyChanged(nameof(CharacterCount));
-                                OnPropertyChanged(nameof(CanReadDocument));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(HasPlainText));
+                                RaisePropertyChanged(nameof(WordCount));
+                                RaisePropertyChanged(nameof(CharacterCount));
+                                RaisePropertyChanged(nameof(CanReadDocument));
                                 UpdateCommandStates();
                         }
                 }
@@ -134,8 +134,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _filePath = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(FileName));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(FileName));
                         }
                 }
 
@@ -157,7 +157,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _playbackHotkeyCombination = newValue;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -171,7 +171,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _playbackHotkeyTogglesPause = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 SavePlaybackHotkeySettings();
                         }
                 }
@@ -189,8 +189,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isPlaying = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(PlayPauseLabel));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(PlayPauseLabel));
                                 _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -204,8 +204,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isPaused = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(PlayPauseLabel));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(PlayPauseLabel));
                                 _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
@@ -219,7 +219,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _currentAudioPosition = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -232,7 +232,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _currentCharacterIndex = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -273,7 +273,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _highlightStartIndex = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -286,7 +286,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _highlightLength = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -299,7 +299,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _isBusy = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                                 UpdateCommandStates();
                         }
                 }
@@ -313,8 +313,8 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _statusMessage = value;
-                                OnPropertyChanged();
-                                OnPropertyChanged(nameof(HasStatusMessage));
+                                RaisePropertyChanged();
+                                RaisePropertyChanged(nameof(HasStatusMessage));
                                 UpdateCommandStates();
                         }
                 }
@@ -330,7 +330,7 @@ namespace Dissonance.ViewModels
                                         return;
 
                                 _lastError = value;
-                                OnPropertyChanged();
+                                RaisePropertyChanged();
                         }
                 }
 
@@ -469,10 +469,10 @@ namespace Dissonance.ViewModels
                         _playbackHotkeyModifiers = modifiers;
                         _playbackHotkeyKey = key;
 
-                        OnPropertyChanged(nameof(PlaybackHotkeyCombination));
-                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
-                        OnPropertyChanged(nameof(PlaybackHotkeyTogglesPause));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyTogglesPause));
                         _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
                 }
@@ -514,9 +514,9 @@ namespace Dissonance.ViewModels
                                 _playbackHotkeyCombination = string.Empty;
                                 _lastAppliedPlaybackHotkeyCombination = string.Empty;
 
-                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
-                                OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                                OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
 
                                 SavePlaybackHotkeySettings();
                                 _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
@@ -531,15 +531,15 @@ namespace Dissonance.ViewModels
                         if (_playbackHotkeyCombination != canonical)
                         {
                                 _playbackHotkeyCombination = canonical;
-                                OnPropertyChanged(nameof(PlaybackHotkeyCombination));
+                                RaisePropertyChanged(nameof(PlaybackHotkeyCombination));
                         }
 
                         _playbackHotkeyModifiers = modifiers;
                         _playbackHotkeyKey = key;
                         _lastAppliedPlaybackHotkeyCombination = canonical;
 
-                        OnPropertyChanged(nameof(PlaybackHotkeyKey));
-                        OnPropertyChanged(nameof(PlaybackHotkeyModifiers));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyKey));
+                        RaisePropertyChanged(nameof(PlaybackHotkeyModifiers));
 
                         SavePlaybackHotkeySettings();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
@@ -981,7 +981,7 @@ namespace Dissonance.ViewModels
                         if (!ReferenceEquals(_selectedHighlightColor, newOption))
                         {
                                 _selectedHighlightColor = newOption;
-                                OnPropertyChanged(nameof(SelectedHighlightColor));
+                                RaisePropertyChanged(nameof(SelectedHighlightColor));
                         }
 
                         UpdateHighlightBrush();
@@ -1004,11 +1004,11 @@ namespace Dissonance.ViewModels
                         if (!ReferenceEquals(_highlightBrush, brush))
                         {
                                 _highlightBrush = brush;
-                                OnPropertyChanged(nameof(HighlightBrush));
+                                RaisePropertyChanged(nameof(HighlightBrush));
                         }
                         else
                         {
-                                OnPropertyChanged(nameof(HighlightBrush));
+                                RaisePropertyChanged(nameof(HighlightBrush));
                         }
                 }
 
@@ -1049,7 +1049,7 @@ namespace Dissonance.ViewModels
                         HighlightLength = clampedLength;
                 }
 
-                private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+                private void RaisePropertyChanged([CallerMemberName] string? propertyName = null)
                 {
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
                 }

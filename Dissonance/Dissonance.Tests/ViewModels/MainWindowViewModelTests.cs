@@ -4,6 +4,8 @@ using System.Linq;
 using System.Speech.Synthesis;
 
 using Dissonance;
+using Dissonance.Managers;
+using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -11,6 +13,8 @@ using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
+
+using Microsoft.Extensions.Logging;
 
 using Xunit;
 
@@ -197,13 +201,15 @@ namespace Dissonance.Tests.ViewModels
                         var hotkeyService = new TestHotkeyService();
                         var themeService = new TestThemeService();
                         var messageService = new FakeMessageService();
+                        var clipboardService = new TestClipboardService();
+                        var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>());
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService);
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager);
 
                 private sealed class TestSettingsService : ISettingsService
                 {
@@ -275,7 +281,9 @@ namespace Dissonance.Tests.ViewModels
 
                         public int LastVolume { get; private set; }
 
-                        public event EventHandler? SpeechCompleted
+                        public Prompt? LastPrompt { get; private set; }
+
+                        public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
                         {
                                 add { }
                                 remove { }
@@ -288,8 +296,10 @@ namespace Dissonance.Tests.ViewModels
                                 LastVolume = volume;
                         }
 
-                        public void Speak(string text)
+                        public Prompt? Speak(string text)
                         {
+                                LastPrompt = new Prompt(text);
+                                return LastPrompt;
                         }
 
                         public void Stop()
@@ -335,6 +345,40 @@ namespace Dissonance.Tests.ViewModels
                         public void ApplyTheme(AppTheme theme)
                         {
                                 CurrentTheme = theme;
+                        }
+                }
+
+                private sealed class TestClipboardService : IClipboardService
+                {
+                        private string? _text;
+
+                        public string? GetClipboardText() => _text;
+
+                        public bool IsTextAvailable() => !string.IsNullOrEmpty(_text);
+
+                        public void SetClipboardText(string? text)
+                        {
+                                _text = text;
+                        }
+                }
+
+                private sealed class TestLogger<T> : ILogger<T>
+                {
+                        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NullScope.Instance;
+
+                        public bool IsEnabled(LogLevel logLevel) => false;
+
+                        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
+                        {
+                        }
+
+                        private sealed class NullScope : IDisposable
+                        {
+                                public static readonly NullScope Instance = new NullScope();
+
+                                public void Dispose()
+                                {
+                                }
                         }
                 }
         }

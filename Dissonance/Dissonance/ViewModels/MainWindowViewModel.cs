@@ -2,8 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Infrastructure.Constants;
@@ -31,6 +33,7 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private readonly ClipboardManager _clipboardManager;
+                private readonly Dispatcher _dispatcher;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
@@ -38,6 +41,13 @@ namespace Dissonance.ViewModels
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private bool _autoReadClipboard;
                 private NavigationSectionViewModel? _selectedSection;
+                private readonly string _previewStartLabel;
+                private readonly string _previewStopLabel;
+                private readonly string _previewToolTip;
+                private readonly string _previewHelpText;
+                private readonly string _previewSampleText;
+                private Prompt? _activePreviewPrompt;
+                private bool _isPreviewing;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
                 {
@@ -48,11 +58,21 @@ namespace Dissonance.ViewModels
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
 
+                        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
                         NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
+
+                        _previewStartLabel = GetResourceString ( "PreviewVoiceButtonLabelStart", "Preview voice" );
+                        _previewStopLabel = GetResourceString ( "PreviewVoiceButtonLabelStop", "Stop preview" );
+                        _previewToolTip = GetResourceString ( "PreviewVoiceButtonToolTip", "Hear how the current voice settings sound." );
+                        _previewHelpText = GetResourceString ( "PreviewVoiceHelpText", "Play or stop a short preview using the selected voice." );
+                        _previewSampleText = GetResourceString ( "PreviewVoiceSampleSentence", "Dissonance reads everything you copy so you can stay in the flow." );
+
+                        PreviewVoiceCommand = new RelayCommandNoParam ( PreviewVoice, ( ) => !string.IsNullOrWhiteSpace ( _previewSampleText ) );
 
                         var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer ( ).GetInstalledVoices ( );
                         foreach ( var voice in installedVoices )
@@ -80,6 +100,7 @@ namespace Dissonance.ViewModels
                         }
 
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+                        _ttsService.SpeechCompleted += OnSpeechCompleted;
 
                         _isDarkTheme = settings.UseDarkTheme;
                         _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
@@ -113,6 +134,28 @@ namespace Dissonance.ViewModels
                 public ICommand SaveDefaultSettingsCommand { get; }
 
                 public ICommand NavigateToSectionCommand { get; }
+
+                public ICommand PreviewVoiceCommand { get; }
+
+                public bool IsPreviewing
+                {
+                        get => _isPreviewing;
+                        private set
+                        {
+                                if ( _isPreviewing == value )
+                                        return;
+
+                                _isPreviewing = value;
+                                OnPropertyChanged ( nameof ( IsPreviewing ) );
+                                OnPropertyChanged ( nameof ( PreviewVoiceButtonLabel ) );
+                        }
+                }
+
+                public string PreviewVoiceButtonLabel => IsPreviewing ? _previewStopLabel : _previewStartLabel;
+
+                public string PreviewVoiceButtonToolTip => _previewToolTip;
+
+                public string PreviewVoiceHelpText => _previewHelpText;
 
                 public bool IsNavigationMenuOpen
                 {
@@ -274,6 +317,10 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        SetPreviewState ( false, null );
+                        _ttsService.Stop ( );
+
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( settings.SaveConfigAsDefaultOnClose )
                         {
@@ -336,6 +383,57 @@ namespace Dissonance.ViewModels
                                 ReloadSettingsFromService ( true );
                                 _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration imported successfully." );
                         }
+                }
+
+                private void PreviewVoice ( )
+                {
+                        var wasPreviewing = IsPreviewing;
+                        _ttsService.Stop ( );
+
+                        if ( wasPreviewing )
+                        {
+                                SetPreviewState ( false, null );
+                                return;
+                        }
+
+                        if ( string.IsNullOrWhiteSpace ( _previewSampleText ) )
+                                return;
+
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+                        var prompt = _ttsService.Speak ( _previewSampleText );
+                        SetPreviewState ( prompt != null, prompt );
+                }
+
+                private void OnSpeechCompleted ( object? sender, SpeakCompletedEventArgs e )
+                {
+                        if ( _activePreviewPrompt == null )
+                                return;
+
+                        if ( !ReferenceEquals ( e.Prompt, _activePreviewPrompt ) )
+                                return;
+
+                        _dispatcher.BeginInvoke ( new Action ( ( ) => SetPreviewState ( false, null ) ) );
+                }
+
+                private void SetPreviewState ( bool isPreviewing, Prompt? prompt )
+                {
+                        if ( isPreviewing && prompt == null )
+                                isPreviewing = false;
+
+                        _activePreviewPrompt = isPreviewing ? prompt : null;
+                        IsPreviewing = isPreviewing;
+
+                        if ( PreviewVoiceCommand is RelayCommandNoParam previewCommand )
+                                previewCommand.RaiseCanExecuteChanged ( );
+                }
+
+                private static string GetResourceString ( string key, string fallback )
+                {
+                        if ( Application.Current?.TryFindResource ( key ) is string value && !string.IsNullOrWhiteSpace ( value ) )
+                                return value;
+
+                        return fallback;
                 }
 
                 private void ReloadSettingsFromService ( bool reapplyHotkey )

@@ -176,6 +176,7 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = null,
                                 WindowHeight = null,
                                 IsWindowMaximized = false,
+                                ManualSpeechLastInput = string.Empty,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                         };
                 }
@@ -194,6 +195,7 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = settings.WindowWidth,
                                 WindowHeight = settings.WindowHeight,
                                 IsWindowMaximized = settings.IsWindowMaximized,
+                                ManualSpeechLastInput = settings.ManualSpeechLastInput ?? string.Empty,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
@@ -221,6 +223,7 @@ namespace Dissonance.Services.SettingsService
                                 WindowWidth = NormalizeDimension ( settings.WindowWidth, reference.WindowWidth ),
                                 WindowHeight = NormalizeDimension ( settings.WindowHeight, reference.WindowHeight ),
                                 IsWindowMaximized = settings.IsWindowMaximized,
+                                ManualSpeechLastInput = settings.ManualSpeechLastInput ?? reference.ManualSpeechLastInput,
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,

@@ -35,6 +35,7 @@ namespace Dissonance.ViewModels
                 private readonly ClipboardManager _clipboardManager;
                 private readonly Dispatcher _dispatcher;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
+                private readonly ManualSpeechViewModel _manualSpeechViewModel;
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
@@ -109,6 +110,8 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
 
+                        _manualSpeechViewModel = new ManualSpeechViewModel ( _ttsService, _settingsService );
+
                         _navigationSections.Add ( new NavigationSectionViewModel (
                                 "clipboard-reader",
                                 "Clipboard Reader",
@@ -117,6 +120,14 @@ namespace Dissonance.ViewModels
                                 "Fine-tune speech playback, volume, and shortcuts for the clipboard narration experience.",
                                 this,
                                 showSettingsControls: true ) );
+
+                        _navigationSections.Add ( new NavigationSectionViewModel (
+                                "manual-speech",
+                                "Manual Speech",
+                                "Type anything you'd like Dissonance to say and play it on demand.",
+                                "Manual Speech",
+                                "Compose custom narration and trigger speech immediately whenever you need it.",
+                                _manualSpeechViewModel ) );
                 }
 
                 public event PropertyChangedEventHandler PropertyChanged;

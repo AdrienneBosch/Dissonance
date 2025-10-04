@@ -24,6 +24,8 @@ namespace Dissonance
 
                 public bool IsWindowMaximized { get; set; }
 
+                public string ManualSpeechLastInput { get; set; } = string.Empty;
+
                 public class HotkeySettings
                 {
                         public string Key { get; set; }

@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Dissonance.ViewModels"
+        xmlns:controls="clr-namespace:Dissonance.Windows.Controls"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
         mc:Ignorable="d"
         Title="Dissonance"
@@ -75,6 +76,9 @@
         </Style>
         <DataTemplate DataType="{x:Type local:NavigationSectionViewModel}">
             <ContentPresenter Content="{Binding ContentViewModel}"/>
+        </DataTemplate>
+        <DataTemplate DataType="{x:Type local:ManualSpeechViewModel}">
+            <controls:ManualSpeechView />
         </DataTemplate>
         <DataTemplate DataType="{x:Type local:MainWindowViewModel}">
             <Grid>

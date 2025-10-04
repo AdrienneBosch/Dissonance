@@ -195,24 +195,29 @@
                             <StackPanel Grid.Row="1"
                                         Orientation="Horizontal"
                                         Margin="0,12,0,0"
-                                        HorizontalAlignment="Left"
-                                        Visibility="{Binding IsDocumentLoaded, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                        HorizontalAlignment="Left">
                                 <Button Content="⏪ 10s"
                                         Command="{Binding SeekBackwardCommand}"
                                         Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="80"
+                                        MinWidth="120"
+                                        MinHeight="36"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
                                         AutomationProperties.Name="Rewind 10 seconds"/>
                                 <Button Content="{Binding PlayPauseLabel}"
                                         Command="{Binding PlayPauseCommand}"
                                         Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="100"
+                                        MinWidth="140"
+                                        MinHeight="36"
                                         Margin="12,0,0,0"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
                                         AutomationProperties.Name="Play or pause document narration"/>
                                 <Button Content="10s ⏩"
                                         Command="{Binding SeekForwardCommand}"
                                         Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="80"
+                                        MinWidth="120"
+                                        MinHeight="36"
                                         Margin="12,0,0,0"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
                                         AutomationProperties.Name="Fast forward 10 seconds"/>
                             </StackPanel>
                             <FlowDocumentScrollViewer Grid.Row="2"

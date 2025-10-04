@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
@@ -184,6 +185,30 @@ namespace Dissonance.Tests.ViewModels
                         Assert.True(settings.DocumentReaderHotkey.UsePlayPauseToggle);
                         Assert.Equal(1, settingsService.SaveCalls);
                         Assert.True(ttsService.StopCalls >= 1);
+                }
+
+                [Fact]
+                public async Task PlaybackHotkeyCommand_StartsPlaybackWhenDocumentPreviewUnavailable()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        var documentField = typeof(DocumentReaderViewModel).GetField("_document", BindingFlags.Instance | BindingFlags.NonPublic);
+                        Assert.NotNull(documentField);
+                        documentField!.SetValue(viewModel, null);
+
+                        Assert.True(viewModel.PlaybackHotkeyCommand.CanExecute(null));
+
+                        viewModel.PlaybackHotkeyCommand.Execute(null);
+
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.Equal(result.PlainText.Length, viewModel.CharacterCount);
                 }
 
                 private static AppSettings CreateSettings()

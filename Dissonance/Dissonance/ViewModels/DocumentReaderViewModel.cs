@@ -67,7 +67,7 @@ namespace Dissonance.ViewModels
                         _playPauseCommand = new RelayCommandNoParam(TogglePlayback, () => !IsBusy && CanReadDocument);
                         _seekBackwardCommand = new RelayCommandNoParam(() => SeekBy(TimeSpan.FromSeconds(-10)), () => !IsBusy && CanReadDocument);
                         _seekForwardCommand = new RelayCommandNoParam(() => SeekBy(TimeSpan.FromSeconds(10)), () => !IsBusy && CanReadDocument);
-                        _playbackHotkeyCommand = new RelayCommandNoParam(ExecutePlaybackHotkey, () => !IsBusy && CanReadDocument);
+                        _playbackHotkeyCommand = new RelayCommandNoParam(ExecutePlaybackHotkey, () => !IsBusy && (HasPlainText || IsPlaying || IsPaused));
                         _applyPlaybackHotkeyCommand = new RelayCommandNoParam(ApplyPlaybackHotkey, CanApplyPlaybackHotkey);
 
                         _ttsService.SpeechCompleted += OnSpeechCompleted;
@@ -109,6 +109,7 @@ namespace Dissonance.ViewModels
                                 OnPropertyChanged(nameof(WordCount));
                                 OnPropertyChanged(nameof(CharacterCount));
                                 OnPropertyChanged(nameof(CanReadDocument));
+                                UpdateCommandStates();
                         }
                 }
 
@@ -178,6 +179,7 @@ namespace Dissonance.ViewModels
                                 _isPlaying = value;
                                 OnPropertyChanged();
                                 OnPropertyChanged(nameof(PlayPauseLabel));
+                                _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
 
@@ -192,6 +194,7 @@ namespace Dissonance.ViewModels
                                 _isPaused = value;
                                 OnPropertyChanged();
                                 OnPropertyChanged(nameof(PlayPauseLabel));
+                                _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         }
                 }
 
@@ -474,12 +477,12 @@ namespace Dissonance.ViewModels
 
                 private void ExecutePlaybackHotkey()
                 {
-                        if (!CanReadDocument)
+                        if (!HasPlainText && !IsPlaying && !IsPaused)
                                 return;
 
                         if (PlaybackHotkeyTogglesPause)
                         {
-                                TogglePlayback();
+                                TogglePlaybackInternal();
                                 return;
                         }
 
@@ -659,6 +662,14 @@ namespace Dissonance.ViewModels
                 private void TogglePlayback()
                 {
                         if (!CanReadDocument)
+                                return;
+
+                        TogglePlaybackInternal();
+                }
+
+                private void TogglePlaybackInternal()
+                {
+                        if (!HasPlainText && !IsPlaying && !IsPaused)
                                 return;
 
                         if (!IsPlaying && !IsPaused)

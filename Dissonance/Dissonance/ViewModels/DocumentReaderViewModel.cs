@@ -225,7 +225,7 @@ namespace Dissonance.ViewModels
                         if (result == null)
                                 throw new ArgumentNullException(nameof(result));
 
-                        Document = result.Document;
+                        Document = CreateFlowDocument(result.PlainText);
                         PlainText = result.PlainText;
                         FilePath = result.FilePath;
                         LastError = null;
@@ -240,6 +240,25 @@ namespace Dissonance.ViewModels
                 private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
                 {
                         PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+                }
+
+                private static FlowDocument CreateFlowDocument(string content)
+                {
+                        var document = new FlowDocument();
+                        if (string.IsNullOrEmpty(content))
+                        {
+                                document.Blocks.Add(new Paragraph(new Run(string.Empty)));
+                                return document;
+                        }
+
+                        var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
+                        var lines = normalized.Split('\n');
+                        foreach (var line in lines)
+                        {
+                                document.Blocks.Add(new Paragraph(new Run(line)));
+                        }
+
+                        return document;
                 }
         }
 }

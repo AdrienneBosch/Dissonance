@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
@@ -15,14 +16,17 @@ namespace Dissonance.Tests.ViewModels
                 [Fact]
                 public async Task LoadDocumentAsync_PopulatesPropertiesOnSuccess()
                 {
-                        var result = new DocumentReadResult("sample.txt", new FlowDocument(new Paragraph(new Run("Hello world"))), "Hello world");
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
                         var viewModel = new DocumentReaderViewModel(service);
 
                         var success = await viewModel.LoadDocumentAsync(result.FilePath);
 
                         Assert.True(success);
-                        Assert.NotNull(viewModel.Document);
+                        var document = Assert.IsType<FlowDocument>(viewModel.Document);
+                        var paragraphs = document.Blocks.OfType<Paragraph>().ToList();
+                        Assert.Single(paragraphs);
+                        Assert.Equal("Hello world", new TextRange(paragraphs[0].ContentStart, paragraphs[0].ContentEnd).Text.Trim());
                         Assert.Equal(result.PlainText, viewModel.PlainText);
                         Assert.Equal(result.FilePath, viewModel.FilePath);
                         Assert.Equal("sample.txt", viewModel.FileName);
@@ -58,7 +62,7 @@ namespace Dissonance.Tests.ViewModels
                 [Fact]
                 public void ClearDocumentCommand_ResetsState()
                 {
-                        var result = new DocumentReadResult("sample.txt", new FlowDocument(new Paragraph(new Run("Hello world"))), "Hello world");
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
                         var service = new StubDocumentReaderService(result);
                         var viewModel = new DocumentReaderViewModel(service);
 
@@ -84,7 +88,7 @@ namespace Dissonance.Tests.ViewModels
                         Assert.False(viewModel.ClearDocumentCommand.CanExecute(null));
                         Assert.False(viewModel.BrowseForDocumentCommand.CanExecute(null));
 
-                        tcs.SetResult(new DocumentReadResult("sample.txt", new FlowDocument(), string.Empty));
+                        tcs.SetResult(new DocumentReadResult("sample.txt", string.Empty));
                         await loadTask;
 
                         Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));

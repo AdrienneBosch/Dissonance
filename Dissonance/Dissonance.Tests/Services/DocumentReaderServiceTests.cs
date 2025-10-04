@@ -1,8 +1,6 @@
 using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 using Dissonance.Services.DocumentReader;
 
@@ -28,11 +26,6 @@ namespace Dissonance.Tests.Services
                                 Assert.Equal(sampleText, result.PlainText);
                                 Assert.Equal(4, result.WordCount);
                                 Assert.Equal(sampleText.Length, result.CharacterCount);
-                                Assert.IsType<FlowDocument>(result.Document);
-                                var paragraphs = result.Document.Blocks.OfType<Paragraph>().ToList();
-                                Assert.Equal(2, paragraphs.Count);
-                                Assert.Equal("Hello world", new TextRange(paragraphs[0].ContentStart, paragraphs[0].ContentEnd).Text.TrimEnd('\r', '\n'));
-                                Assert.Equal("Second line", new TextRange(paragraphs[1].ContentStart, paragraphs[1].ContentEnd).Text.TrimEnd('\r', '\n'));
                         }
                         finally
                         {

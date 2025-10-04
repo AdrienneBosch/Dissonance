@@ -3,7 +3,6 @@ using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Documents;
 
 namespace Dissonance.Services.DocumentReader
 {
@@ -32,27 +31,7 @@ namespace Dissonance.Services.DocumentReader
 
                         cancellationToken.ThrowIfCancellationRequested();
 
-                        var document = CreateFlowDocument(content ?? string.Empty);
-                        return new DocumentReadResult(filePath, document, content ?? string.Empty);
-                }
-
-                private static FlowDocument CreateFlowDocument(string content)
-                {
-                        var document = new FlowDocument();
-                        if (string.IsNullOrEmpty(content))
-                        {
-                                document.Blocks.Add(new Paragraph(new Run(string.Empty)));
-                                return document;
-                        }
-
-                        var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
-                        var lines = normalized.Split('\n');
-                        foreach (var line in lines)
-                        {
-                                document.Blocks.Add(new Paragraph(new Run(line)));
-                        }
-
-                        return document;
+                        return new DocumentReadResult(filePath, content ?? string.Empty);
                 }
         }
 }

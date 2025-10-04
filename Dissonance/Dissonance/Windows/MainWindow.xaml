@@ -163,69 +163,7 @@
                                                Margin="0,6,0,0"/>
                                 </StackPanel>
                             </Grid>
-                            <TextBlock Text="{Binding StatusMessage}"
-                                       Margin="0,20,0,0"
-                                       TextWrapping="Wrap"
-                                       Foreground="{DynamicResource AccentBrush}">
-                                <TextBlock.Style>
-                                    <Style TargetType="TextBlock">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
-                                                <Setter Property="Visibility" Value="Visible"/>
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </TextBlock.Style>
-                            </TextBlock>
-                        </StackPanel>
-                    </Border>
-
-                    <Border Grid.Column="1"
-                            Margin="24,0,0,0"
-                            Style="{StaticResource CardContainerStyle}">
-                        <Grid>
-                            <Grid.Resources>
-                                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-                            </Grid.Resources>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="*"/>
-                            </Grid.RowDefinitions>
-                            <TextBlock Text="Document preview"
-                                       Style="{StaticResource CardTitleTextStyle}"/>
-                            <StackPanel Grid.Row="1"
-                                        Orientation="Horizontal"
-                                        Margin="0,12,0,0"
-                                        HorizontalAlignment="Left">
-                                <Button Content="⏪ 10s"
-                                        Command="{Binding SeekBackwardCommand}"
-                                        Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="120"
-                                        MinHeight="36"
-                                        IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Rewind 10 seconds"/>
-                                <Button Content="{Binding PlayPauseLabel}"
-                                        Command="{Binding PlayPauseCommand}"
-                                        Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="140"
-                                        MinHeight="36"
-                                        Margin="12,0,0,0"
-                                        IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Play or pause document narration"/>
-                                <Button Content="10s ⏩"
-                                        Command="{Binding SeekForwardCommand}"
-                                        Style="{StaticResource PrimaryButtonStyle}"
-                                        MinWidth="120"
-                                        MinHeight="36"
-                                        Margin="12,0,0,0"
-                                        IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Fast forward 10 seconds"/>
-                            </StackPanel>
-                            <StackPanel Grid.Row="2"
-                                        Margin="0,16,0,0">
+                            <StackPanel Margin="0,24,0,0">
                                 <TextBlock x:Name="PlaybackHotkeyHeading"
                                            Text="Playback hotkey"
                                            FontWeight="SemiBold"
@@ -271,13 +209,73 @@
                                     <ComboBox ItemsSource="{Binding HighlightColorOptions}"
                                               SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
                                               DisplayMemberPath="DisplayName"
-                                              Width="200"
-                                              Style="{StaticResource ModernComboBoxStyle}"
+                                              MinWidth="200"
+                                              Style="{StaticResource HighlightColorComboBoxStyle}"
                                               AutomationProperties.Name="Document highlight color"
                                               AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
                                 </StackPanel>
                             </StackPanel>
-                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="3"
+                            <TextBlock Text="{Binding StatusMessage}"
+                                       Margin="0,20,0,0"
+                                       TextWrapping="Wrap"
+                                       Foreground="{DynamicResource AccentBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding HasStatusMessage}" Value="True">
+                                                <Setter Property="Visibility" Value="Visible"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <Border Grid.Column="1"
+                            Margin="24,0,0,0"
+                            Style="{StaticResource CardContainerStyle}">
+                        <Grid>
+                            <Grid.Resources>
+                                <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+                            </Grid.Resources>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+                            <TextBlock Text="Document preview"
+                                       Style="{StaticResource CardTitleTextStyle}"/>
+                            <StackPanel Grid.Row="1"
+                                        Orientation="Horizontal"
+                                        Margin="0,12,0,0"
+                                        HorizontalAlignment="Left">
+                                <Button Content="⏪ 10s"
+                                        Command="{Binding SeekBackwardCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="120"
+                                        MinHeight="36"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
+                                        AutomationProperties.Name="Rewind 10 seconds"/>
+                                <Button Content="{Binding PlayPauseLabel}"
+                                        Command="{Binding PlayPauseCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="140"
+                                        MinHeight="36"
+                                        Margin="12,0,0,0"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
+                                        AutomationProperties.Name="Play or pause document narration"/>
+                                <Button Content="10s ⏩"
+                                        Command="{Binding SeekForwardCommand}"
+                                        Style="{StaticResource PrimaryButtonStyle}"
+                                        MinWidth="120"
+                                        MinHeight="36"
+                                        Margin="12,0,0,0"
+                                        IsEnabled="{Binding IsDocumentLoaded}"
+                                        AutomationProperties.Name="Fast forward 10 seconds"/>
+                            </StackPanel>
+                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="2"
                                                                               Margin="0,12,0,0"
                                                                               Document="{Binding Document}"
                                                                               HighlightStartIndex="{Binding HighlightStartIndex}"
@@ -295,7 +293,7 @@
                                     </Style>
                                 </controls:HighlightingFlowDocumentScrollViewer.Style>
                             </controls:HighlightingFlowDocumentScrollViewer>
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="2"
                                        Margin="0,20,0,0"
                                        Text="Open a document to preview its contents here."
                                        HorizontalAlignment="Center"

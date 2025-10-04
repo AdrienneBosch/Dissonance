@@ -6,6 +6,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Dissonance.ViewModels"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:controls="clr-namespace:Dissonance.Windows.Controls"
         xmlns:status="clr-namespace:Dissonance.Services.StatusAnnouncements"
         mc:Ignorable="d"
         Title="Dissonance"
@@ -259,13 +260,32 @@
                                           ToolTip="When enabled, pressing the hotkey toggles between play and pause."
                                           AutomationProperties.Name="Toggle playback hotkey pause behavior"
                                           AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
+                                <StackPanel Orientation="Horizontal"
+                                            Margin="0,16,0,0"
+                                            VerticalAlignment="Center">
+                                    <TextBlock Text="Highlight color"
+                                               Margin="0,0,12,0"
+                                               VerticalAlignment="Center"
+                                               FontWeight="SemiBold"
+                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                                    <ComboBox ItemsSource="{Binding HighlightColorOptions}"
+                                              SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
+                                              DisplayMemberPath="DisplayName"
+                                              Width="200"
+                                              Style="{StaticResource ModernComboBoxStyle}"
+                                              AutomationProperties.Name="Document highlight color"
+                                              AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
+                                </StackPanel>
                             </StackPanel>
-                            <FlowDocumentScrollViewer Grid.Row="3"
-                                                      Margin="0,12,0,0"
-                                                      Document="{Binding Document}"
-                                                      VerticalScrollBarVisibility="Auto">
-                                <FlowDocumentScrollViewer.Style>
-                                    <Style TargetType="FlowDocumentScrollViewer">
+                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="3"
+                                                                              Margin="0,12,0,0"
+                                                                              Document="{Binding Document}"
+                                                                              HighlightStartIndex="{Binding HighlightStartIndex}"
+                                                                              HighlightLength="{Binding HighlightLength}"
+                                                                              HighlightBrush="{Binding HighlightBrush}"
+                                                                              VerticalScrollBarVisibility="Auto">
+                                <controls:HighlightingFlowDocumentScrollViewer.Style>
+                                    <Style TargetType="controls:HighlightingFlowDocumentScrollViewer">
                                         <Setter Property="Visibility" Value="Collapsed"/>
                                         <Style.Triggers>
                                             <DataTrigger Binding="{Binding IsDocumentLoaded}" Value="True">
@@ -273,8 +293,8 @@
                                             </DataTrigger>
                                         </Style.Triggers>
                                     </Style>
-                                </FlowDocumentScrollViewer.Style>
-                            </FlowDocumentScrollViewer>
+                                </controls:HighlightingFlowDocumentScrollViewer.Style>
+                            </controls:HighlightingFlowDocumentScrollViewer>
                             <TextBlock Grid.Row="3"
                                        Margin="0,20,0,0"
                                        Text="Open a document to preview its contents here."

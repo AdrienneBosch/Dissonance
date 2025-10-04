@@ -253,6 +253,7 @@ namespace Dissonance.ViewModels
                                         settings.UseDarkTheme = value;
                                         _settingsService.SaveCurrentSettings ( );
                                 }
+                                _documentReaderViewModel.RefreshHighlightBrush ( );
                                 OnPropertyChanged ( nameof ( IsDarkTheme ) );
                                 OnPropertyChanged ( nameof ( CurrentThemeName ) );
                         }
@@ -501,6 +502,7 @@ namespace Dissonance.ViewModels
                         }
 
                         _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        _documentReaderViewModel.ReloadHighlightSettings ( );
                         if ( _isDarkTheme != settings.UseDarkTheme )
                         {
                                 _isDarkTheme = settings.UseDarkTheme;
@@ -523,6 +525,7 @@ namespace Dissonance.ViewModels
 
                         _isDarkTheme = settings.UseDarkTheme;
                         _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );
+                        _documentReaderViewModel.RefreshHighlightBrush ( );
                         OnPropertyChanged ( nameof ( IsDarkTheme ) );
                         OnPropertyChanged ( nameof ( CurrentThemeName ) );
 

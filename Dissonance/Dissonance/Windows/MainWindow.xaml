@@ -134,7 +134,7 @@
                                        FontWeight="SemiBold"
                                        Margin="0,16,0,0"/>
                             <TextBox Style="{StaticResource ModernTextBoxStyle}"
-                                     Text="{Binding FilePath, TargetNullValue=No document selected}"
+                                     Text="{Binding FilePath, Mode=OneWay, TargetNullValue=No document selected}"
                                      IsReadOnly="True"
                                      Margin="0,8,0,0"
                                      HorizontalAlignment="Stretch"

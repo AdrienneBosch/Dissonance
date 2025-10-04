@@ -125,9 +125,11 @@
                         <ColumnDefinition Width="*"/>
                     </Grid.ColumnDefinitions>
 
-                    <Border Grid.Column="0"
-                            Style="{StaticResource CardContainerStyle}">
-                        <StackPanel>
+                    <ScrollViewer Grid.Column="0"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <Border Style="{StaticResource CardContainerStyle}">
+                            <StackPanel>
                             <TextBlock Text="Document details"
                                        Style="{StaticResource CardTitleTextStyle}"/>
                             <TextBlock Text="Supported format: plain text (.txt)"
@@ -230,8 +232,9 @@
                                     </Style>
                                 </TextBlock.Style>
                             </TextBlock>
-                        </StackPanel>
-                    </Border>
+                            </StackPanel>
+                        </Border>
+                    </ScrollViewer>
 
                     <Border Grid.Column="1"
                             Margin="24,0,0,0"

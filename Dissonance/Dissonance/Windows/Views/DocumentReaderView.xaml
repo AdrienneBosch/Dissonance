@@ -1,0 +1,168 @@
+<UserControl x:Class="Dissonance.Windows.Views.DocumentReaderView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:vm="clr-namespace:Dissonance.ViewModels"
+             mc:Ignorable="d"
+             d:DataContext="{d:DesignInstance Type=vm:DocumentReaderViewModel}">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+        <Style x:Key="DropZoneButtonStyle" TargetType="Button">
+            <Setter Property="Padding" Value="24"/>
+            <Setter Property="Background" Value="{DynamicResource SurfaceBackgroundBrush}"/>
+            <Setter Property="BorderBrush" Value="{DynamicResource CardBorderBrush}"/>
+            <Setter Property="BorderThickness" Value="2"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="DropBorder"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="{StaticResource CardCornerRadius}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Stretch"
+                                              VerticalAlignment="Center"
+                                              RecognizesAccessKey="True"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                <Setter TargetName="DropBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="DropBorder" Property="Opacity" Value="0.6"/>
+                                <Setter Property="Cursor" Value="Arrow"/>
+                            </Trigger>
+                            <DataTrigger Binding="{Binding DataContext.IsDropActive, RelativeSource={RelativeSource TemplatedParent}}"
+                                         Value="True">
+                                <Setter TargetName="DropBorder" Property="BorderBrush" Value="{DynamicResource AccentBrush}"/>
+                                <Setter TargetName="DropBorder" Property="Background" Value="{DynamicResource ControlHoverBrush}"/>
+                            </DataTrigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel Grid.Row="0" Margin="0,0,0,16">
+            <TextBlock Text="Listen to your documents"
+                       Style="{StaticResource CardTitleTextStyle}"/>
+            <TextBlock Text="Drop a .TXT, .RTF, or .DOCX file below, or browse to select one."
+                       Margin="0,6,0,0"
+                       Style="{StaticResource CardDescriptionTextStyle}"/>
+        </StackPanel>
+
+        <Button x:Name="DropZoneButton"
+                Grid.Row="1"
+                Style="{StaticResource DropZoneButtonStyle}"
+                Command="{Binding BrowseForFileCommand}"
+                AllowDrop="True"
+                HorizontalAlignment="Stretch"
+                HorizontalContentAlignment="Stretch"
+                VerticalContentAlignment="Center"
+                Focusable="True"
+                DragEnter="DropZoneButton_DragEnter"
+                DragOver="DropZoneButton_DragOver"
+                DragLeave="DropZoneButton_DragLeave"
+                Drop="DropZoneButton_Drop"
+                ToolTip="Drop a supported document or activate to browse for one">
+            <StackPanel>
+                <TextBlock Text="Drop document here or press Enter to browse"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                <TextBlock Margin="0,4,0,0"
+                           Text="{Binding SupportedFormatsDescription, StringFormat=Supported formats: {0}}"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           TextWrapping="Wrap"/>
+                <StackPanel Margin="0,12,0,0"
+                            Orientation="Vertical">
+                    <TextBlock Text="{Binding SelectedFileName}" FontWeight="SemiBold">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Setter Property="Foreground" Value="{DynamicResource PrimaryForegroundBrush}"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasDocument}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                    <TextBlock Margin="0,4,0,0"
+                               Text="{Binding DocumentDetails}"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasDocument}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+                <ProgressBar Margin="0,16,0,0"
+                             Height="6"
+                             Maximum="1"
+                             Value="{Binding ReadingProgress}"
+                             Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}"
+                             IsIndeterminate="{Binding IsBusy}"/>
+                <TextBlock Margin="0,8,0,0"
+                           Text="{Binding ProgressLabel}"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           Visibility="{Binding IsProgressVisible, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                <TextBlock Margin="0,12,0,0"
+                           Text="{Binding StatusMessage}"
+                           Foreground="{DynamicResource SecondaryForegroundBrush}"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Button>
+
+        <StackPanel Grid.Row="2" Margin="0,20,0,0">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+                <Button Content="Read document"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding ReadDocumentCommand}"
+                        Margin="0,0,12,0"/>
+                <Button Content="Stop"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding StopReadingCommand}"
+                        Margin="0,0,12,0"/>
+                <Button Content="Clear"
+                        Style="{StaticResource PrimaryButtonStyle}"
+                        Command="{Binding ClearDocumentCommand}"/>
+            </StackPanel>
+
+            <TextBlock Margin="0,16,0,8"
+                       Text="Preview"
+                       FontWeight="SemiBold"
+                       Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+            <Border Background="{DynamicResource SurfaceBackgroundBrush}"
+                    BorderBrush="{DynamicResource CardBorderBrush}"
+                    BorderThickness="1"
+                    CornerRadius="{StaticResource InputCornerRadius}"
+                    Padding="16"
+                    MinHeight="160">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <TextBlock Text="{Binding DocumentPreview, TargetNullValue=Drop a document to see a preview., FallbackValue=Drop a document to see a preview.}"
+                               TextWrapping="Wrap"
+                               Foreground="{DynamicResource SecondaryForegroundBrush}"/>
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
+    </Grid>
+</UserControl>

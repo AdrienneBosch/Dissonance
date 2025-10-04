@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Speech.Synthesis;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Dissonance;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
+using Dissonance.Services.DocumentService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -201,15 +204,17 @@ namespace Dissonance.Tests.ViewModels
                         var hotkeyService = new TestHotkeyService();
                         var themeService = new TestThemeService();
                         var messageService = new FakeMessageService();
+                        var documentTextExtractor = new TestDocumentTextExtractor();
                         var clipboardService = new TestClipboardService();
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>());
 
-                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager);
+                        var documentReaderViewModel = new DocumentReaderViewModel(documentTextExtractor, messageService, settingsService, ttsService);
+                        var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, documentReaderViewModel);
 
-                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager);
+                        return new TestEnvironment(viewModel, settingsService, ttsService, hotkeyService, themeService, clipboardManager, documentReaderViewModel);
                 }
 
-                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager);
+                private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, DocumentReaderViewModel DocumentReaderViewModel);
 
                 private sealed class TestSettingsService : ISettingsService
                 {
@@ -345,6 +350,16 @@ namespace Dissonance.Tests.ViewModels
                         public void ApplyTheme(AppTheme theme)
                         {
                                 CurrentTheme = theme;
+                        }
+                }
+
+                private sealed class TestDocumentTextExtractor : IDocumentTextExtractor
+                {
+                        public IReadOnlyCollection<string> SupportedFileExtensions { get; } = new[] { ".txt", ".rtf", ".docx" };
+
+                        public Task<string?> ExtractTextAsync(string filePath, CancellationToken cancellationToken = default)
+                        {
+                                return Task.FromResult<string?>("test document");
                         }
                 }
 

@@ -33,6 +33,7 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private readonly ClipboardManager _clipboardManager;
+                private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private readonly Dispatcher _dispatcher;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
@@ -49,7 +50,7 @@ namespace Dissonance.ViewModels
                 private Prompt? _activePreviewPrompt;
                 private bool _isPreviewing;
 
-                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager, DocumentReaderViewModel documentReaderViewModel )
                 {
                         _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
                         _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
@@ -57,6 +58,7 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
+                        _documentReaderViewModel = documentReaderViewModel ?? throw new ArgumentNullException ( nameof ( documentReaderViewModel ) );
 
                         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -117,6 +119,14 @@ namespace Dissonance.ViewModels
                                 "Fine-tune speech playback, volume, and shortcuts for the clipboard narration experience.",
                                 this,
                                 showSettingsControls: true ) );
+
+                        _navigationSections.Add ( new NavigationSectionViewModel (
+                                "document-reader",
+                                "Document Reader",
+                                "Drop a text, rich text, or Word document to have Dissonance narrate it.",
+                                "Document Reader",
+                                "Load longer documents and listen as Dissonance streams them in manageable segments.",
+                                _documentReaderViewModel ) );
                 }
 
                 public event PropertyChangedEventHandler PropertyChanged;
@@ -317,6 +327,7 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        _documentReaderViewModel.OnWindowClosing ( );
                         _ttsService.SpeechCompleted -= OnSpeechCompleted;
                         SetPreviewState ( false, null );
                         _ttsService.Stop ( );

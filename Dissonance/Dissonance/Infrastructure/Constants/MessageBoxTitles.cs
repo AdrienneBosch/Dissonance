@@ -9,5 +9,7 @@ public const string HotkeyServiceWarning = "Hotkey Service Warning";
     public const string SettingsServiceInfo = "Settings Service";
 public const string TTSServiceError = "TTS Service Failure";
 public const string TTSServiceWarning = "TTS Service Warning";
+    public const string DocumentServiceError = "Document Reader Error";
+    public const string DocumentServiceWarning = "Document Reader";
 }
 }

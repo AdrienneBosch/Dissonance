@@ -72,7 +72,7 @@
                                       MinWidth="220"
                                       MinHeight="34"/>
                             <Button Grid.Column="1"
-                                    Content="Preview Voice"
+                                    Content="{Binding PreviewVoiceButtonLabel}"
                                     Command="{Binding PreviewVoiceCommand}"
                                     Style="{StaticResource PrimaryButtonStyle}"
                                     Margin="12,0,0,0"
@@ -80,7 +80,7 @@
                                     Padding="16,8"
                                     ToolTipService.ShowOnDisabled="True"
                                     ToolTip="{StaticResource PreviewVoiceButtonToolTip}"
-                                    AutomationProperties.Name="Preview voice"
+                                    AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
                                     AutomationProperties.HelpText="{StaticResource PreviewVoiceButtonHelpText}"
                                     TabIndex="3"
                                     VerticalAlignment="Stretch"/>

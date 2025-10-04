@@ -2,6 +2,8 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="VoicePreviewSampleText">This is a quick preview of how the selected voice sounds when reading your clipboard.</sys:String>
-    <sys:String x:Key="PreviewVoiceButtonToolTip">Play a short sample using the selected voice and your current speech settings.</sys:String>
-    <sys:String x:Key="PreviewVoiceButtonHelpText">Plays a short sample sentence with the current voice, rate, and volume.</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonLabel">Preview Voice</sys:String>
+    <sys:String x:Key="StopPreviewVoiceButtonLabel">Stop Preview</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonToolTip">Play a short sample using the selected voice and your current speech settings. Click again to stop playback.</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonHelpText">Plays a short sample sentence with the current voice, rate, and volume. Activate again to stop playback.</sys:String>
 </ResourceDictionary>

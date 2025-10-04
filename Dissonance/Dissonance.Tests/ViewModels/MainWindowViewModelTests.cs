@@ -275,7 +275,7 @@ namespace Dissonance.Tests.ViewModels
 
                         public int LastVolume { get; private set; }
 
-                        public event EventHandler? SpeechCompleted
+                        public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted
                         {
                                 add { }
                                 remove { }
@@ -288,8 +288,9 @@ namespace Dissonance.Tests.ViewModels
                                 LastVolume = volume;
                         }
 
-                        public void Speak(string text)
+                        public Prompt? Speak(string text)
                         {
+                                return new Prompt(text ?? string.Empty);
                         }
 
                         public void Stop()

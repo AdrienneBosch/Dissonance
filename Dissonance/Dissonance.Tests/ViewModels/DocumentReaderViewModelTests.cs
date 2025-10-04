@@ -33,6 +33,7 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Null(viewModel.StatusMessage);
                         Assert.Null(viewModel.LastError);
                         Assert.True(viewModel.ClearDocumentCommand.CanExecute(null));
+                        Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
                 }
 
                 [Fact]
@@ -51,6 +52,7 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal("boom", viewModel.StatusMessage);
                         Assert.IsType<InvalidOperationException>(viewModel.LastError);
                         Assert.False(viewModel.ClearDocumentCommand.CanExecute(null));
+                        Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
                 }
 
                 [Fact]
@@ -67,6 +69,25 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Null(viewModel.FilePath);
                         Assert.False(viewModel.IsDocumentLoaded);
                         Assert.False(viewModel.ClearDocumentCommand.CanExecute(null));
+                        Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
+                }
+
+                [Fact]
+                public async Task CommandsReflectBusyStateWhileLoading()
+                {
+                        var tcs = new TaskCompletionSource<DocumentReadResult>();
+                        var service = new PendingDocumentReaderService(tcs);
+                        var viewModel = new DocumentReaderViewModel(service);
+
+                        var loadTask = viewModel.LoadDocumentAsync("sample.txt");
+
+                        Assert.False(viewModel.ClearDocumentCommand.CanExecute(null));
+                        Assert.False(viewModel.BrowseForDocumentCommand.CanExecute(null));
+
+                        tcs.SetResult(new DocumentReadResult("sample.txt", new FlowDocument(), string.Empty));
+                        await loadTask;
+
+                        Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
                 }
 
                 private sealed class StubDocumentReaderService : IDocumentReaderService
@@ -96,6 +117,21 @@ namespace Dissonance.Tests.ViewModels
                         public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                         {
                                 return Task.FromException<DocumentReadResult>(_exception);
+                        }
+                }
+
+                private sealed class PendingDocumentReaderService : IDocumentReaderService
+                {
+                        private readonly TaskCompletionSource<DocumentReadResult> _completion;
+
+                        public PendingDocumentReaderService(TaskCompletionSource<DocumentReadResult> completion)
+                        {
+                                _completion = completion;
+                        }
+
+                        public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
+                        {
+                                return _completion.Task;
                         }
                 }
         }

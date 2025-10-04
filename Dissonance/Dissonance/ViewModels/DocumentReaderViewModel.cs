@@ -10,11 +10,15 @@ using System.Windows.Input;
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Services.DocumentReader;
 
+using Microsoft.Win32;
+
 namespace Dissonance.ViewModels
 {
         public class DocumentReaderViewModel : INotifyPropertyChanged
         {
                 private readonly IDocumentReaderService _documentReaderService;
+                private readonly RelayCommandNoParam _clearDocumentCommand;
+                private readonly RelayCommandNoParam _browseForDocumentCommand;
                 private FlowDocument? _document;
                 private string? _plainText;
                 private string? _filePath;
@@ -25,7 +29,8 @@ namespace Dissonance.ViewModels
                 public DocumentReaderViewModel(IDocumentReaderService documentReaderService)
                 {
                         _documentReaderService = documentReaderService ?? throw new ArgumentNullException(nameof(documentReaderService));
-                        ClearDocumentCommand = new RelayCommandNoParam(ClearDocument, () => !IsBusy && (IsDocumentLoaded || HasStatusMessage));
+                        _clearDocumentCommand = new RelayCommandNoParam(ClearDocument, () => !IsBusy && (IsDocumentLoaded || HasStatusMessage));
+                        _browseForDocumentCommand = new RelayCommandNoParam(BrowseForDocument, () => !IsBusy);
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -134,7 +139,9 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                public ICommand ClearDocumentCommand { get; }
+                public ICommand ClearDocumentCommand => _clearDocumentCommand;
+
+                public ICommand BrowseForDocumentCommand => _browseForDocumentCommand;
 
                 public async Task<bool> LoadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                 {
@@ -181,6 +188,38 @@ namespace Dissonance.ViewModels
                         StatusMessage = null;
                 }
 
+                private async void BrowseForDocument()
+                {
+                        var dialog = new OpenFileDialog
+                        {
+                                Filter = "Text documents (*.txt)|*.txt|All files (*.*)|*.*",
+                                CheckFileExists = true,
+                                CheckPathExists = true,
+                                Title = "Open document",
+                                Multiselect = false
+                        };
+
+                        if (!string.IsNullOrWhiteSpace(FilePath))
+                        {
+                                var directory = Path.GetDirectoryName(FilePath);
+                                if (!string.IsNullOrWhiteSpace(directory) && Directory.Exists(directory))
+                                        dialog.InitialDirectory = directory;
+                        }
+
+                        var result = dialog.ShowDialog();
+                        if (result != true)
+                                return;
+
+                        try
+                        {
+                                await LoadDocumentAsync(dialog.FileName);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                                // Cancellation has already updated the status message; swallow to avoid surfacing to the UI.
+                        }
+                }
+
                 private void ApplyResult(DocumentReadResult result)
                 {
                         if (result == null)
@@ -194,8 +233,8 @@ namespace Dissonance.ViewModels
 
                 private void UpdateCommandStates()
                 {
-                        if (ClearDocumentCommand is RelayCommandNoParam clearCommand)
-                                clearCommand.RaiseCanExecuteChanged();
+                        _clearDocumentCommand.RaiseCanExecuteChanged();
+                        _browseForDocumentCommand.RaiseCanExecuteChanged();
                 }
 
                 private void OnPropertyChanged([CallerMemberName] string? propertyName = null)

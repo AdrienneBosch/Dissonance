@@ -97,7 +97,6 @@
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
                             <RowDefinition Height="Auto"/>
-                            <RowDefinition Height="Auto"/>
                         </Grid.RowDefinitions>
                         <TextBlock x:Name="VoiceSelectionHeading"
                                    Grid.Row="0"
@@ -106,27 +105,33 @@
                         <TextBlock Grid.Row="1"
                                    Text="Choose which installed voice is used for speech."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
-                        <ComboBox x:Name="VoiceSelectionComboBox"
-                                  Grid.Row="2"
-                                  Style="{StaticResource ModernComboBoxStyle}"
-                                  ItemsSource="{Binding AvailableVoices}"
-                                  SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                  AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
-                                  ToolTip="Select the voice used by the text-to-speech engine"
-                                  TabIndex="2"
-                                  HorizontalAlignment="Stretch"
-                                  MinWidth="220"
-                                  MinHeight="34"/>
-                        <Button Grid.Row="3"
-                                Content="{Binding PreviewVoiceButtonLabel}"
-                                Command="{Binding PreviewVoiceCommand}"
-                                Style="{StaticResource PrimaryButtonStyle}"
-                                Margin="0,12,0,0"
-                                HorizontalAlignment="Left"
-                                ToolTip="{Binding PreviewVoiceButtonToolTip}"
-                                AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
-                                AutomationProperties.HelpText="{Binding PreviewVoiceHelpText}"
-                                TabIndex="3"/>
+                        <Grid Grid.Row="2" Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <ComboBox x:Name="VoiceSelectionComboBox"
+                                      Grid.Column="0"
+                                      Style="{StaticResource ModernComboBoxStyle}"
+                                      ItemsSource="{Binding AvailableVoices}"
+                                      SelectedItem="{Binding Voice, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                      AutomationProperties.LabeledBy="{Binding ElementName=VoiceSelectionHeading}"
+                                      ToolTip="Select the voice used by the text-to-speech engine"
+                                      TabIndex="2"
+                                      HorizontalAlignment="Stretch"
+                                      MinWidth="220"
+                                      MinHeight="34"/>
+                            <Button Grid.Column="1"
+                                    Content="{Binding PreviewVoiceButtonLabel}"
+                                    Command="{Binding PreviewVoiceCommand}"
+                                    Style="{StaticResource PrimaryButtonStyle}"
+                                    Margin="12,0,0,0"
+                                    HorizontalAlignment="Stretch"
+                                    ToolTip="{Binding PreviewVoiceButtonToolTip}"
+                                    AutomationProperties.Name="{Binding PreviewVoiceButtonLabel}"
+                                    AutomationProperties.HelpText="{Binding PreviewVoiceHelpText}"
+                                    TabIndex="3"/>
+                        </Grid>
                     </Grid>
                 </Border>
 

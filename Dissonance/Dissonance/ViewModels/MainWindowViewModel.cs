@@ -68,9 +68,9 @@ namespace Dissonance.ViewModels
 
                         _previewStartLabel = GetResourceString ( "PreviewVoiceButtonLabelStart", "Preview voice" );
                         _previewStopLabel = GetResourceString ( "PreviewVoiceButtonLabelStop", "Stop preview" );
-                        _previewToolTip = GetResourceString ( "PreviewVoiceButtonToolTip", "Hear how the current voice settings sound." );
-                        _previewHelpText = GetResourceString ( "PreviewVoiceHelpText", "Play or stop a short preview using the selected voice." );
-                        _previewSampleText = GetResourceString ( "PreviewVoiceSampleSentence", "Dissonance reads everything you copy so you can stay in the flow." );
+                        _previewToolTip = GetResourceString ( "PreviewVoiceButtonToolTip", "Listen to how the selected voice settings sound together." );
+                        _previewHelpText = GetResourceString ( "PreviewVoiceHelpText", "Play or stop a short professional sample using the selected voice." );
+                        _previewSampleText = GetResourceString ( "PreviewVoiceSampleSentence", "Dissonance narrates your copied content so you can stay focused on your work." );
 
                         PreviewVoiceCommand = new RelayCommandNoParam ( PreviewVoice, ( ) => !string.IsNullOrWhiteSpace ( _previewSampleText ) );
 

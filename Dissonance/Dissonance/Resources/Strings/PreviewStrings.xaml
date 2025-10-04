@@ -3,7 +3,7 @@
                     xmlns:sys="clr-namespace:System;assembly=mscorlib">
     <sys:String x:Key="PreviewVoiceButtonLabelStart">Preview voice</sys:String>
     <sys:String x:Key="PreviewVoiceButtonLabelStop">Stop preview</sys:String>
-    <sys:String x:Key="PreviewVoiceButtonToolTip">Hear how the current voice, rate, and volume settings sound.</sys:String>
-    <sys:String x:Key="PreviewVoiceHelpText">Press to play or stop a short sample using the selected voice and speech settings.</sys:String>
-    <sys:String x:Key="PreviewVoiceSampleSentence">Dissonance reads everything you copy so you can stay in the flow.</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonToolTip">Listen to how the selected voice, rate, and volume settings sound together.</sys:String>
+    <sys:String x:Key="PreviewVoiceHelpText">Play or stop a short professional sample using the selected voice and speech settings.</sys:String>
+    <sys:String x:Key="PreviewVoiceSampleSentence">Dissonance narrates your copied content so you can stay focused on your work.</sys:String>
 </ResourceDictionary>

@@ -154,7 +154,7 @@ namespace Dissonance.ViewModels
                                 LastError = null;
                                 StatusMessage = null;
 
-                                var result = await _documentReaderService.ReadDocumentAsync(filePath, cancellationToken).ConfigureAwait(false);
+                                var result = await _documentReaderService.ReadDocumentAsync(filePath, cancellationToken);
 
                                 ApplyResult(result);
                                 StatusMessage = null;

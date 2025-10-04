@@ -193,11 +193,6 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <Grid.InputBindings>
-                                <KeyBinding Key="{Binding PlaybackHotkeyKey}"
-                                            Modifiers="{Binding PlaybackHotkeyModifiers}"
-                                            Command="{Binding PlaybackHotkeyCommand}"/>
-                            </Grid.InputBindings>
                             <TextBlock Text="Document preview"
                                        Style="{StaticResource CardTitleTextStyle}"/>
                             <StackPanel Grid.Row="1"

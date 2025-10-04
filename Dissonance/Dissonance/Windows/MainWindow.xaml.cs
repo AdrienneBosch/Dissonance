@@ -21,6 +21,7 @@ namespace Dissonance
                 private bool _isWindowPlacementInitialized;
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
                 private bool _isWindowPlacementDirty;
+                private KeyBinding? _documentPlaybackKeyBinding;
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {
                         Key.LeftCtrl,
@@ -40,6 +41,10 @@ namespace Dissonance
                         InitializeComponent ( );
                         DataContext = _viewModel;
 
+                        var documentReaderViewModel = _viewModel.DocumentReader;
+                        documentReaderViewModel.PropertyChanged += OnDocumentReaderPropertyChanged;
+                        UpdateDocumentPlaybackHotkeyBinding ( documentReaderViewModel );
+
                         SourceInitialized += OnSourceInitialized;
                         LocationChanged += OnWindowLocationChanged;
                         SizeChanged += OnWindowSizeChanged;
@@ -48,6 +53,9 @@ namespace Dissonance
 
                 protected override void OnClosing ( CancelEventArgs e )
                 {
+                        var documentReaderViewModel = _viewModel.DocumentReader;
+                        documentReaderViewModel.PropertyChanged -= OnDocumentReaderPropertyChanged;
+
                         PersistWindowPlacement ( );
                         if ( _isWindowPlacementDirty )
                         {
@@ -378,6 +386,46 @@ namespace Dissonance
 
                         modifiers.Add ( key.ToString ( ) );
                         documentReaderViewModel.PlaybackHotkeyCombination = string.Join ( "+", modifiers );
+                }
+
+                private void OnDocumentReaderPropertyChanged ( object? sender, PropertyChangedEventArgs e )
+                {
+                        if ( sender is not DocumentReaderViewModel documentReaderViewModel )
+                        {
+                                return;
+                        }
+
+                        if ( e.PropertyName == nameof ( DocumentReaderViewModel.PlaybackHotkeyKey )
+                                || e.PropertyName == nameof ( DocumentReaderViewModel.PlaybackHotkeyModifiers ) )
+                        {
+                                UpdateDocumentPlaybackHotkeyBinding ( documentReaderViewModel );
+                        }
+                }
+
+                private void UpdateDocumentPlaybackHotkeyBinding ( DocumentReaderViewModel documentReaderViewModel )
+                {
+                        if ( !Dispatcher.CheckAccess ( ) )
+                        {
+                                Dispatcher.Invoke ( ( ) => UpdateDocumentPlaybackHotkeyBinding ( documentReaderViewModel ) );
+                                return;
+                        }
+
+                        if ( _documentPlaybackKeyBinding != null )
+                        {
+                                InputBindings.Remove ( _documentPlaybackKeyBinding );
+                                _documentPlaybackKeyBinding = null;
+                        }
+
+                        var key = documentReaderViewModel.PlaybackHotkeyKey;
+                        if ( key == Key.None )
+                        {
+                                return;
+                        }
+
+                        _documentPlaybackKeyBinding = new KeyBinding ( documentReaderViewModel.PlaybackHotkeyCommand,
+                                key,
+                                documentReaderViewModel.PlaybackHotkeyModifiers );
+                        InputBindings.Add ( _documentPlaybackKeyBinding );
                 }
 
                 private static bool IsModifierKey ( Key key )

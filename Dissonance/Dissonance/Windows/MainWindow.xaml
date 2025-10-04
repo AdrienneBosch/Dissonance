@@ -159,6 +159,12 @@
                                    Style="{StaticResource CardTitleTextStyle}"/>
                         <TextBlock Text="Define the shortcut that instantly voices your clipboard."
                                    Style="{StaticResource CardDescriptionTextStyle}"/>
+                        <CheckBox Content="Automatically speak new clipboard text"
+                                  IsChecked="{Binding AutoReadClipboard, Mode=TwoWay}"
+                                  Margin="0,12,0,0"
+                                  AutomationProperties.Name="Automatically speak new clipboard text"
+                                  AutomationProperties.HelpText="When enabled, clipboard text will be spoken immediately after it changes"
+                                  TabIndex="5"/>
                         <StackPanel Orientation="Horizontal">
                             <TextBox x:Name="ReadClipboardHotkeyTextBox"
                                      Style="{StaticResource ModernTextBoxStyle}"
@@ -166,7 +172,7 @@
                                      AutomationProperties.LabeledBy="{Binding ElementName=HotkeyHeading}"
                                      ToolTip="Set the hotkey used to trigger speaking the clipboard's text"
                                      Width="170"
-                                     TabIndex="5"
+                                     TabIndex="6"
                                      IsReadOnly="True"
                                      PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                      AutomationProperties.HelpText="Specify the key combination that will read clipboard contents"/>
@@ -176,7 +182,7 @@
                                     Margin="12,0,0,0"
                                     MinWidth="72"
                                     ToolTip="Apply the new hotkey immediately"
-                                    TabIndex="6"
+                                    TabIndex="7"
                                     AutomationProperties.Name="Apply hotkey"
                                     AutomationProperties.HelpText="Applies the entered hotkey combination"/>
                         </StackPanel>

@@ -7,6 +7,7 @@ using System.Windows.Input;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Infrastructure.Constants;
+using Dissonance.Managers;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
@@ -29,20 +30,23 @@ namespace Dissonance.ViewModels
                 private readonly ISettingsService _settingsService;
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
+                private readonly ClipboardManager _clipboardManager;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
                 private string _lastAppliedHotkeyCombination = string.Empty;
+                private bool _autoReadClipboard;
                 private NavigationSectionViewModel? _selectedSection;
 
-                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService )
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
                 {
                         _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
                         _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
                         _hotkeyService = hotkeyService ?? throw new ArgumentNullException ( nameof ( hotkeyService ) );
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
+                        _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
 
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
@@ -59,6 +63,8 @@ namespace Dissonance.ViewModels
                         var settings = _settingsService.GetCurrentSettings ( );
                         _hotkeyCombination = ComposeHotkeyString ( settings.Hotkey );
                         _lastAppliedHotkeyCombination = _hotkeyCombination;
+                        _autoReadClipboard = settings.Hotkey?.AutoReadClipboard ?? false;
+                        _clipboardManager.SetAutoReadClipboard ( _autoReadClipboard );
 
                         if ( !string.IsNullOrWhiteSpace ( _hotkeyCombination ) )
                         {
@@ -191,6 +197,27 @@ namespace Dissonance.ViewModels
                                         if ( ApplyHotkeyCommand is RelayCommandNoParam relay )
                                                 relay.RaiseCanExecuteChanged ( );
                                 }
+                        }
+                }
+
+                public bool AutoReadClipboard
+                {
+                        get => _autoReadClipboard;
+                        set
+                        {
+                                if ( _autoReadClipboard == value )
+                                        return;
+
+                                _autoReadClipboard = value;
+                                var settings = _settingsService.GetCurrentSettings ( );
+                                if ( settings.Hotkey != null && settings.Hotkey.AutoReadClipboard != value )
+                                {
+                                        settings.Hotkey.AutoReadClipboard = value;
+                                        _settingsService.SaveCurrentSettings ( );
+                                }
+
+                                _clipboardManager.SetAutoReadClipboard ( value );
+                                OnPropertyChanged ( nameof ( AutoReadClipboard ) );
                         }
                 }
 
@@ -336,6 +363,12 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( VoiceRate ) );
                         OnPropertyChanged ( nameof ( Volume ) );
                         OnPropertyChanged ( nameof ( SaveConfigAsDefaultOnClose ) );
+                        var autoReadClipboard = settings.Hotkey.AutoReadClipboard;
+                        var autoReadChanged = _autoReadClipboard != autoReadClipboard;
+                        _autoReadClipboard = autoReadClipboard;
+                        if ( autoReadChanged )
+                                OnPropertyChanged ( nameof ( AutoReadClipboard ) );
+                        _clipboardManager.SetAutoReadClipboard ( _autoReadClipboard );
 
                         _isDarkTheme = settings.UseDarkTheme;
                         _themeService.ApplyTheme ( _isDarkTheme ? AppTheme.Dark : AppTheme.Light );

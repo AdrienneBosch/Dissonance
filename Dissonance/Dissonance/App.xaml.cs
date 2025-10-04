@@ -1,6 +1,7 @@
-﻿using System.Windows;
+﻿using System;
+using System.Windows;
 
-using Dissonance.Infrastructure.Logging.Dissonance.Infrastructure.Logging;
+using Dissonance.Infrastructure.Logging;
 using Dissonance.Managers;
 using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
@@ -18,7 +19,7 @@ namespace Dissonance
 	public partial class App : Application
 	{
 		private readonly IServiceProvider _serviceProvider;
-		private StartupManager _startupManager;
+                private StartupManager? _startupManager;
 
 		public App ( )
 		{
@@ -45,7 +46,7 @@ namespace Dissonance
 
 		protected override void OnExit ( ExitEventArgs e )
 		{
-			_startupManager.Dispose ( );
+                        _startupManager?.Dispose ( );
 			base.OnExit ( e );
 		}
 

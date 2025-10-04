@@ -1,13 +1,16 @@
-﻿namespace Dissonance.Services.TTSService
+﻿using System;
+using System.Speech.Synthesis;
+
+namespace Dissonance.Services.TTSService
 {
-	public interface ITTSService
-	{
-		void SetTTSParameters ( string voice, double rate, int volume );
+        public interface ITTSService
+        {
+                void SetTTSParameters ( string voice, double rate, int volume );
 
-		void Speak ( string text );
+                Prompt? Speak ( string text );
 
-		void Stop ( );
+                void Stop ( );
 
-		event EventHandler SpeechCompleted;
-	}
+                event EventHandler<SpeakCompletedEventArgs> SpeechCompleted;
+        }
 }

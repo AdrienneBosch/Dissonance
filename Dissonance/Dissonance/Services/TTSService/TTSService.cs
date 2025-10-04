@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Speech.Synthesis;
 
 using Dissonance.Infrastructure.Constants;
@@ -11,8 +12,8 @@ namespace Dissonance.Services.TTSService
 	{
 		private readonly ILogger<TTSService> _logger;
 		private readonly Dissonance.Services.MessageService.IMessageService _messageService;
-		private readonly SpeechSynthesizer _synthesizer;
-		public event EventHandler SpeechCompleted;
+                private readonly SpeechSynthesizer _synthesizer;
+                public event EventHandler<SpeakCompletedEventArgs>? SpeechCompleted;
 
 		public TTSService ( ILogger<TTSService> logger, Dissonance.Services.MessageService.IMessageService messageService )
 		{
@@ -48,17 +49,18 @@ namespace Dissonance.Services.TTSService
 			}
 		}
 
-		public void Speak ( string text )
-		{
-			try
-			{
-				_synthesizer.SpeakAsync ( text );
-			}
-			catch ( Exception ex )
-			{
-				_messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
-			}
-		}
+                public Prompt? Speak ( string text )
+                {
+                        try
+                        {
+                                return _synthesizer.SpeakAsync ( text );
+                        }
+                        catch ( Exception ex )
+                        {
+                                _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, $"Failed to speak text due to an unhandled exception. \nText: {text}", ex );
+                                return null;
+                        }
+                }
 
 		public void Stop ( )
 		{
@@ -74,7 +76,7 @@ namespace Dissonance.Services.TTSService
 
 		private void OnSpeakCompleted ( object sender, SpeakCompletedEventArgs e )
 		{
-			SpeechCompleted?.Invoke ( this, EventArgs.Empty );
-		}
+                        SpeechCompleted?.Invoke ( this, e );
+                }
 	}
 }

@@ -2,8 +2,10 @@ using System;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
+using System.Speech.Synthesis;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Threading;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Infrastructure.Constants;
@@ -24,6 +26,11 @@ namespace Dissonance.ViewModels
         {
                 private const string ConfigurationFileFilter = "Dissonance Configuration (*.json)|*.json|All files (*.*)|*.*";
                 private const string DefaultExportFileName = "dissonance-config.json";
+                private const string DefaultPreviewButtonStartLabel = "Preview voice";
+                private const string DefaultPreviewButtonStopLabel = "Stop preview";
+                private const string DefaultPreviewButtonTooltip = "Listen to a short sample using the selected voice, rate, and volume.";
+                private const string DefaultPreviewButtonHelpText = "Plays a sample sentence with the current speech settings so you can confirm how it sounds.";
+                private const string DefaultPreviewSampleText = "Dissonance will speak this sentence so you can hear the voice you selected.";
                 private static readonly Logger Logger = LogManager.GetCurrentClassLogger ( );
                 private readonly IHotkeyService _hotkeyService;
                 private readonly IMessageService _messageService;
@@ -38,6 +45,14 @@ namespace Dissonance.ViewModels
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private bool _autoReadClipboard;
                 private NavigationSectionViewModel? _selectedSection;
+                private readonly Dispatcher _dispatcher;
+                private Prompt? _activePreviewPrompt;
+                private bool _isPreviewRunning;
+                private readonly string _previewButtonStartLabel;
+                private readonly string _previewButtonStopLabel;
+                private readonly string _previewButtonTooltip;
+                private readonly string _previewButtonHelpText;
+                private readonly string _previewSampleText;
 
                 public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
                 {
@@ -48,11 +63,21 @@ namespace Dissonance.ViewModels
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
 
+                        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
+                        _previewButtonStartLabel = GetResourceString ( "PreviewVoiceButtonStartLabel", DefaultPreviewButtonStartLabel );
+                        _previewButtonStopLabel = GetResourceString ( "PreviewVoiceButtonStopLabel", DefaultPreviewButtonStopLabel );
+                        _previewButtonTooltip = GetResourceString ( "PreviewVoiceButtonTooltip", DefaultPreviewButtonTooltip );
+                        _previewButtonHelpText = GetResourceString ( "PreviewVoiceButtonHelpText", DefaultPreviewButtonHelpText );
+                        _previewSampleText = GetResourceString ( "PreviewVoiceSampleText", DefaultPreviewSampleText );
+
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
                         ImportSettingsCommand = new RelayCommandNoParam ( ImportConfiguration );
                         ApplyHotkeyCommand = new RelayCommandNoParam ( ApplyHotkey, CanApplyHotkey );
                         NavigateToSectionCommand = new RelayCommand ( NavigateToSection );
+                        PreviewVoiceCommand = new RelayCommandNoParam ( ExecutePreviewVoice );
+
+                        _ttsService.SpeechCompleted += OnSpeechCompleted;
 
                         var installedVoices = new System.Speech.Synthesis.SpeechSynthesizer ( ).GetInstalledVoices ( );
                         foreach ( var voice in installedVoices )
@@ -113,6 +138,14 @@ namespace Dissonance.ViewModels
                 public ICommand SaveDefaultSettingsCommand { get; }
 
                 public ICommand NavigateToSectionCommand { get; }
+
+                public ICommand PreviewVoiceCommand { get; }
+
+                public string PreviewVoiceButtonLabel => _isPreviewRunning ? _previewButtonStopLabel : _previewButtonStartLabel;
+
+                public string PreviewVoiceButtonToolTip => _previewButtonTooltip;
+
+                public string PreviewVoiceButtonHelpText => _previewButtonHelpText;
 
                 public bool IsNavigationMenuOpen
                 {
@@ -274,6 +307,15 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        _ttsService.SpeechCompleted -= OnSpeechCompleted;
+                        if ( _isPreviewRunning )
+                        {
+                                _ttsService.Stop ( );
+                        }
+
+                        _activePreviewPrompt = null;
+                        SetPreviewRunning ( false );
+
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( settings.SaveConfigAsDefaultOnClose )
                         {
@@ -335,6 +377,54 @@ namespace Dissonance.ViewModels
                         {
                                 ReloadSettingsFromService ( true );
                                 _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration imported successfully." );
+                        }
+                }
+
+                private void ExecutePreviewVoice ( )
+                {
+                        _ttsService.Stop ( );
+                        _activePreviewPrompt = null;
+
+                        if ( _isPreviewRunning )
+                        {
+                                SetPreviewRunning ( false );
+                                return;
+                        }
+
+                        var settings = _settingsService.GetCurrentSettings ( );
+                        _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
+
+                        var previewText = string.IsNullOrWhiteSpace ( _previewSampleText )
+                                ? DefaultPreviewSampleText
+                                : _previewSampleText;
+
+                        var prompt = _ttsService.Speak ( previewText );
+                        if ( prompt != null )
+                        {
+                                _activePreviewPrompt = prompt;
+                                SetPreviewRunning ( true );
+                        }
+                }
+
+                private void OnSpeechCompleted ( object? sender, SpeakCompletedEventArgs e )
+                {
+                        if ( _activePreviewPrompt == null || !ReferenceEquals ( e.Prompt, _activePreviewPrompt ) )
+                                return;
+
+                        _activePreviewPrompt = null;
+
+                        void ResetPreview ( )
+                        {
+                                SetPreviewRunning ( false );
+                        }
+
+                        if ( _dispatcher.CheckAccess ( ) )
+                        {
+                                ResetPreview ( );
+                        }
+                        else
+                        {
+                                _dispatcher.BeginInvoke ( ( Action ) ResetPreview );
                         }
                 }
 
@@ -553,6 +643,33 @@ namespace Dissonance.ViewModels
                 protected void OnPropertyChanged ( string propertyName )
                 {
                         PropertyChanged?.Invoke ( this, new PropertyChangedEventArgs ( propertyName ) );
+                }
+
+                private void SetPreviewRunning ( bool isRunning )
+                {
+                        if ( _isPreviewRunning == isRunning )
+                                return;
+
+                        _isPreviewRunning = isRunning;
+                        OnPropertyChanged ( nameof ( PreviewVoiceButtonLabel ) );
+
+                        if ( PreviewVoiceCommand is RelayCommandNoParam relay )
+                        {
+                                relay.RaiseCanExecuteChanged ( );
+                        }
+                }
+
+                private static string GetResourceString ( string key, string fallback )
+                {
+                        if ( Application.Current != null )
+                        {
+                                if ( Application.Current.TryFindResource ( key ) is string value && !string.IsNullOrWhiteSpace ( value ) )
+                                {
+                                        return value;
+                                }
+                        }
+
+                        return fallback;
                 }
         }
 }

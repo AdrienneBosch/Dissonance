@@ -1,4 +1,5 @@
 using System;
+using System.Speech.Synthesis;
 
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
@@ -76,7 +77,7 @@ namespace Dissonance.Managers
                         StartSpeaking ( clipboardText, "clipboard" );
                 }
 
-                private void OnSpeechCompleted ( object sender, EventArgs e )
+                private void OnSpeechCompleted ( object? sender, SpeakCompletedEventArgs e )
                 {
                         _isSpeaking = false;
                         _logger.LogInformation ( "TTS playback completed." );
@@ -103,8 +104,8 @@ namespace Dissonance.Managers
                 {
                         var settings = _settingsService.GetCurrentSettings();
                         _ttsService.SetTTSParameters ( settings.Voice, settings.VoiceRate, settings.Volume );
-                        _ttsService.Speak ( clipboardText );
-                        _isSpeaking = true;
+                        var prompt = _ttsService.Speak ( clipboardText );
+                        _isSpeaking = prompt != null;
                         _logger.LogInformation ( "Speaking clipboard text triggered by {Source}.", source );
                 }
         }

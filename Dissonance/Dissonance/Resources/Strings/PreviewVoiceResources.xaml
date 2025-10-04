@@ -1,0 +1,9 @@
+﻿<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=mscorlib">
+    <sys:String x:Key="PreviewVoiceButtonStartLabel">Preview voice</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonStopLabel">Stop preview</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonTooltip">Listen to a short sample using the selected voice, rate, and volume.</sys:String>
+    <sys:String x:Key="PreviewVoiceButtonHelpText">Plays a sample sentence with the current speech settings so you can confirm how it sounds.</sys:String>
+    <sys:String x:Key="PreviewVoiceSampleText">Dissonance will speak this sentence so you can hear the voice you selected.</sys:String>
+</ResourceDictionary>

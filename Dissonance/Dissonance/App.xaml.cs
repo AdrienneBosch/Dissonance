@@ -7,6 +7,7 @@ using Dissonance.Services.ClipboardService;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
+using Dissonance.Services.StatusAnnouncements;
 using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
@@ -35,6 +36,7 @@ namespace Dissonance
                         services.AddSingleton<IClipboardService, ClipboardService> ( );
                         services.AddSingleton<ITTSService, TTSService> ( );
                         services.AddSingleton<IThemeService, ThemeService> ( );
+                        services.AddSingleton<IStatusAnnouncementService, StatusAnnouncementService> ( );
                         services.AddSingleton<IHotkeyService, HotkeyService> ( );
                         services.AddSingleton<IMessageService, MessageService> ( );
                         services.AddSingleton<ClipboardManager> ( );

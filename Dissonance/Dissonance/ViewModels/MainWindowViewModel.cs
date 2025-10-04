@@ -13,6 +13,7 @@ using Dissonance.Managers;
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.MessageService;
 using Dissonance.Services.SettingsService;
+using Dissonance.Services.StatusAnnouncements;
 using Dissonance.Services.ThemeService;
 using Dissonance.Services.TTSService;
 
@@ -33,8 +34,11 @@ namespace Dissonance.ViewModels
                 private readonly ITTSService _ttsService;
                 private readonly IThemeService _themeService;
                 private readonly ClipboardManager _clipboardManager;
+                private readonly IStatusAnnouncementService _statusAnnouncementService;
                 private readonly Dispatcher _dispatcher;
                 private readonly ObservableCollection<NavigationSectionViewModel> _navigationSections = new ObservableCollection<NavigationSectionViewModel> ( );
+                private readonly ObservableCollection<StatusAnnouncement> _statusHistory = new ObservableCollection<StatusAnnouncement> ( );
+                private readonly ReadOnlyObservableCollection<StatusAnnouncement> _statusHistoryView;
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
@@ -48,8 +52,11 @@ namespace Dissonance.ViewModels
                 private readonly string _previewSampleText;
                 private Prompt? _activePreviewPrompt;
                 private bool _isPreviewing;
+                private StatusAnnouncement? _latestStatus;
 
-                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager )
+                private const int MaxStatusItems = 100;
+
+                public MainWindowViewModel ( ISettingsService settingsService, ITTSService ttsService, IHotkeyService hotkeyService, IThemeService themeService, IMessageService messageService, ClipboardManager clipboardManager, IStatusAnnouncementService statusAnnouncementService )
                 {
                         _settingsService = settingsService ?? throw new ArgumentNullException ( nameof ( settingsService ) );
                         _ttsService = ttsService ?? throw new ArgumentNullException ( nameof ( ttsService ) );
@@ -57,6 +64,25 @@ namespace Dissonance.ViewModels
                         _themeService = themeService ?? throw new ArgumentNullException ( nameof ( themeService ) );
                         _messageService = messageService ?? throw new ArgumentNullException ( nameof ( messageService ) );
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
+                        _statusAnnouncementService = statusAnnouncementService ?? throw new ArgumentNullException ( nameof ( statusAnnouncementService ) );
+
+                        _statusHistoryView = new ReadOnlyObservableCollection<StatusAnnouncement> ( _statusHistory );
+
+                        foreach ( var entry in _statusAnnouncementService.History )
+                        {
+                                _statusHistory.Add ( entry );
+                        }
+
+                        _latestStatus = _statusAnnouncementService.Latest;
+                        TrimStatusHistory ( );
+                        if ( _latestStatus != null )
+                        {
+                                OnPropertyChanged ( nameof ( StatusMessage ) );
+                                OnPropertyChanged ( nameof ( StatusSeverity ) );
+                                OnPropertyChanged ( nameof ( IsStatusMessageVisible ) );
+                        }
+
+                        _statusAnnouncementService.StatusAnnounced += OnStatusAnnounced;
 
                         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
@@ -96,6 +122,7 @@ namespace Dissonance.ViewModels
                                 catch ( ArgumentException ex )
                                 {
                                         Logger.Warn ( ex, "Invalid hotkey configuration \"{Hotkey}\" loaded from settings.", _hotkeyCombination );
+                                        PublishStatus ( "StatusMessageHotkeyConfigurationInvalid", "The saved hotkey couldn't be restored.", StatusSeverity.Warning );
                                 }
                         }
 
@@ -124,6 +151,14 @@ namespace Dissonance.ViewModels
                 public ObservableCollection<string> AvailableVoices { get; } = new ObservableCollection<string> ( );
 
                 public ObservableCollection<NavigationSectionViewModel> NavigationSections => _navigationSections;
+
+                public ReadOnlyObservableCollection<StatusAnnouncement> StatusHistory => _statusHistoryView;
+
+                public string? StatusMessage => _latestStatus?.Message;
+
+                public StatusSeverity StatusSeverity => _latestStatus?.Severity ?? StatusSeverity.Info;
+
+                public bool IsStatusMessageVisible => !string.IsNullOrWhiteSpace ( StatusMessage );
 
                 public ICommand ApplyHotkeyCommand { get; }
 
@@ -317,6 +352,7 @@ namespace Dissonance.ViewModels
 
                 public void OnWindowClosing ( )
                 {
+                        _statusAnnouncementService.StatusAnnounced -= OnStatusAnnounced;
                         _ttsService.SpeechCompleted -= OnSpeechCompleted;
                         SetPreviewState ( false, null );
                         _ttsService.Stop ( );
@@ -345,12 +381,14 @@ namespace Dissonance.ViewModels
                                 if ( ApplyHotkeyCommand is RelayCommandNoParam relay )
                                         relay.RaiseCanExecuteChanged ( );
                                 _settingsService.SaveCurrentSettings ( );
+                                PublishStatus ( "StatusMessageHotkeyUpdated", "Hotkey updated.", StatusSeverity.Success );
                         }
                         catch ( Exception ex )
                         {
                                 var errorMessage = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
                                 MessageBox.Show ( errorMessage, "Hotkey Registration Error", MessageBoxButton.OK, MessageBoxImage.Error );
                                 Logger.Warn ( ex, errorMessage );
+                                PublishStatus ( "StatusMessageHotkeyRegistrationFailed", "Couldn't register the selected hotkey.", StatusSeverity.Error );
                         }
                 }
 
@@ -367,6 +405,7 @@ namespace Dissonance.ViewModels
                         if ( dialog.ShowDialog ( ) == true && _settingsService.ExportSettings ( dialog.FileName ) )
                         {
                                 _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration exported successfully." );
+                                PublishStatus ( "StatusMessageConfigurationExported", "Configuration exported successfully.", StatusSeverity.Success );
                         }
                 }
 
@@ -382,6 +421,7 @@ namespace Dissonance.ViewModels
                         {
                                 ReloadSettingsFromService ( true );
                                 _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration imported successfully." );
+                                PublishStatus ( "StatusMessageConfigurationImported", "Configuration imported successfully.", StatusSeverity.Success );
                         }
                 }
 
@@ -445,6 +485,7 @@ namespace Dissonance.ViewModels
                                 _messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.SettingsServiceWarning, $"The voice \"{settings.Voice}\" is not installed. Using \"{fallbackVoice}\" instead." );
                                 settings.Voice = fallbackVoice;
                                 _settingsService.SaveCurrentSettings ( );
+                                PublishStatus ( "StatusMessageVoiceUnavailable", "The saved voice is no longer installed. A fallback voice will be used.", StatusSeverity.Warning );
                         }
 
                         _themeService.ApplyTheme ( settings.UseDarkTheme ? AppTheme.Dark : AppTheme.Light );
@@ -487,6 +528,7 @@ namespace Dissonance.ViewModels
                                         var warning = $"Failed to register hotkey: {_hotkeyCombination}. It might already be in use by another application.";
                                         _messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.HotkeyServiceWarning, warning );
                                         Logger.Warn ( ex, warning );
+                                        PublishStatus ( "StatusMessageHotkeyRegistrationFailed", "Couldn't register the selected hotkey.", StatusSeverity.Error );
                                 }
                         }
                         else
@@ -506,6 +548,7 @@ namespace Dissonance.ViewModels
                         {
                                 ReloadSettingsFromService ( false );
                                 _messageService.DissonanceMessageBoxShowInfo ( MessageBoxTitles.SettingsServiceInfo, "Configuration saved as default.", TimeSpan.FromSeconds ( 20 ) );
+                                PublishStatus ( "StatusMessageConfigurationSavedAsDefault", "Configuration saved as default.", StatusSeverity.Success );
                         }
                 }
 
@@ -629,6 +672,44 @@ namespace Dissonance.ViewModels
                         return TryParseHotkeyCombination ( candidate, out var modifiers, out var parsedKey )
                                 ? string.Join ( "+", modifiers ) + "+" + parsedKey.ToString ( )
                                 : candidate;
+                }
+
+                private void OnStatusAnnounced ( object? sender, StatusAnnouncement announcement )
+                {
+                        if ( announcement == null )
+                                return;
+
+                        if ( _dispatcher.CheckAccess ( ) )
+                        {
+                                AppendStatus ( announcement );
+                        }
+                        else
+                        {
+                                _dispatcher.BeginInvoke ( new Action ( ( ) => AppendStatus ( announcement ) ) );
+                        }
+                }
+
+                private void AppendStatus ( StatusAnnouncement announcement )
+                {
+                        _statusHistory.Add ( announcement );
+                        TrimStatusHistory ( );
+                        _latestStatus = announcement;
+                        OnPropertyChanged ( nameof ( StatusMessage ) );
+                        OnPropertyChanged ( nameof ( StatusSeverity ) );
+                        OnPropertyChanged ( nameof ( IsStatusMessageVisible ) );
+                }
+
+                private void TrimStatusHistory ( )
+                {
+                        while ( _statusHistory.Count > MaxStatusItems )
+                        {
+                                _statusHistory.RemoveAt ( 0 );
+                        }
+                }
+
+                private void PublishStatus ( string resourceKey, string fallbackMessage, StatusSeverity severity )
+                {
+                        _statusAnnouncementService.AnnounceFromResource ( resourceKey, fallbackMessage, severity );
                 }
 
                 private void NavigateToSection ( object parameter )

@@ -6,6 +6,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:local="clr-namespace:Dissonance.ViewModels"
         xmlns:shell="clr-namespace:System.Windows.Shell;assembly=PresentationFramework"
+        xmlns:status="clr-namespace:Dissonance.Services.StatusAnnouncements"
         mc:Ignorable="d"
         Title="Dissonance"
         MinHeight="520"
@@ -350,6 +351,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
@@ -684,6 +686,85 @@
         </Grid>
 
         <Border Grid.Row="2"
+                Margin="24,8,24,0"
+                Padding="16,12"
+                CornerRadius="12"
+                BorderThickness="1">
+            <Border.Style>
+                <Style TargetType="Border">
+                    <Setter Property="Visibility" Value="Collapsed"/>
+                    <Setter Property="Background" Value="{DynamicResource StatusInfoBackgroundBrush}"/>
+                    <Setter Property="BorderBrush" Value="{DynamicResource StatusInfoBorderBrush}"/>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsStatusMessageVisible}" Value="True">
+                            <Setter Property="Visibility" Value="Visible"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Success}">
+                            <Setter Property="Background" Value="{DynamicResource StatusSuccessBackgroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource StatusSuccessBorderBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Warning}">
+                            <Setter Property="Background" Value="{DynamicResource StatusWarningBackgroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource StatusWarningBorderBrush}"/>
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Error}">
+                            <Setter Property="Background" Value="{DynamicResource StatusErrorBackgroundBrush}"/>
+                            <Setter Property="BorderBrush" Value="{DynamicResource StatusErrorBorderBrush}"/>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Border.Style>
+            <StackPanel Orientation="Horizontal"
+                        VerticalAlignment="Center">
+                <Ellipse Width="12"
+                         Height="12"
+                         VerticalAlignment="Center"
+                         Margin="0,0,12,0">
+                    <Ellipse.Style>
+                        <Style TargetType="Ellipse">
+                            <Setter Property="Fill" Value="{DynamicResource StatusInfoIndicatorBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Success}">
+                                    <Setter Property="Fill" Value="{DynamicResource StatusSuccessIndicatorBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Warning}">
+                                    <Setter Property="Fill" Value="{DynamicResource StatusWarningIndicatorBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Error}">
+                                    <Setter Property="Fill" Value="{DynamicResource StatusErrorIndicatorBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </Ellipse.Style>
+                </Ellipse>
+                <TextBlock Text="{Binding StatusMessage}"
+                           FontSize="13"
+                           FontWeight="SemiBold"
+                           TextWrapping="Wrap"
+                           VerticalAlignment="Center"
+                           AutomationProperties.LiveSetting="Assertive"
+                           AutomationProperties.Name="{Binding StatusMessage}">
+                    <TextBlock.Style>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="Foreground" Value="{DynamicResource StatusInfoForegroundBrush}"/>
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Success}">
+                                    <Setter Property="Foreground" Value="{DynamicResource StatusSuccessForegroundBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Warning}">
+                                    <Setter Property="Foreground" Value="{DynamicResource StatusWarningForegroundBrush}"/>
+                                </DataTrigger>
+                                <DataTrigger Binding="{Binding StatusSeverity}" Value="{x:Static status:StatusSeverity.Error}">
+                                    <Setter Property="Foreground" Value="{DynamicResource StatusErrorForegroundBrush}"/>
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </TextBlock.Style>
+                </TextBlock>
+            </StackPanel>
+        </Border>
+
+        <Border Grid.Row="3"
                 Margin="24,12,24,24"
                 Padding="24"
                 CornerRadius="{StaticResource SurfaceCornerRadius}"

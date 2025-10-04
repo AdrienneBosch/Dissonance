@@ -1033,7 +1033,8 @@
                            TextWrapping="Wrap"
                            VerticalAlignment="Center"
                            AutomationProperties.LiveSetting="Assertive"
-                           AutomationProperties.Name="{Binding StatusMessage}">
+                           AutomationProperties.Name="{Binding StatusAnnouncementAccessibilityText}"
+                           AutomationProperties.HelpText="{Binding StatusAnnouncementAccessibilityText}">
                     <TextBlock.Style>
                         <Style TargetType="TextBlock">
                             <Setter Property="Foreground" Value="{DynamicResource StatusInfoForegroundBrush}"/>

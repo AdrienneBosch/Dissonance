@@ -55,6 +55,7 @@ namespace Dissonance.ViewModels
                 private Prompt? _activePreviewPrompt;
                 private bool _isPreviewing;
                 private StatusAnnouncement? _latestStatus;
+                private DispatcherTimer? _statusDismissTimer;
 
                 private const int MaxStatusItems = 100;
 
@@ -68,6 +69,8 @@ namespace Dissonance.ViewModels
                         _clipboardManager = clipboardManager ?? throw new ArgumentNullException ( nameof ( clipboardManager ) );
                         _statusAnnouncementService = statusAnnouncementService ?? throw new ArgumentNullException ( nameof ( statusAnnouncementService ) );
                         _documentReaderViewModel = documentReaderViewModel ?? throw new ArgumentNullException ( nameof ( documentReaderViewModel ) );
+
+                        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
                         _statusHistoryView = new ReadOnlyObservableCollection<StatusAnnouncement> ( _statusHistory );
 
@@ -83,11 +86,11 @@ namespace Dissonance.ViewModels
                                 OnPropertyChanged ( nameof ( StatusMessage ) );
                                 OnPropertyChanged ( nameof ( StatusSeverity ) );
                                 OnPropertyChanged ( nameof ( IsStatusMessageVisible ) );
+                                OnPropertyChanged ( nameof ( StatusAnnouncementAccessibilityText ) );
+                                ResetStatusDismissTimer ( _latestStatus.Severity );
                         }
 
                         _statusAnnouncementService.StatusAnnounced += OnStatusAnnounced;
-
-                        _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
 
                         SaveDefaultSettingsCommand = new RelayCommandNoParam ( SaveCurrentConfigurationAsDefault );
                         ExportSettingsCommand = new RelayCommandNoParam ( ExportConfiguration );
@@ -183,6 +186,20 @@ namespace Dissonance.ViewModels
                 public string? StatusMessage => _latestStatus?.Message;
 
                 public StatusSeverity StatusSeverity => _latestStatus?.Severity ?? StatusSeverity.Info;
+
+                public string StatusAnnouncementAccessibilityText
+                {
+                        get
+                        {
+                                if ( _latestStatus == null )
+                                        return string.Empty;
+
+                                var severityDescription = GetSeverityAnnouncementPrefix ( _latestStatus.Severity );
+                                return string.IsNullOrWhiteSpace ( severityDescription )
+                                        ? _latestStatus.Message
+                                        : $"{severityDescription}: {_latestStatus.Message}";
+                        }
+                }
 
                 public bool IsStatusMessageVisible => !string.IsNullOrWhiteSpace ( StatusMessage );
 
@@ -384,6 +401,7 @@ namespace Dissonance.ViewModels
                         _readerSettingsViewModel.Dispose ( );
                         SetPreviewState ( false, null );
                         _ttsService.Stop ( );
+                        StopStatusDismissTimer ( );
 
                         var settings = _settingsService.GetCurrentSettings ( );
                         if ( settings.SaveConfigAsDefaultOnClose )
@@ -727,6 +745,8 @@ namespace Dissonance.ViewModels
                         OnPropertyChanged ( nameof ( StatusMessage ) );
                         OnPropertyChanged ( nameof ( StatusSeverity ) );
                         OnPropertyChanged ( nameof ( IsStatusMessageVisible ) );
+                        OnPropertyChanged ( nameof ( StatusAnnouncementAccessibilityText ) );
+                        ResetStatusDismissTimer ( announcement.Severity );
                 }
 
                 private void TrimStatusHistory ( )
@@ -740,6 +760,67 @@ namespace Dissonance.ViewModels
                 private void PublishStatus ( string resourceKey, string fallbackMessage, StatusSeverity severity )
                 {
                         _statusAnnouncementService.AnnounceFromResource ( resourceKey, fallbackMessage, severity );
+                }
+
+                private void ResetStatusDismissTimer ( StatusSeverity severity )
+                {
+                        StopStatusDismissTimer ( );
+
+                        var interval = GetStatusDismissDelay ( severity );
+                        if ( interval <= TimeSpan.Zero )
+                                return;
+
+                        _statusDismissTimer = new DispatcherTimer ( DispatcherPriority.Normal, _dispatcher )
+                        {
+                                Interval = interval
+                        };
+                        _statusDismissTimer.Tick += OnStatusDismissTimerTick;
+                        _statusDismissTimer.Start ( );
+                }
+
+                private void StopStatusDismissTimer ( )
+                {
+                        if ( _statusDismissTimer == null )
+                                return;
+
+                        _statusDismissTimer.Stop ( );
+                        _statusDismissTimer.Tick -= OnStatusDismissTimerTick;
+                        _statusDismissTimer = null;
+                }
+
+                private void OnStatusDismissTimerTick ( object? sender, EventArgs e )
+                {
+                        StopStatusDismissTimer ( );
+                        if ( _latestStatus == null )
+                                return;
+
+                        _latestStatus = null;
+                        OnPropertyChanged ( nameof ( StatusMessage ) );
+                        OnPropertyChanged ( nameof ( StatusSeverity ) );
+                        OnPropertyChanged ( nameof ( IsStatusMessageVisible ) );
+                        OnPropertyChanged ( nameof ( StatusAnnouncementAccessibilityText ) );
+                }
+
+                private static TimeSpan GetStatusDismissDelay ( StatusSeverity severity )
+                {
+                        return severity switch
+                        {
+                                StatusSeverity.Success => TimeSpan.FromSeconds ( 10 ),
+                                StatusSeverity.Warning => TimeSpan.FromSeconds ( 30 ),
+                                StatusSeverity.Error => TimeSpan.FromSeconds ( 30 ),
+                                _ => TimeSpan.FromSeconds ( 10 )
+                        };
+                }
+
+                private static string GetSeverityAnnouncementPrefix ( StatusSeverity severity )
+                {
+                        return severity switch
+                        {
+                                StatusSeverity.Success => "Success notification",
+                                StatusSeverity.Warning => "Warning notification",
+                                StatusSeverity.Error => "Error notification",
+                                _ => "Information"
+                        };
                 }
 
                 private void NavigateToSection ( object parameter )

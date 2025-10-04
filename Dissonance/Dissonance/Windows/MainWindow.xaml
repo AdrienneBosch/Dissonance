@@ -92,11 +92,13 @@
                                 Command="{Binding BrowseForDocumentCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 MinWidth="160"
+                                MinHeight="36"
                                 AutomationProperties.Name="Open document"/>
                         <Button Content="Clear"
                                 Command="{Binding ClearDocumentCommand}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 MinWidth="120"
+                                MinHeight="36"
                                 Margin="12,0,0,0"
                                 AutomationProperties.Name="Clear loaded document"/>
                     </StackPanel>

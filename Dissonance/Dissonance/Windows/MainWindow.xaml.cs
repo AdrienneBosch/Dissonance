@@ -23,17 +23,11 @@ namespace Dissonance
                 private WindowState _lastNonMinimizedWindowState = WindowState.Normal;
                 private bool _isWindowPlacementDirty;
                 private KeyBinding? _documentPlaybackKeyBinding;
-                private static readonly Dictionary<int, Key> AppCommandToKeyMap = new()
+                private static readonly HashSet<int> PlaybackAppCommands = new()
                 {
-                        { 8, Key.VolumeMute },
-                        { 9, Key.VolumeDown },
-                        { 10, Key.VolumeUp },
-                        { 11, Key.MediaNextTrack },
-                        { 12, Key.MediaPreviousTrack },
-                        { 13, Key.MediaStop },
-                        { 14, Key.MediaPlayPause },
-                        { 46, Key.Play },
-                        { 47, Key.Pause },
+                        14, // APPCOMMAND_MEDIA_PLAY_PAUSE
+                        46, // APPCOMMAND_MEDIA_PLAY
+                        47, // APPCOMMAND_MEDIA_PAUSE
                 };
                 private static readonly HashSet<Key> ModifierKeySet = new HashSet<Key>
                 {
@@ -530,13 +524,7 @@ namespace Dissonance
                 private bool TryHandleAppCommand ( IntPtr lParam )
                 {
                         var command = GetAppCommand ( lParam );
-                        if ( !AppCommandToKeyMap.TryGetValue ( command, out var key ) )
-                        {
-                                return false;
-                        }
-
-                        if ( _documentReaderViewModel.PlaybackHotkeyKey != key
-                                || _documentReaderViewModel.PlaybackHotkeyModifiers != ModifierKeys.None )
+                        if ( !PlaybackAppCommands.Contains ( command ) )
                         {
                                 return false;
                         }

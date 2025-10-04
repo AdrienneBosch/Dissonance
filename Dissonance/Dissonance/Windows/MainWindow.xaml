@@ -220,7 +220,7 @@
                                                   SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
                                                   DisplayMemberPath="DisplayName"
                                                   MinWidth="200"
-                                                  Style="{StaticResource HighlightColorComboBoxStyle}"
+                                                  Style="{StaticResource ModernComboBoxStyle}"
                                                   AutomationProperties.Name="Document highlight color"
                                                   AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
                                     </StackPanel>
@@ -261,7 +261,6 @@
                             <Grid.RowDefinitions>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="Auto"/>
-                                <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
                             <TextBlock Text="Document preview"
@@ -294,60 +293,7 @@
                                         IsEnabled="{Binding IsDocumentLoaded}"
                                         AutomationProperties.Name="Fast forward 10 seconds"/>
                             </StackPanel>
-                            <StackPanel Grid.Row="2"
-                                        Margin="0,16,0,0">
-                                <TextBlock x:Name="PlaybackHotkeyHeading"
-                                           Text="Playback hotkey"
-                                           FontWeight="SemiBold"
-                                           Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                                <TextBlock Margin="0,4,0,0"
-                                           Text="Assign a shortcut to control document narration while reviewing the preview."
-                                           Style="{StaticResource CardDescriptionTextStyle}"
-                                           TextWrapping="Wrap"/>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,8,0,0">
-                                    <TextBox x:Name="DocumentPlaybackHotkeyTextBox"
-                                             Width="180"
-                                             Style="{StaticResource ModernTextBoxStyle}"
-                                             Text="{Binding PlaybackHotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                                             IsReadOnly="True"
-                                             PreviewKeyDown="DocumentPlaybackHotkeyTextBox_PreviewKeyDown"
-                                             AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
-                                             AutomationProperties.Name="Document playback hotkey"
-                                             AutomationProperties.HelpText="Set the hotkey used to play or stop document narration"/>
-                                    <Button Content="Apply"
-                                            Style="{StaticResource PrimaryButtonStyle}"
-                                            Command="{Binding ApplyPlaybackHotkeyCommand}"
-                                            Margin="12,0,0,0"
-                                            MinWidth="96"
-                                            AutomationProperties.Name="Apply document playback hotkey"
-                                            AutomationProperties.HelpText="Applies the document playback hotkey combination"/>
-                                </StackPanel>
-                                <CheckBox Margin="0,12,0,0"
-                                          Content="Use the hotkey to play and pause instead of stopping"
-                                          Style="{StaticResource MenuCheckBoxStyle}"
-                                          IsChecked="{Binding PlaybackHotkeyTogglesPause, Mode=TwoWay}"
-                                          ToolTip="When enabled, pressing the hotkey toggles between play and pause."
-                                          AutomationProperties.Name="Toggle playback hotkey pause behavior"
-                                          AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
-                                <StackPanel Orientation="Horizontal"
-                                            Margin="0,16,0,0"
-                                            VerticalAlignment="Center">
-                                    <TextBlock Text="Highlight color"
-                                               Margin="0,0,12,0"
-                                               VerticalAlignment="Center"
-                                               FontWeight="SemiBold"
-                                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                                    <ComboBox ItemsSource="{Binding HighlightColorOptions}"
-                                              SelectedItem="{Binding SelectedHighlightColor, Mode=TwoWay}"
-                                              DisplayMemberPath="DisplayName"
-                                              Width="200"
-                                              Style="{StaticResource ModernComboBoxStyle}"
-                                              AutomationProperties.Name="Document highlight color"
-                                              AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
-                                </StackPanel>
-                            </StackPanel>
-                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="3"
+                            <controls:HighlightingFlowDocumentScrollViewer Grid.Row="2"
                                                                               Margin="0,12,0,0"
                                                                               Document="{Binding Document}"
                                                                               HighlightStartIndex="{Binding HighlightStartIndex}"
@@ -365,7 +311,7 @@
                                     </Style>
                                 </controls:HighlightingFlowDocumentScrollViewer.Style>
                             </controls:HighlightingFlowDocumentScrollViewer>
-                            <TextBlock Grid.Row="3"
+                            <TextBlock Grid.Row="2"
                                        Margin="0,20,0,0"
                                        Text="Open a document to preview its contents here."
                                        HorizontalAlignment="Center"

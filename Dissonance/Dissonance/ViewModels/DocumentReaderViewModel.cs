@@ -63,6 +63,11 @@ namespace Dissonance.ViewModels
                 private Brush _highlightBrush = Brushes.Transparent;
                 private int _highlightStartIndex;
                 private int _highlightLength;
+                private bool _rememberDocumentProgress;
+                private DateTime _lastProgressSaveTime = DateTime.MinValue;
+                private int _lastPersistedCharacterIndex;
+
+                private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
                 private const double DefaultCharactersPerSecond = 15d;
                 private const string ThemeAccentHighlightId = "ThemeAccent";
@@ -86,6 +91,7 @@ namespace Dissonance.ViewModels
                         InitializePlaybackHotkeyFromSettings();
                         _highlightColorOptions = CreateHighlightColorOptions();
                         InitializeHighlightSettings();
+                        InitializeDocumentResumeSettings();
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -146,6 +152,31 @@ namespace Dissonance.ViewModels
                 public bool HasPlainText => !string.IsNullOrWhiteSpace(PlainText);
 
                 public bool CanReadDocument => IsDocumentLoaded && HasPlainText;
+
+                public bool RememberDocumentProgress
+                {
+                        get => _rememberDocumentProgress;
+                        set
+                        {
+                                if (_rememberDocumentProgress == value)
+                                        return;
+
+                                _rememberDocumentProgress = value;
+                                RaisePropertyChanged();
+
+                                if (value)
+                                {
+                                        UpdateRememberDocumentSetting(true);
+                                        PersistDocumentState(force: true);
+                                }
+                                else
+                                {
+                                        UpdateRememberDocumentSetting(false);
+                                        _lastPersistedCharacterIndex = 0;
+                                        _lastProgressSaveTime = DateTime.MinValue;
+                                }
+                        }
+                }
 
                 public string PlaybackHotkeyCombination
                 {
@@ -233,6 +264,7 @@ namespace Dissonance.ViewModels
 
                                 _currentCharacterIndex = value;
                                 RaisePropertyChanged();
+                                PersistDocumentState(force: false);
                         }
                 }
 
@@ -392,6 +424,8 @@ namespace Dissonance.ViewModels
                         LastError = null;
                         StatusMessage = null;
                         ResetPlaybackState();
+                        if (RememberDocumentProgress)
+                                ClearPersistedDocumentState();
                 }
 
                 private async void BrowseForDocument()
@@ -436,6 +470,7 @@ namespace Dissonance.ViewModels
                         FilePath = result.FilePath;
                         LastError = null;
                         ResetPlaybackState();
+                        PersistDocumentState(force: true);
                 }
 
                 private void UpdateCommandStates()
@@ -960,6 +995,123 @@ namespace Dissonance.ViewModels
                 public void ReloadHighlightSettings()
                 {
                         InitializeHighlightSettings();
+                }
+
+                private void InitializeDocumentResumeSettings()
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+
+                        _rememberDocumentProgress = settings.RememberDocumentReaderPosition;
+                        _lastPersistedCharacterIndex = Math.Max(0, settings.DocumentReaderLastCharacterIndex);
+                        RaisePropertyChanged(nameof(RememberDocumentProgress));
+
+                        if (!RememberDocumentProgress)
+                                return;
+
+                        if (string.IsNullOrWhiteSpace(settings.DocumentReaderLastFilePath))
+                                return;
+
+                        if (!File.Exists(settings.DocumentReaderLastFilePath))
+                        {
+                                StatusMessage = "The previously saved document could not be found.";
+                                ClearPersistedDocumentState();
+                                return;
+                        }
+
+                        RestoreDocumentFromSettings(settings.DocumentReaderLastFilePath, _lastPersistedCharacterIndex);
+                }
+
+                private void PersistDocumentState(bool force)
+                {
+                        if (!RememberDocumentProgress)
+                                return;
+
+                        if (string.IsNullOrWhiteSpace(FilePath) || PlainText == null)
+                                return;
+
+                        var normalizedIndex = Math.Clamp(CurrentCharacterIndex, 0, PlainText.Length);
+                        var now = DateTime.UtcNow;
+
+                        if (!force)
+                        {
+                                if (normalizedIndex == _lastPersistedCharacterIndex)
+                                        return;
+
+                                if (now - _lastProgressSaveTime < ProgressPersistInterval)
+                                        return;
+                        }
+
+                        var settings = _settingsService.GetCurrentSettings();
+                        settings.DocumentReaderLastFilePath = FilePath;
+                        settings.DocumentReaderLastCharacterIndex = normalizedIndex;
+                        settings.RememberDocumentReaderPosition = true;
+                        _settingsService.SaveCurrentSettings();
+
+                        _lastPersistedCharacterIndex = normalizedIndex;
+                        _lastProgressSaveTime = now;
+                }
+
+                private void ClearPersistedDocumentState()
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+                        settings.DocumentReaderLastFilePath = null;
+                        settings.DocumentReaderLastCharacterIndex = 0;
+                        _settingsService.SaveCurrentSettings();
+
+                        _lastPersistedCharacterIndex = 0;
+                        _lastProgressSaveTime = DateTime.MinValue;
+                }
+
+                private void UpdateRememberDocumentSetting(bool value)
+                {
+                        var settings = _settingsService.GetCurrentSettings();
+                        settings.RememberDocumentReaderPosition = value;
+
+                        if (!value)
+                        {
+                                settings.DocumentReaderLastFilePath = null;
+                                settings.DocumentReaderLastCharacterIndex = 0;
+                        }
+
+                        _settingsService.SaveCurrentSettings();
+                }
+
+                private async void RestoreDocumentFromSettings(string filePath, int characterIndex)
+                {
+                        try
+                        {
+                                var loaded = await LoadDocumentAsync(filePath);
+                                if (!loaded || PlainText == null)
+                                        return;
+
+                                var clamped = Math.Clamp(characterIndex, 0, PlainText.Length);
+                                _lastPersistedCharacterIndex = clamped;
+                                _lastProgressSaveTime = DateTime.UtcNow;
+
+                                if (clamped > 0)
+                                {
+                                        CurrentCharacterIndex = clamped;
+                                        CurrentAudioPosition = EstimateTimeFromCharacterIndex(clamped);
+                                }
+                                else
+                                {
+                                        CurrentCharacterIndex = 0;
+                                        CurrentAudioPosition = TimeSpan.Zero;
+                                }
+
+                                SetHighlightRange(CurrentCharacterIndex, 0);
+                                PersistDocumentState(force: true);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                                return;
+                        }
+                        catch (Exception ex)
+                        {
+                                LastError = ex;
+                                StatusMessage = "Failed to restore the previously opened document.";
+                                ClearPersistedDocumentState();
+                        }
                 }
 
                 private IReadOnlyList<HighlightColorOption> CreateHighlightColorOptions()

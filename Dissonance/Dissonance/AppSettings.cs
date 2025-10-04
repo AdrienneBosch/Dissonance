@@ -28,6 +28,12 @@ namespace Dissonance
 
                 public bool IsWindowMaximized { get; set; }
 
+                public bool RememberDocumentReaderPosition { get; set; }
+
+                public string? DocumentReaderLastFilePath { get; set; }
+
+                public int DocumentReaderLastCharacterIndex { get; set; }
+
                 public class HotkeySettings
                 {
                         public string Key { get; set; }

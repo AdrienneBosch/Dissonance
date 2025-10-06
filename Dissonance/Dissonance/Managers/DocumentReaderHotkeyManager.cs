@@ -17,6 +17,7 @@ namespace Dissonance.Managers
                 private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private readonly ILogger<DocumentReaderHotkeyManager> _logger;
                 private bool _isInitialized;
+                private bool _hotkeyServiceAvailable;
                 private bool _disposed;
 
                 public DocumentReaderHotkeyManager ( IDocumentReaderHotkeyService hotkeyService,
@@ -41,11 +42,21 @@ namespace Dissonance.Managers
                                 return;
                         }
 
-                        _hotkeyService.Initialize ( mainWindow );
-                        _hotkeyService.HotkeyPressed += OnHotkeyPressed;
-                        _isInitialized = true;
-                        UpdateHotkeyRegistration ( );
-                        _logger.LogInformation ( "Document reader hotkey manager initialized." );
+                        try
+                        {
+                                _hotkeyService.Initialize ( mainWindow );
+                                _hotkeyService.HotkeyPressed += OnHotkeyPressed;
+                                _hotkeyServiceAvailable = true;
+                                _isInitialized = true;
+                                UpdateHotkeyRegistration ( );
+                                _logger.LogInformation ( "Document reader hotkey manager initialized." );
+                        }
+                        catch ( Exception ex )
+                        {
+                                _hotkeyServiceAvailable = false;
+                                _isInitialized = false;
+                                _logger.LogError ( ex, "Failed to initialize document reader hotkey manager." );
+                        }
                 }
 
                 public void Dispose ( )
@@ -55,7 +66,7 @@ namespace Dissonance.Managers
 
                         _documentReaderViewModel.PropertyChanged -= OnDocumentReaderPropertyChanged;
 
-                        if ( _isInitialized )
+                        if ( _hotkeyServiceAvailable )
                         {
                                 _hotkeyService.HotkeyPressed -= OnHotkeyPressed;
                                 _hotkeyService.UnregisterHotkey ( );
@@ -68,7 +79,7 @@ namespace Dissonance.Managers
 
                 private void OnDocumentReaderPropertyChanged ( object? sender, PropertyChangedEventArgs e )
                 {
-                        if ( !_isInitialized )
+                        if ( !_isInitialized || !_hotkeyServiceAvailable )
                                 return;
 
                         if ( e.PropertyName == nameof ( DocumentReaderViewModel.PlaybackHotkeyKey )
@@ -80,7 +91,7 @@ namespace Dissonance.Managers
 
                 private void UpdateHotkeyRegistration ( )
                 {
-                        if ( !_isInitialized )
+                        if ( !_isInitialized || !_hotkeyServiceAvailable )
                                 return;
 
                         var key = _documentReaderViewModel.PlaybackHotkeyKey;

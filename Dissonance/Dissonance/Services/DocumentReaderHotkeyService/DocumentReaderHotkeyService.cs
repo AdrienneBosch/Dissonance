@@ -1,31 +1,52 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Interop;
 using System.Windows.Threading;
 
 using Dissonance.Services.MessageService;
 
 using Microsoft.Extensions.Logging;
 
-using WindowsMessages = Dissonance.Infrastructure.Constants.WindowsMessages;
-using HotkeyModifierKeys = Dissonance.Infrastructure.Constants.ModifierKeys;
 using MessageBoxTitles = Dissonance.Infrastructure.Constants.MessageBoxTitles;
 
 namespace Dissonance.Services.DocumentReaderHotkeyService
 {
         internal class DocumentReaderHotkeyService : IDocumentReaderHotkeyService
         {
-                private readonly object _lock = new();
+                private const int WhKeyboardLl = 13;
+                private const int WmKeydown = 0x0100;
+                private const int WmSyskeydown = 0x0104;
+                private const int WmKeyup = 0x0101;
+                private const int WmSyskeyup = 0x0105;
+                private const int VkShift = 0x10;
+                private const int VkControl = 0x11;
+                private const int VkMenu = 0x12;
+                private const int VkLshift = 0xA0;
+                private const int VkRshift = 0xA1;
+                private const int VkLcontrol = 0xA2;
+                private const int VkRcontrol = 0xA3;
+                private const int VkLmenu = 0xA4;
+                private const int VkRmenu = 0xA5;
+                private const int VkLwin = 0x5B;
+                private const int VkRwin = 0x5C;
+
+                private readonly object _lock = new ( );
                 private readonly ILogger<DocumentReaderHotkeyService> _logger;
                 private readonly IMessageService _messageService;
                 private readonly Action<Action> _dispatcherInvoker;
-                private HwndSource? _source;
-                private IntPtr _windowHandle;
-                private int? _currentHotkeyId;
-                private int _nextHotkeyId;
+                private ModifierKeys _registeredModifiers = ModifierKeys.None;
+                private Key _registeredKey = Key.None;
+                private bool _isInitialized;
+                private IntPtr _hookHandle;
+                private LowLevelKeyboardProc? _keyboardProc;
+                private int _controlCount;
+                private int _shiftCount;
+                private int _altCount;
+                private int _winCount;
 
                 public DocumentReaderHotkeyService ( ILogger<DocumentReaderHotkeyService> logger, IMessageService messageService )
                         : this ( logger, messageService, null )
@@ -41,25 +62,40 @@ namespace Dissonance.Services.DocumentReaderHotkeyService
 
                 public event Action? HotkeyPressed;
 
-                [DllImport ( "user32.dll" )]
-                private static extern bool RegisterHotKey ( IntPtr hWnd, int id, uint fsModifiers, uint vk );
-
-                [DllImport ( "user32.dll" )]
-                private static extern bool UnregisterHotKey ( IntPtr hWnd, int id );
-
                 public void Initialize ( Window mainWindow )
                 {
                         if ( mainWindow == null )
                                 throw new ArgumentNullException ( nameof ( mainWindow ), "MainWindow cannot be null." );
 
-                        var helper = new WindowInteropHelper ( mainWindow );
-                        _windowHandle = helper.Handle;
+                        lock ( _lock )
+                        {
+                                if ( _isInitialized )
+                                {
+                                        _logger.LogDebug ( "Document reader hotkey service already initialized." );
+                                        return;
+                                }
 
-                        if ( _windowHandle == IntPtr.Zero )
-                                throw new InvalidOperationException ( "Failed to get a valid window handle." );
-
-                        _source = HwndSource.FromHwnd ( _windowHandle );
-                        _source.AddHook ( WndProc );
+                                try
+                                {
+                                        EnsureKeyboardHookInstalled ( );
+                                        _isInitialized = true;
+                                        _logger.LogInformation ( "Document reader hotkey service initialized with global keyboard hook." );
+                                }
+                                catch ( Win32Exception ex )
+                                {
+                                        _logger.LogError ( ex, "Failed to initialize document reader hotkey service." );
+                                        _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.HotkeyServiceError,
+                                                "Failed to initialize system-wide document reader hotkey support.", ex );
+                                        throw;
+                                }
+                                catch ( Exception ex )
+                                {
+                                        _logger.LogError ( ex, "Unexpected error while initializing document reader hotkey service." );
+                                        _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.HotkeyServiceError,
+                                                "Failed to initialize system-wide document reader hotkey support due to an unexpected error.", ex );
+                                        throw;
+                                }
+                        }
                 }
 
                 public bool RegisterHotkey ( ModifierKeys modifiers, Key key )
@@ -67,42 +103,30 @@ namespace Dissonance.Services.DocumentReaderHotkeyService
                         if ( key == Key.None )
                                 throw new ArgumentException ( "Key cannot be Key.None when registering a hotkey.", nameof ( key ) );
 
-                        if ( _windowHandle == IntPtr.Zero )
-                                throw new InvalidOperationException ( "The hotkey service must be initialized before registering a hotkey." );
-
                         lock ( _lock )
                         {
+                                if ( !_isInitialized )
+                                        throw new InvalidOperationException ( "The hotkey service must be initialized before registering a hotkey." );
+
                                 try
                                 {
-                                        uint modifierFlags = ConvertModifiers ( modifiers );
-                                        uint virtualKey = (uint)KeyInterop.VirtualKeyFromKey ( key );
-
-                                        if ( _currentHotkeyId.HasValue )
-                                        {
-                                                UnregisterHotkeyInternal ( );
-                                        }
-
-                                        var hotkeyId = _nextHotkeyId++;
-                                        if ( RegisterHotKey ( _windowHandle, hotkeyId, modifierFlags, virtualKey ) )
-                                        {
-                                                _currentHotkeyId = hotkeyId;
-                                                _logger.LogDebug ( "Document reader hotkey registered: {Hotkey}", FormatHotkey ( modifiers, key ) );
-                                                return true;
-                                        }
-                                        else
-                                        {
-                                                var formattedHotkey = FormatHotkey ( modifiers, key );
-                                                _logger.LogWarning ( "Failed to register document reader hotkey: {Hotkey}", formattedHotkey );
-                                                _messageService.DissonanceMessageBoxShowWarning ( MessageBoxTitles.HotkeyServiceWarning,
-                                                        $"Failed to register document reader hotkey: {formattedHotkey}. It might already be in use by another application." );
-                                        }
+                                        EnsureKeyboardHookInstalled ( );
+                                        _registeredModifiers = modifiers;
+                                        _registeredKey = key;
+                                        _logger.LogDebug ( "Document reader hotkey registered via keyboard hook: {Hotkey}", FormatHotkey ( modifiers, key ) );
+                                        return true;
+                                }
+                                catch ( Win32Exception ex )
+                                {
+                                        _logger.LogError ( ex, "Failed to register document reader hotkey using keyboard hook." );
+                                        _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.HotkeyServiceError,
+                                                $"Failed to register document reader hotkey: {FormatHotkey ( modifiers, key )}.", ex );
                                 }
                                 catch ( Exception ex )
                                 {
-                                        var formattedHotkey = FormatHotkey ( modifiers, key );
-                                        _logger.LogError ( ex, "Failed to register document reader hotkey: {Hotkey}", formattedHotkey );
+                                        _logger.LogError ( ex, "Unexpected error while registering document reader hotkey." );
                                         _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.HotkeyServiceError,
-                                                $"Failed to register document reader hotkey: {formattedHotkey}.", ex );
+                                                $"Failed to register document reader hotkey: {FormatHotkey ( modifiers, key )}.", ex );
                                 }
                         }
 
@@ -113,68 +137,197 @@ namespace Dissonance.Services.DocumentReaderHotkeyService
                 {
                         lock ( _lock )
                         {
-                                UnregisterHotkeyInternal ( );
+                                _registeredKey = Key.None;
+                                _registeredModifiers = ModifierKeys.None;
+                                _controlCount = 0;
+                                _shiftCount = 0;
+                                _altCount = 0;
+                                _winCount = 0;
+                                _logger.LogDebug ( "Document reader hotkey cleared." );
                         }
                 }
 
                 public void Dispose ( )
                 {
-                        _source?.RemoveHook ( WndProc );
-                        UnregisterHotkey ( );
-                        _logger.LogInformation ( "Document reader hotkey service disposed." );
-                }
-
-                private static uint ConvertModifiers ( ModifierKeys modifiers )
-                {
-                        uint result = 0;
-
-                        if ( ( modifiers & ModifierKeys.Alt ) == ModifierKeys.Alt )
-                                result |= HotkeyModifierKeys.Alt;
-
-                        if ( ( modifiers & ModifierKeys.Control ) == ModifierKeys.Control )
-                                result |= HotkeyModifierKeys.Control;
-
-                        if ( ( modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift )
-                                result |= HotkeyModifierKeys.Shift;
-
-                        if ( ( modifiers & ModifierKeys.Windows ) == ModifierKeys.Windows )
-                                result |= HotkeyModifierKeys.Win;
-
-                        return result;
-                }
-
-                private IntPtr WndProc ( IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled )
-                {
-                        if ( msg == WindowsMessages.Hotkey )
+                        lock ( _lock )
                         {
-                                _logger.LogDebug ( "Document reader hotkey pressed." );
-                                var handler = HotkeyPressed;
-                                if ( handler != null )
-                                {
-                                        _dispatcherInvoker ( handler );
-                                }
-                                handled = true;
-                        }
+                                _registeredKey = Key.None;
+                                _registeredModifiers = ModifierKeys.None;
 
-                        return IntPtr.Zero;
+                                if ( _hookHandle != IntPtr.Zero )
+                                {
+                                        UnhookWindowsHookEx ( _hookHandle );
+                                        _hookHandle = IntPtr.Zero;
+                                        _logger.LogInformation ( "Document reader hotkey service disposed and keyboard hook removed." );
+                                }
+                        }
                 }
 
-                private void UnregisterHotkeyInternal ( )
+                private void EnsureKeyboardHookInstalled ( )
                 {
-                        if ( !_currentHotkeyId.HasValue )
+                        if ( _hookHandle != IntPtr.Zero )
                                 return;
 
-                        var hotkeyId = _currentHotkeyId.Value;
-                        if ( UnregisterHotKey ( _windowHandle, hotkeyId ) )
+                        _keyboardProc ??= HookCallback;
+
+                        using var currentProcess = Process.GetCurrentProcess ( );
+                        using var currentModule = currentProcess.MainModule ?? throw new InvalidOperationException ( "Failed to retrieve process module for keyboard hook." );
+                        var moduleHandle = GetModuleHandle ( currentModule.ModuleName );
+                        if ( moduleHandle == IntPtr.Zero )
                         {
-                                _logger.LogDebug ( "Document reader hotkey unregistered with Id: {HotkeyId}", hotkeyId );
-                        }
-                        else
-                        {
-                                _logger.LogWarning ( "Failed to unregister document reader hotkey with Id: {HotkeyId}", hotkeyId );
+                                throw new Win32Exception ( Marshal.GetLastWin32Error ( ), "Failed to get module handle for keyboard hook." );
                         }
 
-                        _currentHotkeyId = null;
+                        _hookHandle = SetWindowsHookEx ( WhKeyboardLl, _keyboardProc, moduleHandle, 0 );
+                        if ( _hookHandle == IntPtr.Zero )
+                        {
+                                throw new Win32Exception ( Marshal.GetLastWin32Error ( ), "Failed to install global keyboard hook." );
+                        }
+                }
+
+                private IntPtr HookCallback ( int nCode, IntPtr wParam, IntPtr lParam )
+                {
+                        if ( nCode >= 0 && _registeredKey != Key.None )
+                        {
+                                var message = wParam.ToInt32 ( );
+                                var isKeyDown = message == WmKeydown || message == WmSyskeydown;
+                                var isKeyUp = message == WmKeyup || message == WmSyskeyup;
+
+                                if ( isKeyDown || isKeyUp )
+                                {
+                                        if ( lParam != IntPtr.Zero )
+                                        {
+                                                var hookStruct = Marshal.PtrToStructure<KbdLlHookStruct> ( lParam );
+                                                UpdateModifierState ( hookStruct.VkCode, isKeyDown );
+
+                                                if ( isKeyDown && IsHotkeyMatch ( hookStruct.VkCode ) )
+                                                {
+                                                        _logger.LogDebug ( "Document reader global hotkey detected via keyboard hook." );
+                                                        var handler = HotkeyPressed;
+                                                        if ( handler != null )
+                                                        {
+                                                                _dispatcherInvoker ( handler );
+                                                        }
+                                                }
+                                        }
+                                }
+                        }
+
+                        return CallNextHookEx ( _hookHandle, nCode, wParam, lParam );
+                }
+
+                private void UpdateModifierState ( uint virtualKey, bool isKeyDown )
+                {
+                        if ( IsControlKey ( virtualKey ) )
+                        {
+                                UpdateModifierCounter ( ref _controlCount, isKeyDown );
+                                return;
+                        }
+
+                        if ( IsShiftKey ( virtualKey ) )
+                        {
+                                UpdateModifierCounter ( ref _shiftCount, isKeyDown );
+                                return;
+                        }
+
+                        if ( IsAltKey ( virtualKey ) )
+                        {
+                                UpdateModifierCounter ( ref _altCount, isKeyDown );
+                                return;
+                        }
+
+                        if ( IsWinKey ( virtualKey ) )
+                        {
+                                UpdateModifierCounter ( ref _winCount, isKeyDown );
+                        }
+                }
+
+                private static void UpdateModifierCounter ( ref int counter, bool isKeyDown )
+                {
+                        if ( isKeyDown )
+                        {
+                                counter++;
+                        }
+                        else if ( counter > 0 )
+                        {
+                                counter--;
+                        }
+                }
+
+                private bool IsHotkeyMatch ( uint virtualKey )
+                {
+                        if ( _registeredKey == Key.None )
+                                return false;
+
+                        var expectedVirtualKey = (uint)KeyInterop.VirtualKeyFromKey ( _registeredKey );
+                        if ( virtualKey != expectedVirtualKey )
+                                return false;
+
+                        var currentModifiers = GetActiveModifiers ( );
+                        return currentModifiers == _registeredModifiers;
+                }
+
+                private ModifierKeys GetActiveModifiers ( )
+                {
+                        var modifiers = ModifierKeys.None;
+
+                        if ( _controlCount > 0 )
+                                modifiers |= ModifierKeys.Control;
+
+                        if ( _shiftCount > 0 )
+                                modifiers |= ModifierKeys.Shift;
+
+                        if ( _altCount > 0 )
+                                modifiers |= ModifierKeys.Alt;
+
+                        if ( _winCount > 0 )
+                                modifiers |= ModifierKeys.Windows;
+
+                        return modifiers;
+                }
+
+                private static bool IsControlKey ( uint virtualKey )
+                {
+                        switch ( virtualKey )
+                        {
+                                case VkControl:
+                                case VkLcontrol:
+                                case VkRcontrol:
+                                        return true;
+                                default:
+                                        return false;
+                        }
+                }
+
+                private static bool IsShiftKey ( uint virtualKey )
+                {
+                        switch ( virtualKey )
+                        {
+                                case VkShift:
+                                case VkLshift:
+                                case VkRshift:
+                                        return true;
+                                default:
+                                        return false;
+                        }
+                }
+
+                private static bool IsAltKey ( uint virtualKey )
+                {
+                        switch ( virtualKey )
+                        {
+                                case VkMenu:
+                                case VkLmenu:
+                                case VkRmenu:
+                                        return true;
+                                default:
+                                        return false;
+                        }
+                }
+
+                private static bool IsWinKey ( uint virtualKey )
+                {
+                        return virtualKey == VkLwin || virtualKey == VkRwin;
                 }
 
                 private static string FormatHotkey ( ModifierKeys modifiers, Key key )
@@ -212,6 +365,29 @@ namespace Dissonance.Services.DocumentReaderHotkeyService
                                 action ( );
                         }
                 }
-        }
 
+                [StructLayout ( LayoutKind.Sequential )]
+                private struct KbdLlHookStruct
+                {
+                        public uint VkCode;
+                        public uint ScanCode;
+                        public uint Flags;
+                        public uint Time;
+                        public IntPtr DwExtraInfo;
+                }
+
+                private delegate IntPtr LowLevelKeyboardProc ( int nCode, IntPtr wParam, IntPtr lParam );
+
+                [DllImport ( "user32.dll", SetLastError = true )]
+                private static extern IntPtr SetWindowsHookEx ( int idHook, LowLevelKeyboardProc lpfn, IntPtr hMod, uint dwThreadId );
+
+                [DllImport ( "user32.dll", SetLastError = true )]
+                private static extern bool UnhookWindowsHookEx ( IntPtr hhk );
+
+                [DllImport ( "user32.dll" )]
+                private static extern IntPtr CallNextHookEx ( IntPtr hhk, int nCode, IntPtr wParam, IntPtr lParam );
+
+                [DllImport ( "kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true )]
+                private static extern IntPtr GetModuleHandle ( string lpModuleName );
+        }
 }

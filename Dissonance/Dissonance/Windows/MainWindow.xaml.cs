@@ -331,7 +331,7 @@ namespace Dissonance
 
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( TryHandleHotkeyTabNavigation ( control, key, e, ReadClipboardHotkeyApplyButton ) )
+                        if ( TryHandleHotkeyTabNavigation ( control, key, e ) )
                         {
                                 return;
                         }
@@ -364,7 +364,7 @@ namespace Dissonance
 
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( TryHandleHotkeyTabNavigation ( textBox, key, e, DocumentPlaybackHotkeyApplyButton ) )
+                        if ( TryHandleHotkeyTabNavigation ( textBox, key, e ) )
                                 return;
 
                         if ( key == Key.Back || key == Key.Delete || key == Key.Escape )
@@ -467,7 +467,7 @@ namespace Dissonance
                         return modifiers;
                 }
 
-                private static bool TryHandleHotkeyTabNavigation ( Control control, Key key, KeyEventArgs e, IInputElement? nextElement )
+                private static bool TryHandleHotkeyTabNavigation ( Control control, Key key, KeyEventArgs e )
                 {
                         if ( key != Key.Tab )
                         {
@@ -487,7 +487,11 @@ namespace Dissonance
                                 return movedToPrevious;
                         }
 
-                        if ( nextElement is UIElement element && element.IsEnabled && element.IsVisible )
+                        if ( control is FrameworkElement frameworkElement
+                                && frameworkElement.Tag is IInputElement nextElement
+                                && nextElement is UIElement element
+                                && element.IsEnabled
+                                && element.IsVisible )
                         {
                                 var focused = element.Focus ( );
 

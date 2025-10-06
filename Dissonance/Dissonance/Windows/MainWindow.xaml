@@ -236,6 +236,7 @@
                                                  Text="{Binding PlaybackHotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  IsReadOnly="True"
                                                  TabIndex="3"
+                                                 Tag="{Binding ElementName=DocumentPlaybackHotkeyApplyButton}"
                                                  ToolTip="Press the keys you want to use for the document playback hotkey"
                                                  PreviewKeyDown="DocumentPlaybackHotkeyTextBox_PreviewKeyDown"
                                                  AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
@@ -587,6 +588,7 @@
                                          ToolTip="Set the hotkey used to copy the current selection and speak it aloud"
                                          TabIndex="0"
                                          IsReadOnly="True"
+                                         Tag="{Binding ElementName=ReadClipboardHotkeyApplyButton}"
                                          PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                          AutomationProperties.HelpText="Specify the key combination that copies the current selection and speaks it aloud"/>
                                 <Button x:Name="ReadClipboardHotkeyApplyButton"

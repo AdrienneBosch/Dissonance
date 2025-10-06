@@ -697,100 +697,20 @@
         <Grid Grid.Row="1"
               Margin="24,6,24,0">
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
 
-            <StackPanel Grid.Column="0"
-                        Orientation="Horizontal"
-                        VerticalAlignment="Top"
-                        Margin="0,0,12,0">
-                <ToggleButton x:Name="NavigationToggleButton"
-                              Style="{StaticResource NavigationToggleButtonStyle}"
-                              IsChecked="{Binding IsNavigationMenuOpen, Mode=TwoWay}"
-                              ToolTip="Toggle navigation menu"
-                              TabIndex="0"
-                              AutomationProperties.Name="Toggle navigation menu"
-                              AutomationProperties.HelpText="Shows the available Dissonance tools"/>
-                <Popup x:Name="NavigationMenuPopup"
-                       PlacementTarget="{Binding ElementName=NavigationToggleButton}"
-                       Placement="Bottom"
-                       AllowsTransparency="True"
-                       StaysOpen="False"
-                       PopupAnimation="Fade"
-                       IsOpen="{Binding IsNavigationMenuOpen, Mode=TwoWay}"
-                       DataContext="{Binding DataContext, RelativeSource={RelativeSource AncestorType=Window}}"
-                       Opened="NavigationMenuPopup_Opened"
-                       Closed="NavigationMenuPopup_Closed">
-                    <Border Background="{DynamicResource CardBackgroundBrush}"
-                            BorderBrush="{DynamicResource CardBorderBrush}"
-                            BorderThickness="1"
-                            CornerRadius="12"
-                            Padding="12">
-                        <Border.Effect>
-                            <DropShadowEffect BlurRadius="18"
-                                              ShadowDepth="0"
-                                              Opacity="0.4"
-                                              Color="#99000000"/>
-                        </Border.Effect>
-                        <StackPanel FocusManager.IsFocusScope="True"
-                                    FocusManager.FocusedElement="{Binding ElementName=NavigationHomeButton}"
-                                    KeyboardNavigation.TabNavigation="Cycle"
-                                    KeyboardNavigation.ControlTabNavigation="Cycle"
-                                    KeyboardNavigation.DirectionalNavigation="Cycle">
-                            <Button x:Name="NavigationHomeButton"
-                                    Style="{StaticResource NavigationMenuHomeButtonStyle}"
-                                    Command="{Binding NavigateToSectionCommand}"
-                                    CommandParameter="{x:Null}"
-                                    Margin="0,0,0,8"
-                                    ToolTip="Return to the Dissonance home dashboard"
-                                    TabIndex="0"
-                                    AutomationProperties.Name="Home"
-                                    AutomationProperties.HelpText="Return to the main Dissonance dashboard">
-                                <TextBlock Text="Home"
-                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                            </Button>
-                            <Border Height="1"
-                                    Background="{DynamicResource CardBorderBrush}"/>
-                            <ListBox x:Name="NavigationListBox"
-                                     ItemsSource="{Binding NavigationSections}"
-                                     SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
-                                     MinWidth="220"
-                                     MaxHeight="320"
-                                     BorderThickness="0"
-                                     Background="Transparent"
-                                     Foreground="{DynamicResource PrimaryForegroundBrush}"
-                                     ScrollViewer.VerticalScrollBarVisibility="Auto"
-                                     ToolTip="Select a section to open"
-                                     TabIndex="1"
-                                     PreviewKeyDown="NavigationListBox_PreviewKeyDown"
-                                     AutomationProperties.Name="Available sections"
-                                     AutomationProperties.HelpText="Use the arrow keys to choose a section and press Enter to open it"
-                                     SelectionMode="Single"
-                                     HorizontalContentAlignment="Stretch"
-                                     ItemContainerStyle="{StaticResource NavigationMenuListBoxItemStyle}">
-                                <ListBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding Title}"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}"/>
-                                    </DataTemplate>
-                                </ListBox.ItemTemplate>
-                            </ListBox>
-                        </StackPanel>
-                    </Border>
-                </Popup>
-            </StackPanel>
-
-        <Border Grid.Column="1"
-                Padding="20,12"
-                CornerRadius="{StaticResource HeaderCornerRadius}">
+            <Border Grid.Column="0"
+                    Padding="20,12"
+                    CornerRadius="{StaticResource HeaderCornerRadius}">
             <Border.Style>
                 <Style TargetType="Border">
                     <Setter Property="Background" Value="{DynamicResource SectionHeaderBackgroundBrush}"/>
                     <Setter Property="BorderBrush" Value="{DynamicResource SectionHeaderBorderBrush}"/>
                     <Setter Property="BorderThickness" Value="1"/>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
+                        <DataTrigger Binding="{Binding IsHomeSelected}" Value="True">
                             <Setter Property="Background" Value="{DynamicResource HeaderBackgroundBrush}"/>
                             <Setter Property="BorderBrush" Value="Transparent"/>
                             <Setter Property="BorderThickness" Value="0"/>
@@ -799,17 +719,13 @@
                 </Style>
             </Border.Style>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
                 <Grid Margin="0,0,24,0">
                     <StackPanel>
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
                                 <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
+                                    <DataTrigger Binding="{Binding IsHomeSelected}" Value="True">
                                         <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
@@ -824,19 +740,19 @@
                     <StackPanel>
                         <StackPanel.Style>
                             <Style TargetType="StackPanel">
-                                <Setter Property="Visibility" Value="Visible"/>
+                                <Setter Property="Visibility" Value="Collapsed"/>
                                 <Style.Triggers>
-                                    <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
-                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                    <DataTrigger Binding="{Binding IsHomeSelected}" Value="False">
+                                        <Setter Property="Visibility" Value="Visible"/>
                                     </DataTrigger>
                                 </Style.Triggers>
                             </Style>
                         </StackPanel.Style>
-                        <TextBlock Text="{Binding SelectedSection.BannerTitle}"
+                        <TextBlock Text="{Binding ActiveNavigationSection.BannerTitle}"
                                    FontSize="24"
                                    FontWeight="Bold"
                                    Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                        <TextBlock Text="{Binding SelectedSection.Description}"
+                        <TextBlock Text="{Binding ActiveNavigationSection.Description}"
                                    FontSize="14"
                                    Margin="0,6,0,0"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}"
@@ -855,7 +771,7 @@
                                 </Style>
                             </TextBlock.Style>
                         </TextBlock>
-                        <TextBlock Text="{Binding SelectedSection.BannerSubtitle}"
+                        <TextBlock Text="{Binding ActiveNavigationSection.BannerSubtitle}"
                                    FontSize="14"
                                    Margin="0,6,0,0"
                                    Foreground="{DynamicResource SecondaryForegroundBrush}">
@@ -1060,94 +976,106 @@
                 Padding="24"
                 CornerRadius="{StaticResource SurfaceCornerRadius}"
                 Background="{DynamicResource SurfaceBackgroundBrush}">
-            <Grid>
-                <ContentControl Content="{Binding SelectedSection}">
-                    <ContentControl.Style>
-                        <Style TargetType="ContentControl">
-                            <Setter Property="Visibility" Value="Visible"/>
-                            <Style.Triggers>
-                                <Trigger Property="Content" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                </Trigger>
-                            </Style.Triggers>
-                        </Style>
-                    </ContentControl.Style>
-                </ContentControl>
-
-                <StackPanel HorizontalAlignment="Stretch"
-                            VerticalAlignment="Stretch">
-                    <StackPanel.Style>
-                        <Style TargetType="StackPanel">
-                            <Setter Property="Visibility" Value="Collapsed"/>
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding SelectedSection}" Value="{x:Null}">
-                                    <Setter Property="Visibility" Value="Visible"/>
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </StackPanel.Style>
-                    <TextBlock Text="Welcome to Dissonance"
-                               FontSize="22"
-                               FontWeight="SemiBold"
-                               Foreground="{DynamicResource PrimaryForegroundBrush}"/>
-                    <TextBlock Text="Choose a tool below to jump into its dedicated workspace."
-                               FontSize="14"
-                               Foreground="{DynamicResource SecondaryForegroundBrush}"
-                               Margin="0,8,0,0"
-                               TextWrapping="Wrap"/>
-                    <ItemsControl ItemsSource="{Binding NavigationSections}"
-                                  Margin="0,28,0,0"
-                                  Focusable="False">
-                        <ItemsControl.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <WrapPanel Orientation="Horizontal"
-                                           HorizontalAlignment="Left"/>
-                            </ItemsPanelTemplate>
-                        </ItemsControl.ItemsPanel>
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <Button Style="{StaticResource HomeTileButtonStyle}"
-                                        Margin="0,0,24,24"
-                                        Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
-                                        CommandParameter="{Binding}"
-                                        ToolTip="{Binding Description, FallbackValue=Open this section}"
-                                        AutomationProperties.Name="{Binding Title}"
-                                        AutomationProperties.HelpText="{Binding Description, FallbackValue=Open this section}">
-                                    <StackPanel>
-                                        <TextBlock Text="{Binding Title}"
-                                                   FontSize="18"
-                                                   FontWeight="SemiBold"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                        <TextBlock Text="{Binding Description}"
-                                                   FontSize="14"
-                                                   Margin="0,10,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Opacity="0.9"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
-                                        <TextBlock Text="{Binding BannerSubtitle}"
-                                                   FontSize="13"
-                                                   Margin="0,6,0,0"
-                                                   TextWrapping="Wrap"
-                                                   Opacity="0.75"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
-                                            <TextBlock.Style>
-                                                <Style TargetType="TextBlock">
-                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                    <Style.Triggers>
-                                                        <DataTrigger Binding="{Binding BannerSubtitle}" Value="">
-                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                        </DataTrigger>
-                                                    </Style.Triggers>
-                                                </Style>
-                                            </TextBlock.Style>
-                                        </TextBlock>
-                                    </StackPanel>
-                                </Button>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </Grid>
+            <TabControl SelectedIndex="{Binding SelectedTabIndex, Mode=TwoWay}"
+                        AutomationProperties.Name="Dissonance workspace tabs"
+                        AutomationProperties.HelpText="Switch between the home dashboard and each Dissonance tool"
+                        KeyboardNavigation.TabNavigation="Local"
+                        TabStripPlacement="Top">
+                <TabItem Header="Home"
+                         ToolTip="Overview of all Dissonance tools"
+                         AutomationProperties.Name="Home overview tab"
+                         AutomationProperties.HelpText="Displays the welcome screen with shortcuts to every Dissonance tool">
+                    <ScrollViewer VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <StackPanel>
+                            <TextBlock Text="Welcome to Dissonance"
+                                       FontSize="22"
+                                       FontWeight="SemiBold"
+                                       Foreground="{DynamicResource PrimaryForegroundBrush}"/>
+                            <TextBlock Text="Choose a tool below to jump into its dedicated workspace."
+                                       FontSize="14"
+                                       Foreground="{DynamicResource SecondaryForegroundBrush}"
+                                       Margin="0,8,0,0"
+                                       TextWrapping="Wrap"/>
+                            <ItemsControl ItemsSource="{Binding NavigationSections}"
+                                          Margin="0,28,0,0"
+                                          Focusable="False">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <WrapPanel Orientation="Horizontal"
+                                                   HorizontalAlignment="Left"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Style="{StaticResource HomeTileButtonStyle}"
+                                                Margin="0,0,24,24"
+                                                Command="{Binding DataContext.NavigateToSectionCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                                                CommandParameter="{Binding}"
+                                                ToolTip="{Binding Description, FallbackValue=Open this section}"
+                                                AutomationProperties.Name="{Binding Title}"
+                                                AutomationProperties.HelpText="{Binding Description, FallbackValue=Open this section}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Title}"
+                                                           FontSize="18"
+                                                           FontWeight="SemiBold"
+                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                                <TextBlock Text="{Binding Description}"
+                                                           FontSize="14"
+                                                           Margin="0,10,0,0"
+                                                           TextWrapping="Wrap"
+                                                           Opacity="0.9"
+                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}"/>
+                                                <TextBlock Text="{Binding BannerSubtitle}"
+                                                           FontSize="13"
+                                                           Margin="0,6,0,0"
+                                                           TextWrapping="Wrap"
+                                                           Opacity="0.75"
+                                                           Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}">
+                                                    <TextBlock.Style>
+                                                        <Style TargetType="TextBlock">
+                                                            <Setter Property="Visibility" Value="Visible"/>
+                                                            <Style.Triggers>
+                                                                <DataTrigger Binding="{Binding BannerSubtitle}" Value="">
+                                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                                </DataTrigger>
+                                                            </Style.Triggers>
+                                                        </Style>
+                                                    </TextBlock.Style>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </TabItem>
+                <TabItem Header="Clipboard Reader"
+                         ToolTip="Configure clipboard narration hotkeys and behavior"
+                         AutomationProperties.Name="Clipboard Reader tab"
+                         AutomationProperties.HelpText="Adjust clipboard narration shortcuts and settings">
+                    <ContentControl Content="{Binding}"/>
+                </TabItem>
+                <TabItem Header="Reader Settings"
+                         ToolTip="Customize the shared text-to-speech voice"
+                         AutomationProperties.Name="Reader Settings tab"
+                         AutomationProperties.HelpText="Fine-tune the voice, speed, and volume used across Dissonance">
+                    <TabItem.DataContext>
+                        <Binding Path="ReaderSettings"/>
+                    </TabItem.DataContext>
+                    <ContentControl Content="{Binding}"/>
+                </TabItem>
+                <TabItem Header="Document Reader"
+                         ToolTip="Prepare and preview documents before narration"
+                         AutomationProperties.Name="Document Reader tab"
+                         AutomationProperties.HelpText="Open documents and control their narration preview">
+                    <TabItem.DataContext>
+                        <Binding Path="DocumentReader"/>
+                    </TabItem.DataContext>
+                    <ContentControl Content="{Binding}"/>
+                </TabItem>
+            </TabControl>
         </Border>
     </Grid>
 </Window>

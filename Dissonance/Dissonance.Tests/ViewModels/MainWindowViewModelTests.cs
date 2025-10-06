@@ -158,19 +158,22 @@ namespace Dissonance.Tests.ViewModels
 
                         var viewModel = testEnvironment.ViewModel;
                         Assert.True(viewModel.IsHomeSelected);
-                        Assert.Null(viewModel.SelectedSection);
+                        Assert.Equal(0, viewModel.SelectedTabIndex);
+                        Assert.Null(viewModel.ActiveNavigationSection);
 
                         var targetSection = viewModel.NavigationSections.FirstOrDefault();
                         Assert.NotNull(targetSection);
 
                         viewModel.NavigateToSectionCommand.Execute(targetSection);
 
-                        Assert.Same(targetSection, viewModel.SelectedSection);
+                        Assert.Equal(1, viewModel.SelectedTabIndex);
+                        Assert.Same(targetSection, viewModel.ActiveNavigationSection);
                         Assert.False(viewModel.IsHomeSelected);
 
                         viewModel.NavigateToSectionCommand.Execute(null);
 
-                        Assert.Null(viewModel.SelectedSection);
+                        Assert.Equal(0, viewModel.SelectedTabIndex);
+                        Assert.Null(viewModel.ActiveNavigationSection);
                         Assert.True(viewModel.IsHomeSelected);
                 }
 

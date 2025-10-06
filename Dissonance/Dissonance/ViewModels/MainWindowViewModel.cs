@@ -42,11 +42,10 @@ namespace Dissonance.ViewModels
                 private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private readonly ReaderSettingsViewModel _readerSettingsViewModel;
                 private bool _isDarkTheme;
-                private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private bool _autoReadClipboard;
-                private NavigationSectionViewModel? _selectedSection;
+                private int _selectedTabIndex;
                 private readonly string _previewStartLabel;
                 private readonly string _previewStopLabel;
                 private readonly string _previewToolTip;
@@ -235,38 +234,34 @@ namespace Dissonance.ViewModels
 
                 public string PreviewVoiceHelpText => _previewHelpText;
 
-                public bool IsNavigationMenuOpen
+                public int SelectedTabIndex
                 {
-                        get => _isNavigationMenuOpen;
+                        get => _selectedTabIndex;
                         set
                         {
-                                if ( _isNavigationMenuOpen == value )
+                                if ( _selectedTabIndex == value )
                                         return;
 
-                                _isNavigationMenuOpen = value;
-                                OnPropertyChanged ( nameof ( IsNavigationMenuOpen ) );
-                        }
-                }
-
-                public NavigationSectionViewModel? SelectedSection
-                {
-                        get => _selectedSection;
-                        set
-                        {
-                                if ( _selectedSection == value )
-                                        return;
-
-                                _selectedSection = value;
-                                OnPropertyChanged ( nameof ( SelectedSection ) );
+                                _selectedTabIndex = value;
+                                OnPropertyChanged ( nameof ( SelectedTabIndex ) );
                                 OnPropertyChanged ( nameof ( IsHomeSelected ) );
-                                if ( value != null )
-                                {
-                                        IsNavigationMenuOpen = false;
-                                }
+                                OnPropertyChanged ( nameof ( ActiveNavigationSection ) );
                         }
                 }
 
-                public bool IsHomeSelected => SelectedSection == null;
+                public NavigationSectionViewModel? ActiveNavigationSection
+                {
+                        get
+                        {
+                                var index = SelectedTabIndex - 1;
+                                if ( index < 0 || index >= _navigationSections.Count )
+                                        return null;
+
+                                return _navigationSections[index];
+                        }
+                }
+
+                public bool IsHomeSelected => SelectedTabIndex == 0;
 
                 public bool IsDarkTheme
                 {
@@ -827,17 +822,14 @@ namespace Dissonance.ViewModels
                 {
                         if ( parameter is NavigationSectionViewModel section )
                         {
-                                if ( SelectedSection != section )
-                                        SelectedSection = section;
+                                var index = _navigationSections.IndexOf ( section );
+                                if ( index >= 0 )
+                                        SelectedTabIndex = index + 1;
                         }
                         else
                         {
-                                if ( SelectedSection != null )
-                                        SelectedSection = null;
+                                SelectedTabIndex = 0;
                         }
-
-                        if ( IsNavigationMenuOpen )
-                                IsNavigationMenuOpen = false;
                 }
 
                 protected void OnPropertyChanged ( string propertyName )

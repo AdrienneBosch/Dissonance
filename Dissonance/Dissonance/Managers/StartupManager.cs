@@ -49,6 +49,9 @@ namespace Dissonance.Managers
 
                                 var hotkeyManager = _serviceProvider.GetRequiredService<HotkeyManager> ( );
                                 hotkeyManager.Initialize ( mainWindow );
+
+                                var documentReaderHotkeyManager = _serviceProvider.GetRequiredService<DocumentReaderHotkeyManager> ( );
+                                documentReaderHotkeyManager.Initialize ( mainWindow );
                         };
 
                         _logger.LogInformation ( "StartupManager subscribed to MainWindow Loaded event." );

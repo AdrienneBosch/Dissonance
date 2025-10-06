@@ -84,7 +84,7 @@
 
                 <StackPanel Grid.Row="0"
                             Margin="0,0,0,20">
-                    <TextBlock Text="Open a text document to review it before narration."
+                    <TextBlock Text="Open a text document to hear it narrated."
                                Style="{StaticResource CardDescriptionTextStyle}"/>
                 </StackPanel>
 

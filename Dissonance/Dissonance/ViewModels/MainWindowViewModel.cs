@@ -165,9 +165,9 @@ namespace Dissonance.ViewModels
                         _navigationSections.Add ( new NavigationSectionViewModel (
                                 "document-reader",
                                 "Document Reader",
-                                "Load saved documents and prepare them for narration.",
+                                "Load saved documents and listen as they're narrated.",
                                 "Document Reader",
-                                "Open text files and review their contents before listening.",
+                                "Open text files and follow along while Dissonance reads them aloud.",
                                 _documentReaderViewModel ) );
                 }
 

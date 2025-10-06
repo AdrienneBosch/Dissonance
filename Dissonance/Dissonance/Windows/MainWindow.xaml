@@ -241,7 +241,8 @@
                                                  AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
                                                  AutomationProperties.Name="Document playback hotkey"
                                                  AutomationProperties.HelpText="Set the hotkey used to play or stop document narration"/>
-                                        <Button Content="Apply"
+                                        <Button x:Name="DocumentPlaybackHotkeyApplyButton"
+                                                Content="Apply"
                                                 Style="{StaticResource PrimaryCompactButtonStyle}"
                                                 Command="{Binding ApplyPlaybackHotkeyCommand}"
                                                 Margin="12,0,0,0"
@@ -588,7 +589,8 @@
                                          IsReadOnly="True"
                                          PreviewKeyDown="ReadClipboardHotkeyTextBox_PreviewKeyDown"
                                          AutomationProperties.HelpText="Specify the key combination that copies the current selection and speaks it aloud"/>
-                                <Button Content="Apply"
+                                <Button x:Name="ReadClipboardHotkeyApplyButton"
+                                        Content="Apply"
                                         Style="{StaticResource PrimaryCompactButtonStyle}"
                                         Command="{Binding ApplyHotkeyCommand}"
                                         Margin="12,0,0,0"

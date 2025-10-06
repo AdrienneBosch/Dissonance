@@ -331,7 +331,7 @@ namespace Dissonance
 
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( TryHandleHotkeyTabNavigation ( control, key, e ) )
+                        if ( TryHandleHotkeyTabNavigation ( control, key, e, ReadClipboardHotkeyApplyButton ) )
                         {
                                 return;
                         }
@@ -364,7 +364,7 @@ namespace Dissonance
 
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( TryHandleHotkeyTabNavigation ( textBox, key, e ) )
+                        if ( TryHandleHotkeyTabNavigation ( textBox, key, e, DocumentPlaybackHotkeyApplyButton ) )
                                 return;
 
                         if ( key == Key.Back || key == Key.Delete || key == Key.Escape )
@@ -467,27 +467,46 @@ namespace Dissonance
                         return modifiers;
                 }
 
-                private static bool TryHandleHotkeyTabNavigation ( Control control, Key key, KeyEventArgs e )
+                private static bool TryHandleHotkeyTabNavigation ( Control control, Key key, KeyEventArgs e, IInputElement? nextElement )
                 {
                         if ( key != Key.Tab )
                         {
                                 return false;
                         }
 
-                        var direction = ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift
-                                ? FocusNavigationDirection.Previous
-                                : FocusNavigationDirection.Next;
-
-                        var request = new TraversalRequest ( direction );
-                        var focused = control.MoveFocus ( request );
-
-                        if ( focused )
+                        if ( ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift )
                         {
-                                e.Handled = true;
-                                return true;
+                                var request = new TraversalRequest ( FocusNavigationDirection.Previous );
+                                var movedToPrevious = control.MoveFocus ( request );
+
+                                if ( movedToPrevious )
+                                {
+                                        e.Handled = true;
+                                }
+
+                                return movedToPrevious;
                         }
 
-                        return false;
+                        if ( nextElement is UIElement element && element.IsEnabled && element.IsVisible )
+                        {
+                                var focused = element.Focus ( );
+
+                                if ( focused )
+                                {
+                                        e.Handled = true;
+                                        return true;
+                                }
+                        }
+
+                        var fallbackRequest = new TraversalRequest ( FocusNavigationDirection.Next );
+                        var movedToNext = control.MoveFocus ( fallbackRequest );
+
+                        if ( movedToNext )
+                        {
+                                e.Handled = true;
+                        }
+
+                        return movedToNext;
                 }
 
                 private void VoiceVolumeSlider_KeyDown ( object sender, KeyEventArgs e )

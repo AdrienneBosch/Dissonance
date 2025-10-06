@@ -324,16 +324,16 @@ namespace Dissonance
 
                 private void ReadClipboardHotkeyTextBox_PreviewKeyDown ( object sender, KeyEventArgs e )
                 {
+                        if ( sender is not Control control )
+                        {
+                                return;
+                        }
+
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( key == Key.Tab )
+                        if ( TryHandleHotkeyTabNavigation ( control, key, e ) )
                         {
-                                var modifiersState = Keyboard.Modifiers;
-                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
-                                {
-                                        e.Handled = false;
-                                        return;
-                                }
+                                return;
                         }
 
                         e.Handled = true;
@@ -364,15 +364,8 @@ namespace Dissonance
 
                         var key = e.Key == Key.System ? e.SystemKey : e.Key;
 
-                        if ( key == Key.Tab )
-                        {
-                                var modifiersState = Keyboard.Modifiers;
-                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
-                                {
-                                        e.Handled = false;
-                                        return;
-                                }
-                        }
+                        if ( TryHandleHotkeyTabNavigation ( textBox, key, e ) )
+                                return;
 
                         if ( key == Key.Back || key == Key.Delete || key == Key.Escape )
                         {
@@ -472,6 +465,29 @@ namespace Dissonance
                         }
 
                         return modifiers;
+                }
+
+                private static bool TryHandleHotkeyTabNavigation ( Control control, Key key, KeyEventArgs e )
+                {
+                        if ( key != Key.Tab )
+                        {
+                                return false;
+                        }
+
+                        var direction = ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift
+                                ? FocusNavigationDirection.Previous
+                                : FocusNavigationDirection.Next;
+
+                        var request = new TraversalRequest ( direction );
+                        var focused = control.MoveFocus ( request );
+
+                        if ( focused )
+                        {
+                                e.Handled = true;
+                                return true;
+                        }
+
+                        return false;
                 }
 
                 private void VoiceVolumeSlider_KeyDown ( object sender, KeyEventArgs e )

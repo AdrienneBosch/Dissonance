@@ -57,6 +57,11 @@ namespace Dissonance.Services.TTSService
                 {
                         try
                         {
+                                if ( _synthesizer.State == SynthesizerState.Speaking || _synthesizer.State == SynthesizerState.Paused )
+                                {
+                                        _synthesizer.SpeakAsyncCancelAll ( );
+                                }
+
                                 return _synthesizer.SpeakAsync ( text );
                         }
                         catch ( Exception ex )

@@ -199,20 +199,36 @@
                                         <ColumnDefinition Width="*"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel Grid.Column="0">
-                                        <TextBlock Text="Words"
-                                                   Style="{StaticResource CardDescriptionTextStyle}"/>
-                                        <TextBlock Text="{Binding WordCount, StringFormat={}{0:N0}}"
-                                                   Style="{StaticResource ValueBadgeTextStyle}"
-                                                   Margin="0,6,0,0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1">
-                                        <TextBlock Text="Characters"
-                                                   Style="{StaticResource CardDescriptionTextStyle}"/>
-                                        <TextBlock Text="{Binding CharacterCount, StringFormat={}{0:N0}}"
-                                                   Style="{StaticResource ValueBadgeTextStyle}"
-                                                   Margin="0,6,0,0"/>
-                                    </StackPanel>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="0"
+                                               Text="Words"
+                                               Style="{StaticResource CardDescriptionTextStyle}"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                    <TextBlock Grid.Row="0"
+                                               Grid.Column="1"
+                                               Text="Characters"
+                                               Style="{StaticResource CardDescriptionTextStyle}"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="0"
+                                               Text="{Binding WordCount, StringFormat={}{0:N0}}"
+                                               Style="{StaticResource ValueBadgeTextStyle}"
+                                               Margin="0,6,0,0"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"/>
+                                    <TextBlock Grid.Row="1"
+                                               Grid.Column="1"
+                                               Text="{Binding CharacterCount, StringFormat={}{0:N0}}"
+                                               Style="{StaticResource ValueBadgeTextStyle}"
+                                               Margin="0,6,0,0"
+                                               HorizontalAlignment="Center"
+                                               TextAlignment="Center"/>
                                 </Grid>
                             </StackPanel>
                             <ScrollViewer Grid.Row="1"

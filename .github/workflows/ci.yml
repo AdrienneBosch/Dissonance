@@ -1,10 +1,14 @@
 name: CI
 
 on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+  workflow_dispatch:
+  # Temporarily disable automatic CI/CD triggers while keeping this workflow
+  # available for manual runs. Retain the previous configuration for future
+  # reference by commenting it out below.
+  # push:
+  #   branches: [ main ]
+  # pull_request:
+  #   branches: [ main ]
 
 jobs:
   build:

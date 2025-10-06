@@ -936,6 +936,9 @@ namespace Dissonance.ViewModels
 
                 private void OnSpeechProgress(object? sender, SpeakProgressEventArgs e)
                 {
+                        if (_currentPrompt == null || !ReferenceEquals(e.Prompt, _currentPrompt))
+                                return;
+
                         if (PlainText == null)
                                 return;
 
@@ -963,7 +966,7 @@ namespace Dissonance.ViewModels
 
                 private void OnSpeechCompleted(object? sender, SpeakCompletedEventArgs e)
                 {
-                        if (_currentPrompt != null && !ReferenceEquals(e.Prompt, _currentPrompt))
+                        if (_currentPrompt == null || !ReferenceEquals(e.Prompt, _currentPrompt))
                                 return;
 
                         _currentPrompt = null;

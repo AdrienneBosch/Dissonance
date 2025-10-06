@@ -94,14 +94,20 @@
                                 Style="{StaticResource PrimaryCompactButtonStyle}"
                                 MinWidth="160"
                                 MinHeight="32"
-                                AutomationProperties.Name="Open document"/>
+                                TabIndex="0"
+                                ToolTip="Browse for a text document to preview before narration"
+                                AutomationProperties.Name="Open document"
+                                AutomationProperties.HelpText="Opens a file picker so you can choose a text document to load"/>
                         <Button Content="Clear"
                                 Command="{Binding ClearDocumentCommand}"
                                 Style="{StaticResource PrimaryCompactButtonStyle}"
                                 MinWidth="120"
                                 MinHeight="32"
                                 Margin="12,0,0,0"
-                                AutomationProperties.Name="Clear loaded document"/>
+                                TabIndex="1"
+                                ToolTip="Remove the currently loaded document"
+                                AutomationProperties.Name="Clear loaded document"
+                                AutomationProperties.HelpText="Unloads the current document and resets the preview"/>
                     </StackPanel>
                     <ProgressBar Height="4"
                                  Margin="0,16,0,0"
@@ -147,7 +153,9 @@
                                          Margin="0,8,0,0"
                                          HorizontalAlignment="Stretch"
                                          TextWrapping="Wrap"
-                                         MinHeight="34"/>
+                                         MinHeight="34"
+                                         IsTabStop="False"
+                                         ToolTip="{Binding FilePath, Mode=OneWay, TargetNullValue=No document selected}"/>
                                 <Border Margin="0,16,0,0"
                                         Padding="12"
                                         Background="{DynamicResource SurfaceBackgroundBrush}"
@@ -179,6 +187,8 @@
                                                       IsChecked="{Binding RememberDocumentProgress, Mode=TwoWay}"
                                                       VerticalAlignment="Center"
                                                       Margin="16,0,0,0"
+                                                      TabIndex="2"
+                                                      ToolTip="Remember your last document and reading position when Dissonance starts"
                                                       AutomationProperties.Name="Remember the last document and position"
                                                       AutomationProperties.HelpText="When enabled, Dissonance reopens the last document and restores the saved reading position."
                                                       AutomationProperties.LabeledBy="{Binding ElementName=RememberDocumentToggleLabel}"/>
@@ -225,6 +235,8 @@
                                                  Style="{StaticResource ModernTextBoxStyle}"
                                                  Text="{Binding PlaybackHotkeyCombination, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                                  IsReadOnly="True"
+                                                 TabIndex="3"
+                                                 ToolTip="Press the keys you want to use for the document playback hotkey"
                                                  PreviewKeyDown="DocumentPlaybackHotkeyTextBox_PreviewKeyDown"
                                                  AutomationProperties.LabeledBy="{Binding ElementName=PlaybackHotkeyHeading}"
                                                  AutomationProperties.Name="Document playback hotkey"
@@ -234,6 +246,8 @@
                                                 Command="{Binding ApplyPlaybackHotkeyCommand}"
                                                 Margin="12,0,0,0"
                                                 MinWidth="96"
+                                                TabIndex="4"
+                                                ToolTip="Apply the new document playback hotkey"
                                                 AutomationProperties.Name="Apply document playback hotkey"
                                                 AutomationProperties.HelpText="Applies the document playback hotkey combination"/>
                                     </StackPanel>
@@ -242,6 +256,7 @@
                                               Style="{StaticResource MenuCheckBoxStyle}"
                                               IsChecked="{Binding PlaybackHotkeyTogglesPause, Mode=TwoWay}"
                                               ToolTip="When enabled, pressing the hotkey toggles between play and pause."
+                                              TabIndex="5"
                                               AutomationProperties.Name="Toggle playback hotkey pause behavior"
                                               AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
                                     <StackPanel Orientation="Horizontal"
@@ -257,6 +272,8 @@
                                                   DisplayMemberPath="DisplayName"
                                                   MinWidth="200"
                                                   Style="{StaticResource HighlightColorComboBoxStyle}"
+                                                  TabIndex="6"
+                                                  ToolTip="Choose the color used to highlight narration words"
                                                   AutomationProperties.Name="Document highlight color"
                                                   AutomationProperties.HelpText="Select the color used to highlight the words being narrated"/>
                                     </StackPanel>
@@ -304,7 +321,10 @@
                                         MinWidth="120"
                                         MinHeight="32"
                                         IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Rewind 10 seconds"/>
+                                        TabIndex="7"
+                                        ToolTip="Rewind the narration by ten seconds"
+                                        AutomationProperties.Name="Rewind 10 seconds"
+                                        AutomationProperties.HelpText="Moves the narration back by ten seconds"/>
                                 <Button Content="{Binding PlayPauseLabel}"
                                         Command="{Binding PlayPauseCommand}"
                                         Style="{StaticResource PrimaryCompactButtonStyle}"
@@ -312,7 +332,10 @@
                                         MinHeight="32"
                                         Margin="12,0,0,0"
                                         IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Play or pause document narration"/>
+                                        TabIndex="8"
+                                        ToolTip="Start or pause document narration"
+                                        AutomationProperties.Name="Play or pause document narration"
+                                        AutomationProperties.HelpText="Toggles document narration playback"/>
                                 <Button Content="10s ⏩"
                                         Command="{Binding SeekForwardCommand}"
                                         Style="{StaticResource PrimaryCompactButtonStyle}"
@@ -320,7 +343,10 @@
                                         MinHeight="32"
                                         Margin="12,0,0,0"
                                         IsEnabled="{Binding IsDocumentLoaded}"
-                                        AutomationProperties.Name="Fast forward 10 seconds"/>
+                                        TabIndex="9"
+                                        ToolTip="Advance the narration by ten seconds"
+                                        AutomationProperties.Name="Fast forward 10 seconds"
+                                        AutomationProperties.HelpText="Moves the narration ahead by ten seconds"/>
                             </StackPanel>
                             <controls:HighlightingFlowDocumentScrollViewer Grid.Row="2"
                                                                               Margin="0,12,0,0"
@@ -328,7 +354,11 @@
                                                                               HighlightStartIndex="{Binding HighlightStartIndex}"
                                                                               HighlightLength="{Binding HighlightLength}"
                                                                               HighlightBrush="{Binding HighlightBrush}"
-                                                                              VerticalScrollBarVisibility="Auto">
+                                                                              VerticalScrollBarVisibility="Auto"
+                                                                              TabIndex="10"
+                                                                              AutomationProperties.Name="Document preview content"
+                                                                              AutomationProperties.HelpText="Displays the loaded document with highlighted narration text"
+                                                                              ToolTip="Preview of the loaded document">
                                 <controls:HighlightingFlowDocumentScrollViewer.Style>
                                     <Style TargetType="controls:HighlightingFlowDocumentScrollViewer">
                                         <Setter Property="Visibility" Value="Collapsed"/>

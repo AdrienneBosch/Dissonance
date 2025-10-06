@@ -635,8 +635,6 @@ namespace Dissonance.ViewModels
                         {
                                 (_playbackHotkeyModifiers, _playbackHotkeyKey),
                                 (ModifierKeys.None, Key.MediaPlayPause),
-                                (ModifierKeys.None, Key.MediaPlay),
-                                (ModifierKeys.None, Key.MediaPause),
                         };
 
                         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);

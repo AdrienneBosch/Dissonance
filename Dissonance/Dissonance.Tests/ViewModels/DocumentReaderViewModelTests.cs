@@ -57,7 +57,8 @@ namespace Dissonance.Tests.ViewModels
                         var service = new FailingDocumentReaderService(new InvalidOperationException("boom"));
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, new RecordingHotkeyService());
+                        var hotkeyService = new RecordingHotkeyService();
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         var success = await viewModel.LoadDocumentAsync("missing.txt");
 
@@ -119,7 +120,8 @@ namespace Dissonance.Tests.ViewModels
                         var settings = CreateSettings();
                         settings.DocumentReaderHotkey.Key = string.Empty;
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, new RecordingHotkeyService());
+                        var hotkeyService = new RecordingHotkeyService();
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         viewModel.PlaybackHotkeyCombination = "MediaPlayPause";
 
@@ -148,8 +150,6 @@ namespace Dissonance.Tests.ViewModels
                         _ = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         Assert.Contains("|MediaPlayPause|allowEmpty:True", hotkeyService.Registrations);
-                        Assert.Contains("|MediaPlay|allowEmpty:True", hotkeyService.Registrations);
-                        Assert.Contains("|MediaPause|allowEmpty:True", hotkeyService.Registrations);
                 }
 
                 [Fact]

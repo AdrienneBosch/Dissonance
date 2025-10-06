@@ -328,12 +328,21 @@ namespace Dissonance
 
                         if ( key == Key.Tab )
                         {
-                                var modifiersState = Keyboard.Modifiers;
-                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
+                                if ( sender is UIElement focusElement )
+                                {
+                                        var direction = ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift
+                                                ? FocusNavigationDirection.Previous
+                                                : FocusNavigationDirection.Next;
+
+                                        e.Handled = true;
+                                        focusElement.MoveFocus ( new TraversalRequest ( direction ) );
+                                }
+                                else
                                 {
                                         e.Handled = false;
-                                        return;
                                 }
+
+                                return;
                         }
 
                         e.Handled = true;
@@ -366,12 +375,13 @@ namespace Dissonance
 
                         if ( key == Key.Tab )
                         {
-                                var modifiersState = Keyboard.Modifiers;
-                                if ( modifiersState == ModifierKeys.None || modifiersState == ModifierKeys.Shift )
-                                {
-                                        e.Handled = false;
-                                        return;
-                                }
+                                var direction = ( Keyboard.Modifiers & ModifierKeys.Shift ) == ModifierKeys.Shift
+                                        ? FocusNavigationDirection.Previous
+                                        : FocusNavigationDirection.Next;
+
+                                e.Handled = true;
+                                textBox.MoveFocus ( new TraversalRequest ( direction ) );
+                                return;
                         }
 
                         if ( key == Key.Back || key == Key.Delete || key == Key.Escape )

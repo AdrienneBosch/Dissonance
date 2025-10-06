@@ -798,7 +798,7 @@
                                     Background="{DynamicResource CardBorderBrush}"/>
                             <ListBox x:Name="NavigationListBox"
                                      ItemsSource="{Binding NavigationSections}"
-                                     SelectedItem="{Binding SelectedSection, Mode=TwoWay}"
+                                     SelectedItem="{Binding PendingNavigationSection, Mode=TwoWay}"
                                      MinWidth="220"
                                      MaxHeight="320"
                                      BorderThickness="0"
@@ -808,6 +808,7 @@
                                      ToolTip="Select a section to open"
                                      TabIndex="1"
                                      PreviewKeyDown="NavigationListBox_PreviewKeyDown"
+                                     PreviewMouseLeftButtonUp="NavigationListBox_PreviewMouseLeftButtonUp"
                                      AutomationProperties.Name="Available sections"
                                      AutomationProperties.HelpText="Use the arrow keys to choose a section and press Enter to open it"
                                      SelectionMode="Single"

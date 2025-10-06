@@ -174,6 +174,47 @@ namespace Dissonance.Tests.ViewModels
                         Assert.True(viewModel.IsHomeSelected);
                 }
 
+                [WindowsFact]
+                public void PendingNavigationSection_DoesNotChangeSelectedSection()
+                {
+                        var testEnvironment = CreateTestEnvironment(useDarkTheme: false);
+                        if (testEnvironment is null)
+                        {
+                                return;
+                        }
+
+                        var viewModel = testEnvironment.ViewModel;
+                        var targetSection = viewModel.NavigationSections.FirstOrDefault();
+                        Assert.NotNull(targetSection);
+
+                        viewModel.PendingNavigationSection = targetSection;
+
+                        Assert.Null(viewModel.SelectedSection);
+                        Assert.Same(targetSection, viewModel.PendingNavigationSection);
+                }
+
+                [WindowsFact]
+                public void SelectedSection_UpdatesPendingNavigationSection()
+                {
+                        var testEnvironment = CreateTestEnvironment(useDarkTheme: false);
+                        if (testEnvironment is null)
+                        {
+                                return;
+                        }
+
+                        var viewModel = testEnvironment.ViewModel;
+                        var targetSection = viewModel.NavigationSections.FirstOrDefault();
+                        Assert.NotNull(targetSection);
+
+                        viewModel.NavigateToSectionCommand.Execute(targetSection);
+
+                        Assert.Same(targetSection, viewModel.PendingNavigationSection);
+
+                        viewModel.NavigateToSectionCommand.Execute(null);
+
+                        Assert.Null(viewModel.PendingNavigationSection);
+                }
+
                 private static TestEnvironment? CreateTestEnvironment(bool useDarkTheme)
                 {
                         var synthesizer = new SpeechSynthesizer();

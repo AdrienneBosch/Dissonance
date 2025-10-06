@@ -283,6 +283,7 @@ namespace Dissonance
 
                 private void NavigationMenuPopup_Opened ( object? sender, EventArgs e )
                 {
+                        _viewModel.PendingNavigationSection = _viewModel.SelectedSection;
                         Dispatcher.BeginInvoke ( new Action ( ( ) =>
                         {
                                 if ( NavigationHomeButton.IsVisible )
@@ -317,6 +318,18 @@ namespace Dissonance
                                 if ( NavigationMenuPopup.IsOpen )
                                 {
                                         NavigationMenuPopup.IsOpen = false;
+                                        e.Handled = true;
+                                }
+                        }
+                }
+
+                private void NavigationListBox_PreviewMouseLeftButtonUp ( object sender, MouseButtonEventArgs e )
+                {
+                        if ( NavigationListBox.SelectedItem is NavigationSectionViewModel section )
+                        {
+                                if ( _viewModel.NavigateToSectionCommand?.CanExecute ( section ) == true )
+                                {
+                                        _viewModel.NavigateToSectionCommand.Execute ( section );
                                         e.Handled = true;
                                 }
                         }

@@ -47,6 +47,7 @@ namespace Dissonance.ViewModels
                 private string _lastAppliedHotkeyCombination = string.Empty;
                 private bool _autoReadClipboard;
                 private NavigationSectionViewModel? _selectedSection;
+                private NavigationSectionViewModel? _pendingNavigationSection;
                 private readonly string _previewStartLabel;
                 private readonly string _previewStopLabel;
                 private readonly string _previewToolTip;
@@ -259,10 +260,24 @@ namespace Dissonance.ViewModels
                                 _selectedSection = value;
                                 OnPropertyChanged ( nameof ( SelectedSection ) );
                                 OnPropertyChanged ( nameof ( IsHomeSelected ) );
+                                PendingNavigationSection = value;
                                 if ( value != null )
                                 {
                                         IsNavigationMenuOpen = false;
                                 }
+                        }
+                }
+
+                public NavigationSectionViewModel? PendingNavigationSection
+                {
+                        get => _pendingNavigationSection;
+                        set
+                        {
+                                if ( _pendingNavigationSection == value )
+                                        return;
+
+                                _pendingNavigationSection = value;
+                                OnPropertyChanged ( nameof ( PendingNavigationSection ) );
                         }
                 }
 

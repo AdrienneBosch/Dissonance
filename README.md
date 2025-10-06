@@ -1,18 +1,18 @@
 # Dissonance Accessibility Tool
 
-Dissonance is a Windows desktop application that empowers visually impaired users to interact with rich on-screen content. It combines real-time screen capture with accessible presentation layers so that critical information can be read aloud, magnified, or exported for later review.
+Dissonance is a Windows desktop narrator that focuses on making clipboard text and plain-text documents easier to review with speech synthesis. It provides keyboard-driven controls, theme switching, and configurable voices so low-vision users can stay in their flow without switching tools.
 
-![Home page – light mode](./Dissonance/Assets/Wiki/home_page_light_mode.png)
+![Home page – light mode](./Dissonance/Dissonance/Dissonance/Assets/Wiki/home_page_light_mode.png)
 
 ## Key Features
 
-- **Clipboard Reader** – Automatically ingests copied text and presents it in a customizable reading pane with text-to-speech integration.
-- **Theming** – Light and dark themes ensure comfortable viewing in a range of environments.
-- **Session History** – Preserves previously captured snippets, making it easy to revisit important information.
-- **Configurable Voices** – Works with installed Windows voices so users can tailor the experience to their needs.
-- **Extensible Architecture** – Service- and manager-based abstractions make it straightforward to add new capture or export pipelines.
+- **Clipboard Reader** – Capture the current selection or monitor the clipboard automatically, then read it aloud with text-to-speech controls.
+- **Document Reader** – Load `.txt` files, follow along with synchronized highlighting, and resume from your last saved position.
+- **Customizable Voices** – Choose an installed Windows voice, adjust speaking rate and volume, and preview the sound before applying it across the app.
+- **Hotkey Management** – Configure the global shortcut that copies and narrates clipboard content, including whether it should auto-read newly captured text.
+- **Accessible Theming & Feedback** – Toggle light or dark themes and review recent status announcements to track background operations.
 
-![Clipboard Reader – dark mode](./Dissonance/Assets/Wiki/clipboard_reader_page_dark_mode.png)
+![Clipboard Reader – dark mode](./Dissonance/Dissonance/Dissonance/Assets/Wiki/clipboard_reader_page_dark_mode.png)
 
 ## Getting Started
 
@@ -25,27 +25,28 @@ Dissonance is a Windows desktop application that empowers visually impaired user
 
 1. Clone the repository.
 2. Restore the solution dependencies: `dotnet restore`.
-3. Build the application: `dotnet build Dissonance.sln`.
-4. Launch the app from the generated binaries in `Dissonance/bin/`.
+3. Build the application: `dotnet build Dissonance/Dissonance.sln`.
+4. Run the app: `dotnet run --project Dissonance/Dissonance/Dissonance/Dissonance.csproj`.
 
 ## Usage Overview
 
 1. Launch Dissonance.
-2. Copy any text from another application.
-3. Switch to the Clipboard Reader view to review, edit, or listen to the captured content.
-4. Use the toolbar to toggle themes or access additional utilities.
+2. Copy text from another application or trigger the global hotkey to capture a selection.
+3. Switch to the Clipboard Reader view to listen immediately or adjust auto-read behavior.
+4. Open the Document Reader to review saved `.txt` files with playback and highlighting controls.
+5. Use the Reader Settings panel to fine-tune voice, rate, and volume.
 
 ## Architecture Highlights
 
-- **Services** encapsulate integrations such as speech synthesis and clipboard monitoring.
-- **Managers** coordinate domain logic like session history and UI state transitions.
+- **Services** encapsulate integrations such as speech synthesis, clipboard monitoring, theme management, and configuration storage.
+- **Managers** coordinate domain logic like clipboard access and application startup routines.
 - **ViewModels** implement MVVM bindings for the WPF views, ensuring testability and separation of concerns.
 
 ## Accessibility Considerations
 
 - Supports screen readers and keyboard navigation throughout the interface.
-- Adjustable font sizes and color schemes improve readability for low-vision users.
-- Speech settings allow users to match pace and tone to their preferences.
+- Adjustable voice parameters and color themes improve comfort for low-vision users.
+- Status announcements provide audible and visible confirmation of background actions.
 
 ## Contributing
 

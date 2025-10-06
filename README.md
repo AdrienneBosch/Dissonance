@@ -2,8 +2,6 @@
 
 Dissonance is a Windows desktop narrator that focuses on making clipboard text and plain-text documents easier to review with speech synthesis. It provides keyboard-driven controls, theme switching, and configurable voices so low-vision users can stay in their flow without switching tools.
 
-![Home page – light mode](./Dissonance/Dissonance/Dissonance/Assets/Wiki/home_page_light_mode.png)
-
 ## Key Features
 
 - **Clipboard Reader** – Capture the current selection or monitor the clipboard automatically, then read it aloud with text-to-speech controls.
@@ -11,8 +9,6 @@ Dissonance is a Windows desktop narrator that focuses on making clipboard text a
 - **Customizable Voices** – Choose an installed Windows voice, adjust speaking rate and volume, and preview the sound before applying it across the app.
 - **Hotkey Management** – Configure the global shortcut that copies and narrates clipboard content, including whether it should auto-read newly captured text.
 - **Accessible Theming & Feedback** – Toggle light or dark themes and review recent status announcements to track background operations.
-
-![Clipboard Reader – dark mode](./Dissonance/Dissonance/Dissonance/Assets/Wiki/clipboard_reader_page_dark_mode.png)
 
 ## Getting Started
 

@@ -447,7 +447,7 @@ namespace Dissonance.ViewModels
                 {
                         var dialog = new OpenFileDialog
                         {
-                                Filter = "Text documents (*.txt)|*.txt|All files (*.*)|*.*",
+                                Filter = "Supported documents (*.txt;*.epub)|*.txt;*.epub|Text documents (*.txt)|*.txt|EPUB files (*.epub)|*.epub|All files (*.*)|*.*",
                                 CheckFileExists = true,
                                 CheckPathExists = true,
                                 Title = "Open document",

@@ -141,7 +141,7 @@
                             <StackPanel Grid.Row="0">
                                 <TextBlock Text="Document details"
                                            Style="{StaticResource CardTitleTextStyle}"/>
-                                <TextBlock Text="Supported format: plain text (.txt)"
+                                <TextBlock Text="Supported formats: plain text (.txt) and EPUB (.epub)"
                                            Style="{StaticResource CardDescriptionTextStyle}"
                                            Margin="0,6,0,0"/>
                                 <TextBlock Text="Selected file"

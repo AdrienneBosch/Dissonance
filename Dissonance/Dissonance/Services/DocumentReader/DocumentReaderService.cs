@@ -66,7 +66,7 @@ namespace Dissonance.Services.DocumentReader
                         cancellationToken.ThrowIfCancellationRequested();
 
                         rootFilePath = NormalizeEntryPath(rootFilePath);
-                        var packageEntry = archive.GetEntry(rootFilePath)
+                        var packageEntry = FindEntry(archive, rootFilePath)
                                 ?? throw new InvalidDataException("The EPUB file references a missing package document.");
 
                         var packageDocument = await LoadXmlAsync(packageEntry, cancellationToken).ConfigureAwait(false);
@@ -117,7 +117,7 @@ namespace Dissonance.Services.DocumentReader
                                 cancellationToken.ThrowIfCancellationRequested();
 
                                 var entryPath = CombineEntryPath(basePath, item.Href);
-                                var entry = archive.GetEntry(entryPath);
+                                var entry = FindEntry(archive, entryPath);
                                 if (entry == null)
                                         continue;
 
@@ -332,6 +332,8 @@ namespace Dissonance.Services.DocumentReader
                         if (string.IsNullOrWhiteSpace(path))
                                 return string.Empty;
 
+                        path = path.Replace('\\', '/');
+
                         var segments = path.Split(new[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
                         var stack = new Stack<string>();
 
@@ -375,6 +377,23 @@ namespace Dissonance.Services.DocumentReader
                                 return string.Empty;
 
                         return path.Substring(0, index + 1);
+                }
+
+                private static ZipArchiveEntry? FindEntry(ZipArchive archive, string path)
+                {
+                        if (archive == null)
+                                throw new ArgumentNullException(nameof(archive));
+
+                        path = NormalizeEntryPath(path);
+                        if (string.IsNullOrEmpty(path))
+                                return null;
+
+                        var entry = archive.GetEntry(path);
+                        if (entry != null)
+                                return entry;
+
+                        return archive.Entries.FirstOrDefault(e =>
+                                string.Equals(NormalizeEntryPath(e.FullName), path, StringComparison.OrdinalIgnoreCase));
                 }
 
                 private readonly struct ManifestItem

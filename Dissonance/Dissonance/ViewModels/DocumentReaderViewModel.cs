@@ -17,6 +17,7 @@ using System.Text;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Services.DocumentReader;
+using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 
@@ -36,6 +37,7 @@ namespace Dissonance.ViewModels
                 private readonly RelayCommandNoParam _playbackHotkeyCommand;
                 private readonly ITTSService _ttsService;
                 private readonly ISettingsService _settingsService;
+                private readonly IHotkeyService _hotkeyService;
                 private FlowDocument? _document;
                 private string? _plainText;
                 private string? _filePath;
@@ -55,6 +57,7 @@ namespace Dissonance.ViewModels
                 private TimeSpan _pendingSeekAudioPosition;
                 private double _charactersPerSecond;
                 private readonly List<(TimeSpan Time, int CharacterIndex)> _progressHistory = new();
+                private readonly List<IDisposable> _playbackHotkeyRegistrations = new();
                 private string _playbackHotkeyCombination = string.Empty;
                 private string _lastAppliedPlaybackHotkeyCombination = string.Empty;
                 private Key _playbackHotkeyKey = Key.None;
@@ -78,11 +81,12 @@ namespace Dissonance.ViewModels
                 private const double DefaultCharactersPerSecond = 15d;
                 private const string ThemeAccentHighlightId = "ThemeAccent";
 
-                public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService)
+                public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService, IHotkeyService hotkeyService)
                 {
                         _documentReaderService = documentReaderService ?? throw new ArgumentNullException(nameof(documentReaderService));
                         _ttsService = ttsService ?? throw new ArgumentNullException(nameof(ttsService));
                         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+                        _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
                         _clearDocumentCommand = new RelayCommandNoParam(ClearDocument, () => !IsBusy && (IsDocumentLoaded || HasStatusMessage));
                         _browseForDocumentCommand = new RelayCommandNoParam(BrowseForDocument, () => !IsBusy);
                         _playPauseCommand = new RelayCommandNoParam(TogglePlayback, () => !IsBusy && CanReadDocument);
@@ -527,6 +531,7 @@ namespace Dissonance.ViewModels
                         RaisePropertyChanged(nameof(PlaybackHotkeyTogglesPause));
                         _playbackHotkeyCommand.RaiseCanExecuteChanged();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                        UpdatePlaybackHotkeyRegistration();
                 }
 
                 private void InitializeHighlightSettings()
@@ -595,6 +600,7 @@ namespace Dissonance.ViewModels
 
                         SavePlaybackHotkeySettings();
                         _applyPlaybackHotkeyCommand.RaiseCanExecuteChanged();
+                        UpdatePlaybackHotkeyRegistration();
                 }
 
                 private void ExecutePlaybackHotkey()
@@ -615,6 +621,47 @@ namespace Dissonance.ViewModels
                         else
                         {
                                 StartPlaybackFromCurrentPosition();
+                        }
+                }
+
+                private void UpdatePlaybackHotkeyRegistration()
+                {
+                        foreach (var registration in _playbackHotkeyRegistrations)
+                                registration.Dispose();
+
+                        _playbackHotkeyRegistrations.Clear();
+
+                        var combinations = new List<(ModifierKeys Modifiers, Key Key)>
+                        {
+                                (_playbackHotkeyModifiers, _playbackHotkeyKey),
+                                (ModifierKeys.None, Key.MediaPlayPause),
+                                (ModifierKeys.None, Key.MediaPlay),
+                                (ModifierKeys.None, Key.MediaPause),
+                        };
+
+                        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+                        foreach (var (modifiers, key) in combinations)
+                        {
+                                if (key == Key.None)
+                                        continue;
+
+                                var modifierString = ComposeModifierString(modifiers);
+                                var canonical = $"{modifierString}|{key}";
+                                if (!seen.Add(canonical))
+                                        continue;
+
+                                var registration = _hotkeyService.RegisterHotkey(
+                                        new AppSettings.HotkeySettings
+                                        {
+                                                Modifiers = modifierString,
+                                                Key = key.ToString(),
+                                        },
+                                        ExecutePlaybackHotkey,
+                                        allowEmptyModifiers: modifiers == ModifierKeys.None);
+
+                                if (registration != null)
+                                        _playbackHotkeyRegistrations.Add(registration);
                         }
                 }
 

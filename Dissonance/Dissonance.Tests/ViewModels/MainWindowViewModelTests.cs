@@ -213,7 +213,7 @@ namespace Dissonance.Tests.ViewModels
                         var clipboardService = new TestClipboardService();
                         var statusService = new TestStatusAnnouncementService();
                         var documentReaderService = new TestDocumentReaderService();
-                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService, settingsService);
+                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService, settingsService, hotkeyService);
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
                         var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService, documentReaderViewModel);
@@ -373,6 +373,7 @@ namespace Dissonance.Tests.ViewModels
                 private sealed class TestHotkeyService : IHotkeyService
                 {
                         public string? LastRegisteredHotkey { get; private set; }
+                        public List<string> AdditionalRegistrations { get; } = new();
 
                         public event Action? HotkeyPressed
                         {
@@ -393,9 +394,22 @@ namespace Dissonance.Tests.ViewModels
                                 LastRegisteredHotkey = $"{hotkey.Modifiers}+{hotkey.Key}";
                         }
 
+                        public IDisposable? RegisterHotkey(AppSettings.HotkeySettings hotkey, Action callback, bool allowEmptyModifiers = false)
+                        {
+                                AdditionalRegistrations.Add($"{hotkey.Modifiers}|{hotkey.Key}|allowEmpty:{allowEmptyModifiers}");
+                                return new StubRegistration();
+                        }
+
                         public void UnregisterHotkey()
                         {
                                 LastRegisteredHotkey = null;
+                        }
+
+                        private sealed class StubRegistration : IDisposable
+                        {
+                                public void Dispose()
+                                {
+                                }
                         }
                 }
 

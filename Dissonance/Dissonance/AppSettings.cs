@@ -1,3 +1,5 @@
+using System;
+
 namespace Dissonance
 {
         public class AppSettings
@@ -34,6 +36,8 @@ namespace Dissonance
 
                 public int DocumentReaderLastCharacterIndex { get; set; }
 
+                public DocumentReaderResumeState? DocumentReaderResumeState { get; set; }
+
                 public class HotkeySettings
                 {
                         public string Key { get; set; }
@@ -50,6 +54,21 @@ namespace Dissonance
                         public string Modifiers { get; set; }
 
                         public bool UsePlayPauseToggle { get; set; }
+                }
+
+                public class DocumentReaderResumeState
+                {
+                        public string? FilePath { get; set; }
+
+                        public int CharacterIndex { get; set; }
+
+                        public int DocumentLength { get; set; }
+
+                        public string? ContentHash { get; set; }
+
+                        public long? FileSize { get; set; }
+
+                        public DateTime? LastWriteTimeUtc { get; set; }
                 }
         }
 }

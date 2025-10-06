@@ -12,6 +12,8 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Speech.Synthesis;
+using System.Security.Cryptography;
+using System.Text;
 
 using Dissonance.Infrastructure.Commands;
 using Dissonance.Services.DocumentReader;
@@ -66,6 +68,10 @@ namespace Dissonance.ViewModels
                 private bool _rememberDocumentProgress;
                 private DateTime _lastProgressSaveTime = DateTime.MinValue;
                 private int _lastPersistedCharacterIndex;
+                private bool _suspendProgressPersistence;
+                private bool _documentMetadataDirty = true;
+                private DocumentMetadata? _currentDocumentMetadata;
+                private DocumentMetadata? _lastPersistedMetadata;
 
                 private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
@@ -110,6 +116,7 @@ namespace Dissonance.ViewModels
                                 RaisePropertyChanged(nameof(CanReadDocument));
                                 RaisePropertyChanged(nameof(FileName));
                                 UpdateCommandStates();
+                                MarkDocumentMetadataDirty();
                         }
                 }
 
@@ -128,6 +135,7 @@ namespace Dissonance.ViewModels
                                 RaisePropertyChanged(nameof(CharacterCount));
                                 RaisePropertyChanged(nameof(CanReadDocument));
                                 UpdateCommandStates();
+                                MarkDocumentMetadataDirty();
                         }
                 }
 
@@ -142,6 +150,7 @@ namespace Dissonance.ViewModels
                                 _filePath = value;
                                 RaisePropertyChanged();
                                 RaisePropertyChanged(nameof(FileName));
+                                MarkDocumentMetadataDirty();
                         }
                 }
 
@@ -174,6 +183,7 @@ namespace Dissonance.ViewModels
                                         UpdateRememberDocumentSetting(false);
                                         _lastPersistedCharacterIndex = 0;
                                         _lastProgressSaveTime = DateTime.MinValue;
+                                        _lastPersistedMetadata = null;
                                 }
                         }
                 }
@@ -264,7 +274,8 @@ namespace Dissonance.ViewModels
 
                                 _currentCharacterIndex = value;
                                 RaisePropertyChanged();
-                                PersistDocumentState(force: false);
+                                if (!_suspendProgressPersistence)
+                                        PersistDocumentState(force: false);
                         }
                 }
 
@@ -380,7 +391,7 @@ namespace Dissonance.ViewModels
 
                 public ICommand PlaybackHotkeyCommand => _playbackHotkeyCommand;
 
-                public async Task<bool> LoadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
+                public async Task<bool> LoadDocumentAsync(string filePath, CancellationToken cancellationToken = default, bool persistImmediately = true)
                 {
                         if (string.IsNullOrWhiteSpace(filePath))
                                 throw new ArgumentException("File path cannot be null or whitespace.", nameof(filePath));
@@ -393,7 +404,7 @@ namespace Dissonance.ViewModels
 
                                 var result = await _documentReaderService.ReadDocumentAsync(filePath, cancellationToken);
 
-                                ApplyResult(result);
+                                ApplyResult(result, persistImmediately);
                                 StatusMessage = null;
                                 return true;
                         }
@@ -423,6 +434,10 @@ namespace Dissonance.ViewModels
                         FilePath = null;
                         LastError = null;
                         StatusMessage = null;
+                        _currentDocumentMetadata = null;
+                        _lastPersistedMetadata = null;
+                        _documentMetadataDirty = true;
+                        _lastPersistedCharacterIndex = 0;
                         ResetPlaybackState();
                         if (RememberDocumentProgress)
                                 ClearPersistedDocumentState();
@@ -460,7 +475,7 @@ namespace Dissonance.ViewModels
                         }
                 }
 
-                private void ApplyResult(DocumentReadResult result)
+                private void ApplyResult(DocumentReadResult result, bool persistImmediately)
                 {
                         if (result == null)
                                 throw new ArgumentNullException(nameof(result));
@@ -470,7 +485,9 @@ namespace Dissonance.ViewModels
                         FilePath = result.FilePath;
                         LastError = null;
                         ResetPlaybackState();
-                        PersistDocumentState(force: true);
+                        EnsureDocumentMetadata();
+                        if (persistImmediately)
+                                PersistDocumentState(force: true);
                 }
 
                 private void UpdateCommandStates()
@@ -884,8 +901,11 @@ namespace Dissonance.ViewModels
                         _isStoppingForSeek = false;
                         _pendingSeekCharacterIndex = null;
                         _pendingSeekAudioPosition = TimeSpan.Zero;
+                        var previousSuppressed = _suspendProgressPersistence;
+                        _suspendProgressPersistence = true;
                         CurrentCharacterIndex = 0;
                         CurrentAudioPosition = TimeSpan.Zero;
+                        _suspendProgressPersistence = previousSuppressed;
                         SetHighlightRange(0, 0);
                         IsPlaying = false;
                         IsPaused = false;
@@ -1003,63 +1023,101 @@ namespace Dissonance.ViewModels
 
                         _rememberDocumentProgress = settings.RememberDocumentReaderPosition;
                         _lastPersistedCharacterIndex = Math.Max(0, settings.DocumentReaderLastCharacterIndex);
+                        _lastPersistedMetadata = null;
+                        _lastProgressSaveTime = DateTime.MinValue;
                         RaisePropertyChanged(nameof(RememberDocumentProgress));
 
                         if (!RememberDocumentProgress)
                                 return;
 
-                        if (string.IsNullOrWhiteSpace(settings.DocumentReaderLastFilePath))
+                        var resumeState = settings.DocumentReaderResumeState;
+                        if (resumeState == null && !string.IsNullOrWhiteSpace(settings.DocumentReaderLastFilePath))
+                        {
+                                resumeState = new AppSettings.DocumentReaderResumeState
+                                {
+                                        FilePath = settings.DocumentReaderLastFilePath,
+                                        CharacterIndex = Math.Max(0, settings.DocumentReaderLastCharacterIndex),
+                                        DocumentLength = 0,
+                                };
+                        }
+
+                        if (resumeState == null || string.IsNullOrWhiteSpace(resumeState.FilePath))
                                 return;
 
-                        if (!File.Exists(settings.DocumentReaderLastFilePath))
+                        if (!File.Exists(resumeState.FilePath))
                         {
                                 StatusMessage = "The previously saved document could not be found.";
                                 ClearPersistedDocumentState();
                                 return;
                         }
 
-                        RestoreDocumentFromSettings(settings.DocumentReaderLastFilePath, _lastPersistedCharacterIndex);
+                        RestoreDocumentFromSettings(resumeState);
                 }
 
                 private void PersistDocumentState(bool force)
                 {
+                        if (_suspendProgressPersistence && !force)
+                                return;
+
                         if (!RememberDocumentProgress)
                                 return;
 
                         if (string.IsNullOrWhiteSpace(FilePath) || PlainText == null)
                                 return;
 
-                        var normalizedIndex = Math.Clamp(CurrentCharacterIndex, 0, PlainText.Length);
+                        var metadata = EnsureDocumentMetadata();
+                        if (metadata == null)
+                                return;
+
+                        var normalizedIndex = Math.Clamp(CurrentCharacterIndex, 0, metadata.DocumentLength);
                         var now = DateTime.UtcNow;
 
                         if (!force)
                         {
-                                if (normalizedIndex == _lastPersistedCharacterIndex)
+                                if (normalizedIndex == _lastPersistedCharacterIndex && MetadataEquals(_lastPersistedMetadata, metadata))
+                                {
+                                        if (now - _lastProgressSaveTime < ProgressPersistInterval)
+                                                return;
+                                }
+                                else if (now - _lastProgressSaveTime < ProgressPersistInterval)
+                                {
                                         return;
-
-                                if (now - _lastProgressSaveTime < ProgressPersistInterval)
-                                        return;
+                                }
                         }
 
+                        var state = new AppSettings.DocumentReaderResumeState
+                        {
+                                FilePath = metadata.FilePath,
+                                CharacterIndex = normalizedIndex,
+                                DocumentLength = metadata.DocumentLength,
+                                ContentHash = metadata.ContentHash,
+                                FileSize = metadata.FileSize,
+                                LastWriteTimeUtc = metadata.LastWriteTimeUtc,
+                        };
+
                         var settings = _settingsService.GetCurrentSettings();
-                        settings.DocumentReaderLastFilePath = FilePath;
-                        settings.DocumentReaderLastCharacterIndex = normalizedIndex;
+                        settings.DocumentReaderResumeState = state;
+                        settings.DocumentReaderLastFilePath = state.FilePath;
+                        settings.DocumentReaderLastCharacterIndex = state.CharacterIndex;
                         settings.RememberDocumentReaderPosition = true;
                         _settingsService.SaveCurrentSettings();
 
-                        _lastPersistedCharacterIndex = normalizedIndex;
+                        _lastPersistedCharacterIndex = state.CharacterIndex;
                         _lastProgressSaveTime = now;
+                        _lastPersistedMetadata = metadata;
                 }
 
                 private void ClearPersistedDocumentState()
                 {
                         var settings = _settingsService.GetCurrentSettings();
+                        settings.DocumentReaderResumeState = null;
                         settings.DocumentReaderLastFilePath = null;
                         settings.DocumentReaderLastCharacterIndex = 0;
                         _settingsService.SaveCurrentSettings();
 
                         _lastPersistedCharacterIndex = 0;
                         _lastProgressSaveTime = DateTime.MinValue;
+                        _lastPersistedMetadata = null;
                 }
 
                 private void UpdateRememberDocumentSetting(bool value)
@@ -1069,6 +1127,7 @@ namespace Dissonance.ViewModels
 
                         if (!value)
                         {
+                                settings.DocumentReaderResumeState = null;
                                 settings.DocumentReaderLastFilePath = null;
                                 settings.DocumentReaderLastCharacterIndex = 0;
                         }
@@ -1076,30 +1135,62 @@ namespace Dissonance.ViewModels
                         _settingsService.SaveCurrentSettings();
                 }
 
-                private async void RestoreDocumentFromSettings(string filePath, int characterIndex)
+                private async void RestoreDocumentFromSettings(AppSettings.DocumentReaderResumeState resumeState)
                 {
                         try
                         {
-                                var loaded = await LoadDocumentAsync(filePath);
+                                if (resumeState == null || string.IsNullOrWhiteSpace(resumeState.FilePath))
+                                {
+                                        ClearPersistedDocumentState();
+                                        return;
+                                }
+
+                                if (!File.Exists(resumeState.FilePath))
+                                {
+                                        StatusMessage = "The previously saved document could not be found.";
+                                        ClearPersistedDocumentState();
+                                        return;
+                                }
+
+                                var loaded = await LoadDocumentAsync(resumeState.FilePath, cancellationToken: default, persistImmediately: false);
                                 if (!loaded || PlainText == null)
                                         return;
 
-                                var clamped = Math.Clamp(characterIndex, 0, PlainText.Length);
-                                _lastPersistedCharacterIndex = clamped;
+                                var metadata = EnsureDocumentMetadata();
+                                if (metadata == null)
+                                        return;
+
+                                var isCompatible = IsMetadataCompatible(resumeState, metadata);
+                                var clamped = Math.Clamp(resumeState.CharacterIndex, 0, metadata.DocumentLength);
+
+                                var previousSuppressed = _suspendProgressPersistence;
+                                _suspendProgressPersistence = true;
+
+                                try
+                                {
+                                        if (isCompatible && clamped > 0)
+                                        {
+                                                CurrentCharacterIndex = clamped;
+                                                CurrentAudioPosition = EstimateTimeFromCharacterIndex(clamped);
+                                        }
+                                        else
+                                        {
+                                                CurrentCharacterIndex = 0;
+                                                CurrentAudioPosition = TimeSpan.Zero;
+                                                if (!isCompatible)
+                                                        StatusMessage = "The previously saved document has changed. Progress was reset.";
+                                        }
+
+                                        SetHighlightRange(CurrentCharacterIndex, 0);
+                                }
+                                finally
+                                {
+                                        _suspendProgressPersistence = previousSuppressed;
+                                }
+
+                                _lastPersistedCharacterIndex = CurrentCharacterIndex;
                                 _lastProgressSaveTime = DateTime.UtcNow;
-
-                                if (clamped > 0)
-                                {
-                                        CurrentCharacterIndex = clamped;
-                                        CurrentAudioPosition = EstimateTimeFromCharacterIndex(clamped);
-                                }
-                                else
-                                {
-                                        CurrentCharacterIndex = 0;
-                                        CurrentAudioPosition = TimeSpan.Zero;
-                                }
-
-                                SetHighlightRange(CurrentCharacterIndex, 0);
+                                _lastPersistedMetadata = metadata;
                                 PersistDocumentState(force: true);
                         }
                         catch (OperationCanceledException)
@@ -1112,6 +1203,131 @@ namespace Dissonance.ViewModels
                                 StatusMessage = "Failed to restore the previously opened document.";
                                 ClearPersistedDocumentState();
                         }
+                }
+
+                private void MarkDocumentMetadataDirty()
+                {
+                        _documentMetadataDirty = true;
+                        _currentDocumentMetadata = null;
+                }
+
+                private DocumentMetadata? EnsureDocumentMetadata()
+                {
+                        if (!_documentMetadataDirty && _currentDocumentMetadata != null)
+                                return _currentDocumentMetadata;
+
+                        if (PlainText == null || string.IsNullOrWhiteSpace(FilePath))
+                        {
+                                _currentDocumentMetadata = null;
+                                _documentMetadataDirty = false;
+                                return null;
+                        }
+
+                        var metadata = new DocumentMetadata
+                        {
+                                FilePath = FilePath,
+                                DocumentLength = PlainText.Length,
+                                ContentHash = ComputeContentHash(PlainText),
+                        };
+
+                        try
+                        {
+                                var info = new FileInfo(FilePath);
+                                if (info.Exists)
+                                {
+                                        metadata.FileSize = info.Length;
+                                        metadata.LastWriteTimeUtc = info.LastWriteTimeUtc;
+                                }
+                        }
+                        catch (Exception)
+                        {
+                                metadata.FileSize = null;
+                                metadata.LastWriteTimeUtc = null;
+                        }
+
+                        _currentDocumentMetadata = metadata;
+                        _documentMetadataDirty = false;
+                        return metadata;
+                }
+
+                private static bool MetadataEquals(DocumentMetadata? left, DocumentMetadata? right)
+                {
+                        if (left == null || right == null)
+                                return false;
+
+                        if (!string.Equals(left.FilePath, right.FilePath, StringComparison.OrdinalIgnoreCase))
+                                return false;
+
+                        if (left.DocumentLength != right.DocumentLength)
+                                return false;
+
+                        if (!string.Equals(left.ContentHash, right.ContentHash, StringComparison.Ordinal))
+                                return false;
+
+                        if (left.FileSize != right.FileSize)
+                                return false;
+
+                        if (!NullableDateTimeEquals(left.LastWriteTimeUtc, right.LastWriteTimeUtc))
+                                return false;
+
+                        return true;
+                }
+
+                private static bool NullableDateTimeEquals(DateTime? first, DateTime? second)
+                {
+                        if (!first.HasValue && !second.HasValue)
+                                return true;
+
+                        if (!first.HasValue || !second.HasValue)
+                                return false;
+
+                        return Math.Abs((first.Value - second.Value).TotalSeconds) <= 1;
+                }
+
+                private static bool IsMetadataCompatible(AppSettings.DocumentReaderResumeState expected, DocumentMetadata actual)
+                {
+                        if (expected == null)
+                                return false;
+
+                        if (!string.Equals(expected.FilePath, actual.FilePath, StringComparison.OrdinalIgnoreCase))
+                                return false;
+
+                        if (expected.DocumentLength > 0 && expected.DocumentLength != actual.DocumentLength)
+                                return false;
+
+                        if (!string.IsNullOrEmpty(expected.ContentHash) && !string.Equals(expected.ContentHash, actual.ContentHash, StringComparison.Ordinal))
+                                return false;
+
+                        if (expected.FileSize.HasValue && actual.FileSize.HasValue && expected.FileSize.Value != actual.FileSize.Value)
+                                return false;
+
+                        if (expected.LastWriteTimeUtc.HasValue && actual.LastWriteTimeUtc.HasValue)
+                        {
+                                if (!NullableDateTimeEquals(expected.LastWriteTimeUtc, actual.LastWriteTimeUtc))
+                                        return false;
+                        }
+
+                        return true;
+                }
+
+                private static string ComputeContentHash(string content)
+                {
+                        var bytes = Encoding.UTF8.GetBytes(content ?? string.Empty);
+                        var hash = SHA256.HashData(bytes);
+                        return Convert.ToHexString(hash);
+                }
+
+                private sealed class DocumentMetadata
+                {
+                        public string FilePath { get; set; } = string.Empty;
+
+                        public int DocumentLength { get; set; }
+
+                        public string ContentHash { get; set; } = string.Empty;
+
+                        public long? FileSize { get; set; }
+
+                        public DateTime? LastWriteTimeUtc { get; set; }
                 }
 
                 private IReadOnlyList<HighlightColorOption> CreateHighlightColorOptions()

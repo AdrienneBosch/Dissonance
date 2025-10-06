@@ -179,6 +179,7 @@ namespace Dissonance.Services.SettingsService
                                 RememberDocumentReaderPosition = false,
                                 DocumentReaderLastFilePath = null,
                                 DocumentReaderLastCharacterIndex = 0,
+                                DocumentReaderResumeState = null,
                                 Hotkey = new HotkeySettings { Modifiers = "Alt", Key = "E", AutoReadClipboard = false },
                                 DocumentReaderHotkey = new DocumentReaderHotkeySettings { Modifiers = string.Empty, Key = "MediaPlayPause", UsePlayPauseToggle = false },
                                 DocumentReaderHighlightColor = "ThemeAccent",
@@ -202,6 +203,7 @@ namespace Dissonance.Services.SettingsService
                                 RememberDocumentReaderPosition = settings.RememberDocumentReaderPosition,
                                 DocumentReaderLastFilePath = settings.DocumentReaderLastFilePath,
                                 DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex,
+                                DocumentReaderResumeState = CloneResumeState ( settings.DocumentReaderResumeState ),
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = settings.Hotkey?.Modifiers ?? string.Empty,
@@ -239,6 +241,7 @@ namespace Dissonance.Services.SettingsService
                                 RememberDocumentReaderPosition = settings.RememberDocumentReaderPosition,
                                 DocumentReaderLastFilePath = string.IsNullOrWhiteSpace ( settings.DocumentReaderLastFilePath ) ? reference.DocumentReaderLastFilePath : settings.DocumentReaderLastFilePath,
                                 DocumentReaderLastCharacterIndex = settings.DocumentReaderLastCharacterIndex < 0 ? reference.DocumentReaderLastCharacterIndex : settings.DocumentReaderLastCharacterIndex,
+                                DocumentReaderResumeState = NormalizeResumeState ( settings, reference ),
                                 Hotkey = new HotkeySettings
                                 {
                                         Modifiers = string.IsNullOrWhiteSpace ( settings.Hotkey?.Modifiers ) ? reference.Hotkey.Modifiers : settings.Hotkey.Modifiers,
@@ -271,6 +274,63 @@ namespace Dissonance.Services.SettingsService
                                 return value.Value;
 
                         return fallback;
+                }
+
+                private static AppSettings.DocumentReaderResumeState? CloneResumeState ( AppSettings.DocumentReaderResumeState? state )
+                {
+                        if ( state == null )
+                                return null;
+
+                        return new AppSettings.DocumentReaderResumeState
+                        {
+                                FilePath = state.FilePath,
+                                CharacterIndex = state.CharacterIndex,
+                                DocumentLength = state.DocumentLength,
+                                ContentHash = state.ContentHash,
+                                FileSize = state.FileSize,
+                                LastWriteTimeUtc = state.LastWriteTimeUtc,
+                        };
+                }
+
+                private static AppSettings.DocumentReaderResumeState? NormalizeResumeState ( AppSettings settings, AppSettings fallback )
+                {
+                        var normalizedFromState = NormalizeResumeState ( settings.DocumentReaderResumeState );
+                        if ( normalizedFromState != null )
+                                return normalizedFromState;
+
+                        if ( !string.IsNullOrWhiteSpace ( settings.DocumentReaderLastFilePath ) )
+                        {
+                                return new AppSettings.DocumentReaderResumeState
+                                {
+                                        FilePath = settings.DocumentReaderLastFilePath,
+                                        CharacterIndex = Math.Max ( 0, settings.DocumentReaderLastCharacterIndex ),
+                                        DocumentLength = 0,
+                                        ContentHash = null,
+                                        FileSize = null,
+                                        LastWriteTimeUtc = null,
+                                };
+                        }
+
+                        return CloneResumeState ( fallback.DocumentReaderResumeState );
+                }
+
+                private static AppSettings.DocumentReaderResumeState? NormalizeResumeState ( AppSettings.DocumentReaderResumeState? state )
+                {
+                        if ( state == null )
+                                return null;
+
+                        if ( string.IsNullOrWhiteSpace ( state.FilePath ) )
+                                return null;
+
+                        return new AppSettings.DocumentReaderResumeState
+                        {
+                                FilePath = state.FilePath,
+                                CharacterIndex = Math.Max ( 0, state.CharacterIndex ),
+                                DocumentLength = state.DocumentLength < 0 ? 0 : state.DocumentLength,
+                                ContentHash = string.IsNullOrWhiteSpace ( state.ContentHash ) ? null : state.ContentHash,
+                                FileSize = state.FileSize.HasValue && state.FileSize.Value >= 0 ? state.FileSize : null,
+                                LastWriteTimeUtc = state.LastWriteTimeUtc,
+                        };
                 }
 
                 private bool WriteSettingsToFile ( string path, AppSettings settings, string failureMessage )

@@ -126,7 +126,7 @@
                                                 MinWidth="160"
                                                 MinHeight="32"
                                                 TabIndex="0"
-                                                ToolTip="Browse for a text document to preview before narration"
+                                                ToolTip="Browse for a text document to read with narration"
                                                 AutomationProperties.Name="Open document"
                                                 AutomationProperties.HelpText="Opens a file picker so you can choose a text document to load"/>
                                         <Button Content="Clear"
@@ -138,7 +138,7 @@
                                                 TabIndex="1"
                                                 ToolTip="Remove the currently loaded document"
                                                 AutomationProperties.Name="Clear loaded document"
-                                                AutomationProperties.HelpText="Unloads the current document and resets the preview"/>
+                                                AutomationProperties.HelpText="Unloads the current document and resets the reader"/>
                                     </StackPanel>
                                     <ProgressBar Height="4"
                                                  Margin="0,16,0,0"
@@ -238,7 +238,7 @@
                                                FontWeight="SemiBold"
                                                Foreground="{DynamicResource PrimaryForegroundBrush}"/>
                                     <TextBlock Margin="0,4,0,0"
-                                               Text="Assign a shortcut to control document narration while reviewing the preview."
+                                               Text="Assign a shortcut to control document narration while reading."
                                                Style="{StaticResource CardDescriptionTextStyle}"
                                                TextWrapping="Wrap"/>
                                     <StackPanel Orientation="Horizontal"
@@ -271,7 +271,7 @@
                                               ToolTip="When enabled, pressing the hotkey toggles between play and pause."
                                               TabIndex="5"
                                               AutomationProperties.Name="Toggle playback hotkey pause behavior"
-                                              AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume the document preview"/>
+                                              AutomationProperties.HelpText="Enable to make the playback hotkey pause and resume document narration"/>
                                 </StackPanel>
 
                                 <StackPanel Margin="0,24,0,0">
@@ -320,7 +320,7 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="*"/>
                             </Grid.RowDefinitions>
-                            <TextBlock Text="Document preview"
+                            <TextBlock Text="Document reader"
                                        Style="{StaticResource CardTitleTextStyle}"/>
                             <StackPanel Grid.Row="1"
                                         Orientation="Horizontal"
@@ -367,9 +367,9 @@
                                                                               HighlightBrush="{Binding HighlightBrush}"
                                                                               VerticalScrollBarVisibility="Auto"
                                                                               TabIndex="10"
-                                                                              AutomationProperties.Name="Document preview content"
-                                                                              AutomationProperties.HelpText="Displays the loaded document with highlighted narration text"
-                                                                              ToolTip="Preview of the loaded document">
+                                                                              AutomationProperties.Name="Document reader content"
+                                                                              AutomationProperties.HelpText="Displays the loaded document for reading with highlighted narration text"
+                                                                              ToolTip="Reader view of the loaded document">
                                 <controls:HighlightingFlowDocumentScrollViewer.Style>
                                     <Style TargetType="controls:HighlightingFlowDocumentScrollViewer">
                                         <Setter Property="Visibility" Value="Collapsed"/>
@@ -383,7 +383,7 @@
                             </controls:HighlightingFlowDocumentScrollViewer>
                             <TextBlock Grid.Row="2"
                                        Margin="0,20,0,0"
-                                       Text="Open a document to preview its contents here."
+                                       Text="Open a document to read its contents here."
                                        HorizontalAlignment="Center"
                                        VerticalAlignment="Center"
                                        TextAlignment="Center"

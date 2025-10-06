@@ -2,14 +2,16 @@
 
 namespace Dissonance.Services.HotkeyService
 {
-	public interface IHotkeyService : IDisposable
-	{
-		event Action HotkeyPressed;
+        public interface IHotkeyService : IDisposable
+        {
+                event Action HotkeyPressed;
 
-		void Initialize ( Window mainWindow );
+                void Initialize ( Window mainWindow );
 
-		void RegisterHotkey ( AppSettings.HotkeySettings hotkey );
+                void RegisterHotkey ( AppSettings.HotkeySettings hotkey );
 
-		void UnregisterHotkey ( );
-	}
+                IDisposable? RegisterHotkey ( AppSettings.HotkeySettings hotkey, Action callback, bool allowEmptyModifiers = false );
+
+                void UnregisterHotkey ( );
+        }
 }

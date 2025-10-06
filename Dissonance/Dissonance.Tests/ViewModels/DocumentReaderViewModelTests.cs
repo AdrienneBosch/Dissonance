@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -9,6 +10,7 @@ using System.Speech.Synthesis;
 
 using Dissonance;
 using Dissonance.Services.DocumentReader;
+using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
 using Dissonance.ViewModels;
@@ -26,7 +28,8 @@ namespace Dissonance.Tests.ViewModels
                         var service = new StubDocumentReaderService(result);
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+                        var hotkeyService = new RecordingHotkeyService();
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         var success = await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -54,7 +57,8 @@ namespace Dissonance.Tests.ViewModels
                         var service = new FailingDocumentReaderService(new InvalidOperationException("boom"));
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+                        var hotkeyService = new RecordingHotkeyService();
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         var success = await viewModel.LoadDocumentAsync("missing.txt");
 
@@ -76,7 +80,7 @@ namespace Dissonance.Tests.ViewModels
                         var service = new StubDocumentReaderService(result);
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, new RecordingHotkeyService());
 
                         viewModel.ClearDocumentCommand.Execute(null);
 
@@ -95,7 +99,7 @@ namespace Dissonance.Tests.ViewModels
                         var service = new PendingDocumentReaderService(tcs);
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, new RecordingHotkeyService());
 
                         var loadTask = viewModel.LoadDocumentAsync("sample.txt");
 
@@ -116,7 +120,8 @@ namespace Dissonance.Tests.ViewModels
                         var settings = CreateSettings();
                         settings.DocumentReaderHotkey.Key = string.Empty;
                         var settingsService = new StubSettingsService(settings);
-                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+                        var hotkeyService = new RecordingHotkeyService();
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
 
                         viewModel.PlaybackHotkeyCombination = "MediaPlayPause";
 
@@ -130,6 +135,21 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal("MediaPlayPause", settings.DocumentReaderHotkey.Key);
                         Assert.Equal(string.Empty, settings.DocumentReaderHotkey.Modifiers);
                         Assert.Equal(1, settingsService.SaveCalls);
+                        Assert.Contains("|MediaPlayPause|allowEmpty:True", hotkeyService.Registrations);
+                }
+
+                [Fact]
+                public void InitializesGlobalMediaKeyRegistrations()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var hotkeyService = new RecordingHotkeyService();
+
+                        _ = new DocumentReaderViewModel(service, new StubTtsService(), settingsService, hotkeyService);
+
+                        Assert.Contains("|MediaPlayPause|allowEmpty:True", hotkeyService.Registrations);
                 }
 
                 [Fact]
@@ -140,7 +160,7 @@ namespace Dissonance.Tests.ViewModels
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
                         var ttsService = new StubTtsService(returnPrompt: true);
-                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService, new RecordingHotkeyService());
 
                         await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -167,7 +187,7 @@ namespace Dissonance.Tests.ViewModels
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
                         var ttsService = new StubTtsService(returnPrompt: true);
-                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService, new RecordingHotkeyService());
 
                         await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -195,7 +215,7 @@ namespace Dissonance.Tests.ViewModels
                         var settings = CreateSettings();
                         var settingsService = new StubSettingsService(settings);
                         var ttsService = new StubTtsService(returnPrompt: true);
-                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService, new RecordingHotkeyService());
 
                         await viewModel.LoadDocumentAsync(result.FilePath);
 
@@ -307,6 +327,66 @@ namespace Dissonance.Tests.ViewModels
                         public Task<DocumentReadResult> ReadDocumentAsync(string filePath, CancellationToken cancellationToken = default)
                         {
                                 return _completion.Task;
+                        }
+                }
+
+                private sealed class RecordingHotkeyService : IHotkeyService
+                {
+                        public List<string> PrimaryRegistrations { get; } = new();
+                        public List<string> Registrations { get; } = new();
+                        public List<string> DisposedRegistrations { get; } = new();
+
+                        public event Action? HotkeyPressed
+                        {
+                                add { }
+                                remove { }
+                        }
+
+                        public void Dispose()
+                        {
+                        }
+
+                        public void Initialize(System.Windows.Window mainWindow)
+                        {
+                        }
+
+                        public void RegisterHotkey(AppSettings.HotkeySettings hotkey)
+                        {
+                                PrimaryRegistrations.Add($"{hotkey.Modifiers}|{hotkey.Key}");
+                        }
+
+                        public IDisposable? RegisterHotkey(AppSettings.HotkeySettings hotkey, Action callback, bool allowEmptyModifiers = false)
+                        {
+                                var descriptor = $"{hotkey.Modifiers}|{hotkey.Key}|allowEmpty:{allowEmptyModifiers}";
+                                Registrations.Add(descriptor);
+                                return new RecordingRegistration(this, descriptor);
+                        }
+
+                        public void UnregisterHotkey()
+                        {
+                                PrimaryRegistrations.Clear();
+                        }
+
+                        private sealed class RecordingRegistration : IDisposable
+                        {
+                                private readonly RecordingHotkeyService _owner;
+                                private readonly string _descriptor;
+                                private bool _disposed;
+
+                                public RecordingRegistration(RecordingHotkeyService owner, string descriptor)
+                                {
+                                        _owner = owner;
+                                        _descriptor = descriptor;
+                                }
+
+                                public void Dispose()
+                                {
+                                        if (_disposed)
+                                                return;
+
+                                        _owner.DisposedRegistrations.Add(_descriptor);
+                                        _disposed = true;
+                                }
                         }
                 }
 

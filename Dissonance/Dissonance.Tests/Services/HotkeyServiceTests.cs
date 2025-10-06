@@ -20,10 +20,10 @@ public class HotkeyServiceTests
                         var parseMethod = typeof(HotkeyService).GetMethod("ParseModifiers", BindingFlags.NonPublic | BindingFlags.Instance);
                         Assert.NotNull(parseMethod);
 
-                        var result = (uint)parseMethod!.Invoke(service, new object[] { "Ctrl + Alt" })!;
+                        var result = (uint)parseMethod!.Invoke(service, new object[] { "Ctrl + Alt", false })!;
                         Assert.Equal(ModifierKeys.Control | ModifierKeys.Alt, result);
 
-                        result = (uint)parseMethod.Invoke(service, new object[] { "Shift+Win" })!;
+                        result = (uint)parseMethod.Invoke(service, new object[] { "Shift+Win", false })!;
                         Assert.Equal(ModifierKeys.Shift | ModifierKeys.Win, result);
                 });
         }
@@ -39,8 +39,11 @@ public class HotkeyServiceTests
                         var parseMethod = typeof(HotkeyService).GetMethod("ParseModifiers", BindingFlags.NonPublic | BindingFlags.Instance);
                         Assert.NotNull(parseMethod);
 
-                        Assert.Throws<TargetInvocationException>(() => parseMethod!.Invoke(service, new object[] { "Unknown" }));
-                        Assert.Throws<TargetInvocationException>(() => parseMethod.Invoke(service, new object[] { string.Empty }));
+                        Assert.Throws<TargetInvocationException>(() => parseMethod!.Invoke(service, new object[] { "Unknown", false }));
+                        Assert.Throws<TargetInvocationException>(() => parseMethod.Invoke(service, new object[] { string.Empty, false }));
+
+                        var zeroResult = (uint)parseMethod.Invoke(service, new object[] { string.Empty, true })!;
+                        Assert.Equal<uint>(0, zeroResult);
                 });
         }
 
@@ -58,7 +61,11 @@ public class HotkeyServiceTests
                         var wndProc = typeof(HotkeyService).GetMethod("WndProc", BindingFlags.NonPublic | BindingFlags.Instance);
                         Assert.NotNull(wndProc);
 
-                        var args = new object[] { IntPtr.Zero, WindowsMessages.Hotkey, IntPtr.Zero, IntPtr.Zero, false };
+                        var primaryField = typeof(HotkeyService).GetField("_primaryHotkeyId", BindingFlags.NonPublic | BindingFlags.Instance);
+                        Assert.NotNull(primaryField);
+                        primaryField!.SetValue(service, 42);
+
+                        var args = new object[] { IntPtr.Zero, WindowsMessages.Hotkey, new IntPtr(42), IntPtr.Zero, false };
                         wndProc!.Invoke(service, args);
 
                         Assert.Equal(1, invocationCount);

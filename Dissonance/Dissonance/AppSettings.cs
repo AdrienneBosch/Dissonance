@@ -36,7 +36,7 @@ namespace Dissonance
 
                 public int DocumentReaderLastCharacterIndex { get; set; }
 
-                public DocumentReaderResumeState? DocumentReaderResumeState { get; set; }
+                public DocumentReaderResumeSnapshot? DocumentReaderResumeState { get; set; }
 
                 public class HotkeySettings
                 {
@@ -56,7 +56,7 @@ namespace Dissonance
                         public bool UsePlayPauseToggle { get; set; }
                 }
 
-                public class DocumentReaderResumeState
+                public class DocumentReaderResumeSnapshot
                 {
                         public string? FilePath { get; set; }
 

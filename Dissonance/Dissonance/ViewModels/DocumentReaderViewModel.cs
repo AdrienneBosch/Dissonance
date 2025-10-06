@@ -1033,7 +1033,7 @@ namespace Dissonance.ViewModels
                         var resumeState = settings.DocumentReaderResumeState;
                         if (resumeState == null && !string.IsNullOrWhiteSpace(settings.DocumentReaderLastFilePath))
                         {
-                                resumeState = new AppSettings.DocumentReaderResumeState
+                                resumeState = new AppSettings.DocumentReaderResumeSnapshot
                                 {
                                         FilePath = settings.DocumentReaderLastFilePath,
                                         CharacterIndex = Math.Max(0, settings.DocumentReaderLastCharacterIndex),
@@ -1085,7 +1085,7 @@ namespace Dissonance.ViewModels
                                 }
                         }
 
-                        var state = new AppSettings.DocumentReaderResumeState
+                        var state = new AppSettings.DocumentReaderResumeSnapshot
                         {
                                 FilePath = metadata.FilePath,
                                 CharacterIndex = normalizedIndex,
@@ -1135,7 +1135,7 @@ namespace Dissonance.ViewModels
                         _settingsService.SaveCurrentSettings();
                 }
 
-                private async void RestoreDocumentFromSettings(AppSettings.DocumentReaderResumeState resumeState)
+                private async void RestoreDocumentFromSettings(AppSettings.DocumentReaderResumeSnapshot resumeState)
                 {
                         try
                         {
@@ -1284,7 +1284,7 @@ namespace Dissonance.ViewModels
                         return Math.Abs((first.Value - second.Value).TotalSeconds) <= 1;
                 }
 
-                private static bool IsMetadataCompatible(AppSettings.DocumentReaderResumeState expected, DocumentMetadata actual)
+                private static bool IsMetadataCompatible(AppSettings.DocumentReaderResumeSnapshot expected, DocumentMetadata actual)
                 {
                         if (expected == null)
                                 return false;

@@ -276,12 +276,12 @@ namespace Dissonance.Services.SettingsService
                         return fallback;
                 }
 
-                private static AppSettings.DocumentReaderResumeState? CloneResumeState ( AppSettings.DocumentReaderResumeState? state )
+                private static AppSettings.DocumentReaderResumeSnapshot? CloneResumeState ( AppSettings.DocumentReaderResumeSnapshot? state )
                 {
                         if ( state == null )
                                 return null;
 
-                        return new AppSettings.DocumentReaderResumeState
+                        return new AppSettings.DocumentReaderResumeSnapshot
                         {
                                 FilePath = state.FilePath,
                                 CharacterIndex = state.CharacterIndex,
@@ -292,7 +292,7 @@ namespace Dissonance.Services.SettingsService
                         };
                 }
 
-                private static AppSettings.DocumentReaderResumeState? NormalizeResumeState ( AppSettings settings, AppSettings fallback )
+                private static AppSettings.DocumentReaderResumeSnapshot? NormalizeResumeState ( AppSettings settings, AppSettings fallback )
                 {
                         var normalizedFromState = NormalizeResumeState ( settings.DocumentReaderResumeState );
                         if ( normalizedFromState != null )
@@ -300,7 +300,7 @@ namespace Dissonance.Services.SettingsService
 
                         if ( !string.IsNullOrWhiteSpace ( settings.DocumentReaderLastFilePath ) )
                         {
-                                return new AppSettings.DocumentReaderResumeState
+                                return new AppSettings.DocumentReaderResumeSnapshot
                                 {
                                         FilePath = settings.DocumentReaderLastFilePath,
                                         CharacterIndex = Math.Max ( 0, settings.DocumentReaderLastCharacterIndex ),
@@ -314,7 +314,7 @@ namespace Dissonance.Services.SettingsService
                         return CloneResumeState ( fallback.DocumentReaderResumeState );
                 }
 
-                private static AppSettings.DocumentReaderResumeState? NormalizeResumeState ( AppSettings.DocumentReaderResumeState? state )
+                private static AppSettings.DocumentReaderResumeSnapshot? NormalizeResumeState ( AppSettings.DocumentReaderResumeSnapshot? state )
                 {
                         if ( state == null )
                                 return null;
@@ -322,7 +322,7 @@ namespace Dissonance.Services.SettingsService
                         if ( string.IsNullOrWhiteSpace ( state.FilePath ) )
                                 return null;
 
-                        return new AppSettings.DocumentReaderResumeState
+                        return new AppSettings.DocumentReaderResumeSnapshot
                         {
                                 FilePath = state.FilePath,
                                 CharacterIndex = Math.Max ( 0, state.CharacterIndex ),

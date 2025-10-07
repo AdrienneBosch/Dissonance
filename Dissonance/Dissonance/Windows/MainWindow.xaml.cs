@@ -11,6 +11,7 @@ using System.Windows.Threading;
 
 using Dissonance.Services.SettingsService;
 using Dissonance.ViewModels;
+using Dissonance.Windows.Controls;
 
 namespace Dissonance
 {
@@ -495,6 +496,15 @@ namespace Dissonance
                         }
 
                         return modifiers;
+                }
+
+                private void DocumentReaderViewer_SelectionChanged ( object sender, RoutedEventArgs e )
+                {
+                        if ( sender is not HighlightingFlowDocumentScrollViewer viewer )
+                                return;
+
+                        var selectedText = string.IsNullOrEmpty ( viewer.SelectedText ) ? null : viewer.SelectedText;
+                        _documentReaderViewModel.UpdateSelectionRange ( viewer.SelectionStartIndex, viewer.SelectionLength, selectedText );
                 }
 
                 private void VoiceVolumeSlider_KeyDown ( object sender, KeyEventArgs e )

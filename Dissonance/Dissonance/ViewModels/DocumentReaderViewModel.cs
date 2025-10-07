@@ -63,6 +63,9 @@ namespace Dissonance.ViewModels
                 private Key _playbackHotkeyKey = Key.None;
                 private ModifierKeys _playbackHotkeyModifiers = ModifierKeys.None;
                 private bool _playbackHotkeyTogglesPause;
+                private int? _selectionStartIndex;
+                private int _selectionLength;
+                private int _activePlaybackLength;
                 private readonly IReadOnlyList<HighlightColorOption> _highlightColorOptions;
                 private HighlightColorOption _selectedHighlightColor = null!;
                 private Brush _highlightBrush = Brushes.Transparent;
@@ -474,6 +477,31 @@ namespace Dissonance.ViewModels
                         ResetPlaybackState();
                         if (RememberDocumentProgress)
                                 ClearPersistedDocumentState();
+                }
+
+                public void UpdateSelectionRange(int startIndex, int length, string? selectedText)
+                {
+                        _ = selectedText;
+
+                        if (PlainText == null)
+                        {
+                                _selectionStartIndex = null;
+                                _selectionLength = 0;
+                                return;
+                        }
+
+                        var normalizedStart = Math.Clamp(startIndex, 0, PlainText.Length);
+                        var normalizedLength = Math.Max(0, Math.Min(length, PlainText.Length - normalizedStart));
+
+                        _selectionStartIndex = normalizedStart;
+                        _selectionLength = normalizedLength;
+
+                        if (normalizedLength == 0 && !IsPlaying)
+                        {
+                                CurrentCharacterIndex = normalizedStart;
+                                CurrentAudioPosition = EstimateTimeFromCharacterIndex(normalizedStart);
+                                SetHighlightRange(normalizedStart, 0);
+                        }
                 }
 
                 private async void BrowseForDocument()
@@ -919,6 +947,51 @@ namespace Dissonance.ViewModels
                         if (PlainText == null)
                                 return;
 
+                        _activePlaybackLength = 0;
+
+                        if (_selectionStartIndex.HasValue && PlainText.Length > 0)
+                        {
+                                var selectionStart = Math.Clamp(_selectionStartIndex.Value, 0, PlainText.Length);
+                                var selectionLength = Math.Max(0, Math.Min(_selectionLength, PlainText.Length - selectionStart));
+
+                                if (selectionLength > 0)
+                                {
+                                        CurrentCharacterIndex = selectionStart;
+                                        _playbackStartCharacterIndex = selectionStart;
+                                        _playbackStartAudioPosition = EstimateTimeFromCharacterIndex(selectionStart);
+                                        CurrentAudioPosition = _playbackStartAudioPosition;
+                                        _activePlaybackLength = selectionLength;
+                                        SetHighlightRange(selectionStart, 0);
+                                        var selectedText = PlainText.Substring(selectionStart, selectionLength);
+                                        _currentPrompt = _ttsService.Speak(selectedText);
+                                        _pendingSeekCharacterIndex = null;
+                                        _pendingSeekAudioPosition = TimeSpan.Zero;
+
+                                        if (_currentPrompt != null)
+                                        {
+                                                IsPlaying = true;
+                                                IsPaused = false;
+                                                _isStoppingForPause = false;
+                                                _isStoppingForSeek = false;
+                                        }
+                                        else
+                                        {
+                                                IsPlaying = false;
+                                                IsPaused = false;
+                                                _activePlaybackLength = 0;
+                                        }
+
+                                        return;
+                                }
+
+                                if (selectionStart != CurrentCharacterIndex)
+                                {
+                                        CurrentCharacterIndex = selectionStart;
+                                        CurrentAudioPosition = EstimateTimeFromCharacterIndex(selectionStart);
+                                        SetHighlightRange(selectionStart, 0);
+                                }
+                        }
+
                         if (CurrentCharacterIndex >= PlainText.Length)
                         {
                                 CurrentCharacterIndex = 0;
@@ -933,9 +1006,11 @@ namespace Dissonance.ViewModels
                                 return;
                         }
 
-                        var textToSpeak = PlainText.Substring(CurrentCharacterIndex);
+                        var textToSpeak = PlainText.Substring(CurrentCharacterIndex, remainingLength);
                         _playbackStartCharacterIndex = CurrentCharacterIndex;
                         _playbackStartAudioPosition = EstimateTimeFromCharacterIndex(CurrentCharacterIndex);
+                        CurrentAudioPosition = _playbackStartAudioPosition;
+                        _activePlaybackLength = remainingLength;
                         SetHighlightRange(CurrentCharacterIndex, 0);
                         _currentPrompt = _ttsService.Speak(textToSpeak);
                         _pendingSeekCharacterIndex = null;
@@ -952,6 +1027,7 @@ namespace Dissonance.ViewModels
                         {
                                 IsPlaying = false;
                                 IsPaused = false;
+                                _activePlaybackLength = 0;
                         }
                 }
 
@@ -1003,6 +1079,9 @@ namespace Dissonance.ViewModels
                         _isStoppingForSeek = false;
                         _pendingSeekCharacterIndex = null;
                         _pendingSeekAudioPosition = TimeSpan.Zero;
+                        _selectionStartIndex = null;
+                        _selectionLength = 0;
+                        _activePlaybackLength = 0;
                         var previousSuppressed = _suspendProgressPersistence;
                         _suspendProgressPersistence = true;
                         CurrentCharacterIndex = 0;
@@ -1062,7 +1141,11 @@ namespace Dissonance.ViewModels
                                 _progressHistory.Add((CurrentAudioPosition, CurrentCharacterIndex));
 
                         var highlightStart = Math.Clamp(_playbackStartCharacterIndex + e.CharacterPosition, 0, PlainText.Length);
-                        var highlightLength = Math.Clamp(e.CharacterCount, 0, PlainText.Length - highlightStart);
+                        var playbackLimit = _activePlaybackLength > 0
+                                ? Math.Min(_playbackStartCharacterIndex + _activePlaybackLength, PlainText.Length)
+                                : PlainText.Length;
+                        var highlightEnd = Math.Min(playbackLimit, highlightStart + Math.Max(0, e.CharacterCount));
+                        var highlightLength = Math.Max(0, highlightEnd - highlightStart);
                         SetHighlightRange(highlightStart, highlightLength);
                 }
 
@@ -1078,6 +1161,7 @@ namespace Dissonance.ViewModels
                                 _isStoppingForPause = false;
                                 IsPlaying = false;
                                 IsPaused = true;
+                                _activePlaybackLength = 0;
                                 return;
                         }
 
@@ -1091,12 +1175,17 @@ namespace Dissonance.ViewModels
                                         _pendingSeekCharacterIndex = null;
                                         StartPlaybackFromCurrentPosition();
                                 }
+                                else
+                                {
+                                        _activePlaybackLength = 0;
+                                }
                                 return;
                         }
 
                         if (e.Cancelled)
                         {
                                 IsPlaying = false;
+                                _activePlaybackLength = 0;
                                 SetHighlightRange(CurrentCharacterIndex, 0);
                                 return;
                         }
@@ -1106,9 +1195,23 @@ namespace Dissonance.ViewModels
 
                         if (PlainText != null)
                         {
-                                CurrentCharacterIndex = PlainText.Length;
+                                var playbackLength = _activePlaybackLength;
+                                _activePlaybackLength = 0;
+                                if (playbackLength > 0)
+                                {
+                                        var completionIndex = Math.Clamp(_playbackStartCharacterIndex + playbackLength, 0, PlainText.Length);
+                                        CurrentCharacterIndex = completionIndex;
+                                }
+                                else
+                                {
+                                        CurrentCharacterIndex = PlainText.Length;
+                                }
                                 CurrentAudioPosition = EstimateTimeFromCharacterIndex(CurrentCharacterIndex);
                                 SetHighlightRange(CurrentCharacterIndex, 0);
+                        }
+                        else
+                        {
+                                _activePlaybackLength = 0;
                         }
                 }
 

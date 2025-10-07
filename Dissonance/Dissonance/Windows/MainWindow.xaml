@@ -405,13 +405,15 @@
                                         </ListBox>
                                     </StackPanel>
                                 </Border>
-                                <controls:HighlightingFlowDocumentScrollViewer Grid.Column="1"
+                                <controls:HighlightingFlowDocumentScrollViewer x:Name="DocumentReaderViewer"
+                                                                              Grid.Column="1"
                                                                               Document="{Binding Document}"
                                                                               HighlightStartIndex="{Binding HighlightStartIndex}"
                                                                               HighlightLength="{Binding HighlightLength}"
                                                                               HighlightBrush="{Binding HighlightBrush}"
                                                                               VerticalScrollBarVisibility="Auto"
                                                                               TabIndex="11"
+                                                                              SelectionChanged="DocumentReaderViewer_SelectionChanged"
                                                                               AutomationProperties.Name="Document reader content"
                                                                               AutomationProperties.HelpText="Displays the loaded document for reading with highlighted narration text"
                                                                               ToolTip="Reader view of the loaded document">

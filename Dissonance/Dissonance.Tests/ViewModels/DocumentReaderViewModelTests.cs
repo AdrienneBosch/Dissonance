@@ -211,6 +211,45 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal(result.PlainText.Length, viewModel.CharacterCount);
                 }
 
+                [Fact]
+                public async Task PlayPauseCommand_UsesSelectionWhenProvided()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello brave world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        viewModel.UpdateSelectionRange(6, 5, "brave");
+                        viewModel.PlayPauseCommand.Execute(null);
+
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.Equal("brave", ttsService.LastPromptText);
+                        Assert.Equal(6, viewModel.CurrentCharacterIndex);
+                }
+
+                [Fact]
+                public async Task UpdateSelectionRange_WithCaretOnly_MovesCurrentIndex()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        viewModel.UpdateSelectionRange(4, 0, null);
+
+                        Assert.Equal(4, viewModel.CurrentCharacterIndex);
+                        Assert.Equal(TimeSpan.FromSeconds(4 / 15d), viewModel.CurrentAudioPosition);
+                        Assert.Equal(4, viewModel.HighlightStartIndex);
+                        Assert.Equal(0, viewModel.HighlightLength);
+                }
+
                 private static AppSettings CreateSettings()
                 {
                         return new AppSettings
@@ -335,6 +374,9 @@ namespace Dissonance.Tests.ViewModels
 
                         public Prompt? LastPrompt { get; private set; }
 
+                        private string? _lastPromptText;
+                        public string? LastPromptText => _lastPromptText;
+
                         public void SetTTSParameters(string voice, double rate, int volume)
                         {
                         }
@@ -345,6 +387,7 @@ namespace Dissonance.Tests.ViewModels
                                         return null;
 
                                 LastPrompt = new Prompt(text);
+                                _lastPromptText = text;
                                 return LastPrompt;
                         }
 

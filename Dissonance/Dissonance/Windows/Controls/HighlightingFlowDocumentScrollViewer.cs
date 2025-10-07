@@ -9,6 +9,11 @@ namespace Dissonance.Windows.Controls
 {
         public class HighlightingFlowDocumentScrollViewer : FlowDocumentScrollViewer
         {
+                public HighlightingFlowDocumentScrollViewer()
+                {
+                        SelectionChanged += HandleSelectionChanged;
+                }
+
                 public static readonly DependencyProperty HighlightStartIndexProperty =
                         DependencyProperty.Register(nameof(HighlightStartIndex), typeof(int), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(0, OnHighlightChanged));
 
@@ -84,15 +89,13 @@ namespace Dissonance.Windows.Controls
                         }
                 }
 
-                protected override void OnSelectionChanged(RoutedEventArgs args)
+                private void HandleSelectionChanged(object sender, RoutedEventArgs args)
                 {
-                        base.OnSelectionChanged(args);
-
                         if (_suppressSelectionPublishing)
                                 return;
 
                         var document = Document;
-                        var selection = Selection;
+                        TextSelection? selection = Selection;
 
                         if (document == null || selection == null)
                         {

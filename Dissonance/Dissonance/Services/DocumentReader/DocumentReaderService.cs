@@ -1,8 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -64,34 +66,54 @@ namespace Dissonance.Services.DocumentReader
 
                         if (book != null)
                         {
-                                var orderedContent = (IEnumerable<EpubTextContentFile>?)book.ReadingOrder;
-                                if (orderedContent == null || !orderedContent.Any())
-                                        orderedContent = book.Content?.Html?.Values;
+                                // Build a sequence of content objects without assuming exact library types.
+                                IEnumerable<object>? orderedContent = null;
+                                if (book.ReadingOrder != null && (book.ReadingOrder as IEnumerable)?.GetEnumerator() != null)
+                                {
+                                        orderedContent = ((IEnumerable)book.ReadingOrder).Cast<object>();
+                                }
+                                else if (book.Content?.Html is IEnumerable htmlCollection)
+                                {
+                                        orderedContent = htmlCollection.Cast<object>();
+                                }
 
                                 if (orderedContent != null)
                                 {
-                                        foreach (var textContentFile in orderedContent)
+                                        foreach (var contentObj in orderedContent)
                                         {
                                                 cancellationToken.ThrowIfCancellationRequested();
 
-                                                if (textContentFile == null)
+                                                if (contentObj == null)
                                                         continue;
 
-                                                string? htmlContent;
+                                                // contentObj may be either a text content file or a KeyValuePair-like entry.
+                                                object? fileObj = contentObj;
+                                                string? keyFromPair = null;
+
+                                                var type = contentObj.GetType();
+                                                var valueProp = type.GetProperty("Value");
+                                                if (valueProp != null)
+                                                {
+                                                        // treat as KeyValuePair or similar
+                                                        fileObj = valueProp.GetValue(contentObj);
+                                                        var keyProp = type.GetProperty("Key");
+                                                        if (keyProp != null)
+                                                                keyFromPair = keyProp.GetValue(contentObj)?.ToString();
+                                                }
+
+                                                if (fileObj == null)
+                                                        continue;
+
+                                                string? htmlContent = null;
                                                 try
                                                 {
-                                                        htmlContent = textContentFile.Content;
-                                                        if (string.IsNullOrWhiteSpace(htmlContent))
-                                                                htmlContent = textContentFile.TextContent;
+                                                        var contentProp = fileObj.GetType().GetProperty("Content");
+                                                        if (contentProp != null)
+                                                                htmlContent = contentProp.GetValue(fileObj) as string;
                                                 }
-                                                catch (EpubContentException)
+                                                catch (TargetInvocationException)
                                                 {
                                                         continue;
-                                                }
-                                                catch (Exception ex)
-                                                {
-                                                        var sectionName = textContentFile.FileName ?? textContentFile.Key ?? "unknown";
-                                                        throw new InvalidOperationException($"Failed to read content from EPUB section '{sectionName}'.", ex);
                                                 }
 
                                                 if (string.IsNullOrWhiteSpace(htmlContent))
@@ -104,15 +126,33 @@ namespace Dissonance.Services.DocumentReader
                                                 }
                                                 catch (Exception ex)
                                                 {
-                                                        var sectionName = textContentFile.Title ?? textContentFile.FileName ?? textContentFile.Key ?? "unknown";
+                                                        // Try to build a section identifier for error message
+                                                        var sectionName = keyFromPair ?? fileObj.GetType().Name;
                                                         throw new InvalidOperationException($"Failed to convert HTML to text for EPUB section '{sectionName}'.", ex);
                                                 }
 
-                                                var sectionTitle = !string.IsNullOrWhiteSpace(textContentFile.Title)
-                                                        ? textContentFile.Title!.Trim()
-                                                        : (!string.IsNullOrWhiteSpace(textContentFile.FileName)
-                                                                ? Path.GetFileNameWithoutExtension(textContentFile.FileName)
-                                                                : "Section");
+                                                // Derive a section title using available metadata if present
+                                                string? sectionTitle = null;
+                                                var titleProp = fileObj.GetType().GetProperty("Title");
+                                                if (titleProp != null)
+                                                        sectionTitle = titleProp.GetValue(fileObj) as string;
+
+                                                if (string.IsNullOrWhiteSpace(sectionTitle))
+                                                {
+                                                        var filenameProp = fileObj.GetType().GetProperty("FileName") ?? fileObj.GetType().GetProperty("FilePath");
+                                                        if (filenameProp != null)
+                                                        {
+                                                                var filename = filenameProp.GetValue(fileObj) as string;
+                                                                if (!string.IsNullOrWhiteSpace(filename))
+                                                                        sectionTitle = Path.GetFileNameWithoutExtension(filename);
+                                                        }
+                                                }
+
+                                                if (string.IsNullOrWhiteSpace(sectionTitle) && !string.IsNullOrWhiteSpace(keyFromPair))
+                                                        sectionTitle = Path.GetFileNameWithoutExtension(keyFromPair);
+
+                                                if (string.IsNullOrWhiteSpace(sectionTitle))
+                                                        sectionTitle = "Section";
 
                                                 var startIndex = AppendSectionContent(builder, sectionTitle, text);
                                                 sections.Add(new DocumentSection(sectionTitle, startIndex, 0));

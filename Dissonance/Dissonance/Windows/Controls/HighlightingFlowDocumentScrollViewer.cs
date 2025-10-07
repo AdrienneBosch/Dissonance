@@ -18,10 +18,20 @@ namespace Dissonance.Windows.Controls
                 public static readonly DependencyProperty HighlightBrushProperty =
                         DependencyProperty.Register(nameof(HighlightBrush), typeof(Brush), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(Brushes.Transparent, OnHighlightChanged));
 
+                public static readonly DependencyProperty SelectionStartIndexProperty =
+                        DependencyProperty.Register(nameof(SelectionStartIndex), typeof(int), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(0));
+
+                public static readonly DependencyProperty SelectionLengthProperty =
+                        DependencyProperty.Register(nameof(SelectionLength), typeof(int), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(0));
+
+                public static readonly DependencyProperty SelectedTextProperty =
+                        DependencyProperty.Register(nameof(SelectedText), typeof(string), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(string.Empty));
+
                 private TextRange? _currentHighlight;
                 private int _appliedStartIndex = -1;
                 private int _appliedLength;
                 private Brush? _appliedBrush;
+                private bool _suppressSelectionPublishing;
 
                 public int HighlightStartIndex
                 {
@@ -41,6 +51,24 @@ namespace Dissonance.Windows.Controls
                         set => SetValue(HighlightBrushProperty, value);
                 }
 
+                public int SelectionStartIndex
+                {
+                        get => (int)GetValue(SelectionStartIndexProperty);
+                        private set => SetValue(SelectionStartIndexProperty, value);
+                }
+
+                public int SelectionLength
+                {
+                        get => (int)GetValue(SelectionLengthProperty);
+                        private set => SetValue(SelectionLengthProperty, value);
+                }
+
+                public string SelectedText
+                {
+                        get => (string)GetValue(SelectedTextProperty);
+                        private set => SetValue(SelectedTextProperty, value);
+                }
+
                 protected override void OnPropertyChanged(DependencyPropertyChangedEventArgs e)
                 {
                         base.OnPropertyChanged(e);
@@ -51,8 +79,33 @@ namespace Dissonance.Windows.Controls
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;
                                 _appliedBrush = null;
+                                PublishSelectionRange(0, 0, string.Empty);
                                 UpdateHighlight();
                         }
+                }
+
+                protected override void OnSelectionChanged(RoutedEventArgs args)
+                {
+                        base.OnSelectionChanged(args);
+
+                        if (_suppressSelectionPublishing)
+                                return;
+
+                        var document = Document;
+                        var selection = Selection;
+
+                        if (document == null || selection == null)
+                        {
+                                PublishSelectionRange(0, 0, string.Empty);
+                                return;
+                        }
+
+                        var start = GetOffsetFromPointer(document, selection.Start);
+                        var end = GetOffsetFromPointer(document, selection.End);
+                        var length = Math.Max(0, end - start);
+                        var text = length > 0 ? new TextRange(selection.Start, selection.End).Text : string.Empty;
+
+                        PublishSelectionRange(start, length, text ?? string.Empty);
                 }
 
                 private static void OnHighlightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -60,6 +113,21 @@ namespace Dissonance.Windows.Controls
                         if (d is HighlightingFlowDocumentScrollViewer viewer)
                         {
                                 viewer.UpdateHighlight();
+                        }
+                }
+
+                private void PublishSelectionRange(int start, int length, string text)
+                {
+                        _suppressSelectionPublishing = true;
+                        try
+                        {
+                                SelectionStartIndex = Math.Max(0, start);
+                                SelectionLength = Math.Max(0, length);
+                                SelectedText = length > 0 ? text : string.Empty;
+                        }
+                        finally
+                        {
+                                _suppressSelectionPublishing = false;
                         }
                 }
 
@@ -165,6 +233,47 @@ namespace Dissonance.Windows.Controls
                         }
 
                         return document.ContentEnd;
+                }
+
+                private static int GetOffsetFromPointer(FlowDocument document, TextPointer pointer)
+                {
+                        if (document == null || pointer == null)
+                                return 0;
+
+                        var navigator = document.ContentStart;
+                        var offset = 0;
+
+                        while (navigator != null && navigator.CompareTo(pointer) < 0 && navigator.CompareTo(document.ContentEnd) < 0)
+                        {
+                                if (navigator.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
+                                {
+                                        var textRun = navigator.GetTextInRun(LogicalDirection.Forward);
+                                        if (textRun.Length == 0)
+                                        {
+                                                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+                                                continue;
+                                        }
+
+                                        var runEnd = navigator.GetPositionAtOffset(textRun.Length, LogicalDirection.Forward);
+                                        if (runEnd == null)
+                                                break;
+
+                                        if (pointer.CompareTo(runEnd) <= 0)
+                                        {
+                                                offset += navigator.GetOffsetToPosition(pointer);
+                                                return Math.Max(0, offset);
+                                        }
+
+                                        offset += textRun.Length;
+                                        navigator = runEnd;
+                                }
+                                else
+                                {
+                                        navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+                                }
+                        }
+
+                        return Math.Max(0, offset);
                 }
         }
 }

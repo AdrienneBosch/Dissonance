@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 using UglyToad.PdfPig;
-using UglyToad.PdfPig.Outline;
 
 using VersOne.Epub;
 
@@ -63,27 +63,104 @@ namespace Dissonance.Services.DocumentReader
                         var sections = new List<DocumentSection>();
                         var builder = new StringBuilder();
 
-                        if (book?.Chapters != null)
+                        if (book != null)
                         {
-                                foreach (var chapter in book.Chapters)
+                                try
                                 {
-                                        AppendEpubChapter(chapter, sections, builder, 0, cancellationToken);
+                                        var contentProp = book.GetType().GetProperty("Content", BindingFlags.Public | BindingFlags.Instance);
+                                        if (contentProp != null)
+                                        {
+                                                var contentObj = contentProp.GetValue(book);
+                                                if (contentObj != null)
+                                                {
+                                                        var htmlProp = contentObj.GetType().GetProperty("Html", BindingFlags.Public | BindingFlags.Instance);
+                                                        if (htmlProp != null)
+                                                        {
+                                                                var htmlCollection = htmlProp.GetValue(contentObj);
+                                                                if (htmlCollection != null)
+                                                                {
+                                                                        IEnumerable<object>? items = null;
+
+                                                                        // Try direct 'Values' property
+                                                                        var valuesProp = htmlCollection.GetType().GetProperty("Values", BindingFlags.Public | BindingFlags.Instance);
+                                                                        if (valuesProp != null)
+                                                                        {
+                                                                                var values = valuesProp.GetValue(htmlCollection);
+                                                                                if (values is System.Collections.IEnumerable en1 && !(values is string))
+                                                                                        items = en1.Cast<object>();
+                                                                        }
+
+                                                                        // If not found, scan properties for an enumerable
+                                                                        if (items == null)
+                                                                        {
+                                                                                foreach (var prop in htmlCollection.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
+                                                                                {
+                                                                                        try
+                                                                                        {
+                                                                                                var val = prop.GetValue(htmlCollection);
+                                                                                                if (val is System.Collections.IEnumerable en && !(val is string))
+                                                                                                {
+                                                                                                        items = en.Cast<object>();
+                                                                                                        break;
+                                                                                                }
+                                                                                        }
+                                                                                        catch
+                                                                                        {
+                                                                                                // ignore
+                                                                                        }
+                                                                                }
+                                                                        }
+
+                                                                        // If still not found, scan fields
+                                                                        if (items == null)
+                                                                        {
+                                                                                foreach (var field in htmlCollection.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                                                                                {
+                                                                                        try
+                                                                                        {
+                                                                                                var val = field.GetValue(htmlCollection);
+                                                                                                if (val is System.Collections.IEnumerable en && !(val is string))
+                                                                                                {
+                                                                                                        items = en.Cast<object>();
+                                                                                                        break;
+                                                                                                }
+                                                                                        }
+                                                                                        catch
+                                                                                        {
+                                                                                                // ignore
+                                                                                        }
+                                                                                }
+                                                                        }
+
+                                                                        if (items != null)
+                                                                        {
+                                                                                foreach (var htmlContent in items)
+                                                                                {
+                                                                                        cancellationToken.ThrowIfCancellationRequested();
+
+                                                                                        var htmlContentType = htmlContent.GetType();
+                                                                                        var contentTextProp = htmlContentType.GetProperty("Content", BindingFlags.Public | BindingFlags.Instance);
+                                                                                        var fileNameProp = htmlContentType.GetProperty("FileName", BindingFlags.Public | BindingFlags.Instance) ?? htmlContentType.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance);
+
+                                                                                        var htmlString = contentTextProp?.GetValue(htmlContent) as string;
+                                                                                        if (string.IsNullOrWhiteSpace(htmlString))
+                                                                                                continue;
+
+                                                                                        var fileName = fileNameProp?.GetValue(htmlContent) as string;
+                                                                                        var text = HtmlToPlainText(htmlString);
+                                                                                        var title = !string.IsNullOrWhiteSpace(fileName) ? Path.GetFileNameWithoutExtension(fileName) : "Section";
+                                                                                        var startIndex = AppendSectionContent(builder, title, text);
+                                                                                        sections.Add(new DocumentSection(title, startIndex, 0));
+                                                                                }
+                                                                        }
+                                                                }
+                                                        }
+                                                }
+                                        }
                                 }
-                        }
-
-                        if (builder.Length == 0 && book?.Content?.Html != null)
-                        {
-                                foreach (var htmlContent in book.Content.Html.Values)
+                                catch
                                 {
-                                        cancellationToken.ThrowIfCancellationRequested();
-
-                                        var text = HtmlToPlainText(htmlContent.Content);
-                                        if (string.IsNullOrWhiteSpace(text))
-                                                continue;
-
-                                        var title = !string.IsNullOrWhiteSpace(htmlContent.FileName) ? Path.GetFileNameWithoutExtension(htmlContent.FileName) : "Section";
-                                        var startIndex = AppendSectionContent(builder, title, text);
-                                        sections.Add(new DocumentSection(title, startIndex, 0));
+                                        // ignore and continue
                                 }
                         }
 
@@ -120,9 +197,8 @@ namespace Dissonance.Services.DocumentReader
                                                 }
                                         }
 
-                                        var outlines = document.GetOutlines();
-                                        if (outlines != null && outlines.Count > 0)
-                                                FlattenPdfOutlines(outlines, 0, pageOffsets, sections);
+                                        // Outline/bookmark extraction is omitted because the PdfPig API varies between versions.
+                                        // Rely on per-page sections as a stable fallback.
                                 }
 
                                 if (sections.Count == 0)
@@ -136,32 +212,6 @@ namespace Dissonance.Services.DocumentReader
                                 var plainText = NormalizeLineEndings(builder.ToString());
                                 return new DocumentReadResult(filePath, null, plainText, sections);
                         }, cancellationToken).ConfigureAwait(false);
-                }
-
-                private static void AppendEpubChapter(EpubChapter? chapter, ICollection<DocumentSection> sections, StringBuilder builder, int level, CancellationToken cancellationToken)
-                {
-                        if (chapter == null)
-                                return;
-
-                        cancellationToken.ThrowIfCancellationRequested();
-
-                        var title = !string.IsNullOrWhiteSpace(chapter.Title) ? chapter.Title!.Trim() : null;
-                        var body = HtmlToPlainText(chapter.HtmlContent);
-                        var hasContent = !string.IsNullOrWhiteSpace(title) || !string.IsNullOrWhiteSpace(body);
-
-                        if (hasContent)
-                        {
-                                var startIndex = AppendSectionContent(builder, title, body);
-                                sections.Add(new DocumentSection(title ?? "Chapter", startIndex, level));
-                        }
-
-                        if (chapter.SubChapters != null)
-                        {
-                                foreach (var subChapter in chapter.SubChapters)
-                                {
-                                        AppendEpubChapter(subChapter, sections, builder, level + 1, cancellationToken);
-                                }
-                        }
                 }
 
                 private static string HtmlToPlainText(string? html)
@@ -201,25 +251,6 @@ namespace Dissonance.Services.DocumentReader
                         }
 
                         return startIndex;
-                }
-
-                private static void FlattenPdfOutlines(IReadOnlyList<BookmarkNode> outlines, int level, IReadOnlyDictionary<int, int> pageOffsets, ICollection<DocumentSection> sections)
-                {
-                        if (outlines == null)
-                                return;
-
-                        foreach (var outline in outlines)
-                        {
-                                if (!string.IsNullOrWhiteSpace(outline.Title) && outline.PageNumber.HasValue && pageOffsets.TryGetValue(outline.PageNumber.Value, out var index))
-                                {
-                                        sections.Add(new DocumentSection(outline.Title, index, level));
-                                }
-
-                                if (outline.Children != null && outline.Children.Count > 0)
-                                {
-                                        FlattenPdfOutlines(outline.Children, level + 1, pageOffsets, sections);
-                                }
-                        }
                 }
 
                 private static string NormalizeWhitespace(string? text)

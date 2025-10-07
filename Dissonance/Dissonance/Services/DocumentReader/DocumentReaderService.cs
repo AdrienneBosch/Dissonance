@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -65,102 +64,59 @@ namespace Dissonance.Services.DocumentReader
 
                         if (book != null)
                         {
-                                try
+                                var orderedContent = (IEnumerable<EpubTextContentFile>?)book.ReadingOrder;
+                                if (orderedContent == null || !orderedContent.Any())
+                                        orderedContent = book.Content?.Html?.Values;
+
+                                if (orderedContent != null)
                                 {
-                                        var contentProp = book.GetType().GetProperty("Content", BindingFlags.Public | BindingFlags.Instance);
-                                        if (contentProp != null)
+                                        foreach (var textContentFile in orderedContent)
                                         {
-                                                var contentObj = contentProp.GetValue(book);
-                                                if (contentObj != null)
+                                                cancellationToken.ThrowIfCancellationRequested();
+
+                                                if (textContentFile == null)
+                                                        continue;
+
+                                                string? htmlContent;
+                                                try
                                                 {
-                                                        var htmlProp = contentObj.GetType().GetProperty("Html", BindingFlags.Public | BindingFlags.Instance);
-                                                        if (htmlProp != null)
-                                                        {
-                                                                var htmlCollection = htmlProp.GetValue(contentObj);
-                                                                if (htmlCollection != null)
-                                                                {
-                                                                        IEnumerable<object>? items = null;
-
-                                                                        // Try direct 'Values' property
-                                                                        var valuesProp = htmlCollection.GetType().GetProperty("Values", BindingFlags.Public | BindingFlags.Instance);
-                                                                        if (valuesProp != null)
-                                                                        {
-                                                                                var values = valuesProp.GetValue(htmlCollection);
-                                                                                if (values is System.Collections.IEnumerable en1 && !(values is string))
-                                                                                        items = en1.Cast<object>();
-                                                                        }
-
-                                                                        // If not found, scan properties for an enumerable
-                                                                        if (items == null)
-                                                                        {
-                                                                                foreach (var prop in htmlCollection.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance))
-                                                                                {
-                                                                                        try
-                                                                                        {
-                                                                                                var val = prop.GetValue(htmlCollection);
-                                                                                                if (val is System.Collections.IEnumerable en && !(val is string))
-                                                                                                {
-                                                                                                        items = en.Cast<object>();
-                                                                                                        break;
-                                                                                                }
-                                                                                        }
-                                                                                        catch
-                                                                                        {
-                                                                                                // ignore
-                                                                                        }
-                                                                                }
-                                                                        }
-
-                                                                        // If still not found, scan fields
-                                                                        if (items == null)
-                                                                        {
-                                                                                foreach (var field in htmlCollection.GetType().GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                                                                                {
-                                                                                        try
-                                                                                        {
-                                                                                                var val = field.GetValue(htmlCollection);
-                                                                                                if (val is System.Collections.IEnumerable en && !(val is string))
-                                                                                                {
-                                                                                                        items = en.Cast<object>();
-                                                                                                        break;
-                                                                                                }
-                                                                                        }
-                                                                                        catch
-                                                                                        {
-                                                                                                // ignore
-                                                                                        }
-                                                                                }
-                                                                        }
-
-                                                                        if (items != null)
-                                                                        {
-                                                                                foreach (var htmlContent in items)
-                                                                                {
-                                                                                        cancellationToken.ThrowIfCancellationRequested();
-
-                                                                                        var htmlContentType = htmlContent.GetType();
-                                                                                        var contentTextProp = htmlContentType.GetProperty("Content", BindingFlags.Public | BindingFlags.Instance);
-                                                                                        var fileNameProp = htmlContentType.GetProperty("FileName", BindingFlags.Public | BindingFlags.Instance) ?? htmlContentType.GetProperty("Name", BindingFlags.Public | BindingFlags.Instance);
-
-                                                                                        var htmlString = contentTextProp?.GetValue(htmlContent) as string;
-                                                                                        if (string.IsNullOrWhiteSpace(htmlString))
-                                                                                                continue;
-
-                                                                                        var fileName = fileNameProp?.GetValue(htmlContent) as string;
-                                                                                        var text = HtmlToPlainText(htmlString);
-                                                                                        var title = !string.IsNullOrWhiteSpace(fileName) ? Path.GetFileNameWithoutExtension(fileName) : "Section";
-                                                                                        var startIndex = AppendSectionContent(builder, title, text);
-                                                                                        sections.Add(new DocumentSection(title, startIndex, 0));
-                                                                                }
-                                                                        }
-                                                                }
-                                                        }
+                                                        htmlContent = textContentFile.Content;
+                                                        if (string.IsNullOrWhiteSpace(htmlContent))
+                                                                htmlContent = textContentFile.TextContent;
                                                 }
+                                                catch (EpubContentException)
+                                                {
+                                                        continue;
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                        var sectionName = textContentFile.FileName ?? textContentFile.Key ?? "unknown";
+                                                        throw new InvalidOperationException($"Failed to read content from EPUB section '{sectionName}'.", ex);
+                                                }
+
+                                                if (string.IsNullOrWhiteSpace(htmlContent))
+                                                        continue;
+
+                                                string text;
+                                                try
+                                                {
+                                                        text = HtmlToPlainText(htmlContent);
+                                                }
+                                                catch (Exception ex)
+                                                {
+                                                        var sectionName = textContentFile.Title ?? textContentFile.FileName ?? textContentFile.Key ?? "unknown";
+                                                        throw new InvalidOperationException($"Failed to convert HTML to text for EPUB section '{sectionName}'.", ex);
+                                                }
+
+                                                var sectionTitle = !string.IsNullOrWhiteSpace(textContentFile.Title)
+                                                        ? textContentFile.Title!.Trim()
+                                                        : (!string.IsNullOrWhiteSpace(textContentFile.FileName)
+                                                                ? Path.GetFileNameWithoutExtension(textContentFile.FileName)
+                                                                : "Section");
+
+                                                var startIndex = AppendSectionContent(builder, sectionTitle, text);
+                                                sections.Add(new DocumentSection(sectionTitle, startIndex, 0));
                                         }
-                                }
-                                catch
-                                {
-                                        // ignore and continue
                                 }
                         }
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.CompilerServices;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,6 +37,8 @@ namespace Dissonance.ViewModels
                 private readonly RelayCommandNoParam _playbackHotkeyCommand;
                 private readonly ITTSService _ttsService;
                 private readonly ISettingsService _settingsService;
+                private readonly ObservableCollection<DocumentSection> _sections = new();
+                private readonly ReadOnlyObservableCollection<DocumentSection> _readOnlySections;
                 private FlowDocument? _document;
                 private string? _plainText;
                 private string? _filePath;
@@ -66,6 +69,8 @@ namespace Dissonance.ViewModels
                 private int _highlightStartIndex;
                 private int _highlightLength;
                 private bool _rememberDocumentProgress;
+                private DocumentSection? _selectedSection;
+                private bool _suppressSectionNavigation;
                 private DateTime _lastProgressSaveTime = DateTime.MinValue;
                 private int _lastPersistedCharacterIndex;
                 private bool _suspendProgressPersistence;
@@ -83,6 +88,7 @@ namespace Dissonance.ViewModels
                         _documentReaderService = documentReaderService ?? throw new ArgumentNullException(nameof(documentReaderService));
                         _ttsService = ttsService ?? throw new ArgumentNullException(nameof(ttsService));
                         _settingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
+                        _readOnlySections = new ReadOnlyObservableCollection<DocumentSection>(_sections);
                         _clearDocumentCommand = new RelayCommandNoParam(ClearDocument, () => !IsBusy && (IsDocumentLoaded || HasStatusMessage));
                         _browseForDocumentCommand = new RelayCommandNoParam(BrowseForDocument, () => !IsBusy);
                         _playPauseCommand = new RelayCommandNoParam(TogglePlayback, () => !IsBusy && CanReadDocument);
@@ -98,6 +104,8 @@ namespace Dissonance.ViewModels
                         _highlightColorOptions = CreateHighlightColorOptions();
                         InitializeHighlightSettings();
                         InitializeDocumentResumeSettings();
+
+                        _sections.CollectionChanged += OnSectionsCollectionChanged;
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -185,6 +193,29 @@ namespace Dissonance.ViewModels
                                         _lastProgressSaveTime = DateTime.MinValue;
                                         _lastPersistedMetadata = null;
                                 }
+                        }
+                }
+
+                public ReadOnlyObservableCollection<DocumentSection> Sections => _readOnlySections;
+
+                public bool HasSections => _sections.Count > 0;
+
+                public DocumentSection? SelectedSection
+                {
+                        get => _selectedSection;
+                        set
+                        {
+                                if (ReferenceEquals(_selectedSection, value))
+                                        return;
+
+                                _selectedSection = value;
+                                RaisePropertyChanged();
+
+                                if (_suppressSectionNavigation)
+                                        return;
+
+                                if (value != null)
+                                        NavigateToSection(value);
                         }
                 }
 
@@ -438,6 +469,8 @@ namespace Dissonance.ViewModels
                         _lastPersistedMetadata = null;
                         _documentMetadataDirty = true;
                         _lastPersistedCharacterIndex = 0;
+                        _sections.Clear();
+                        SelectedSection = null;
                         ResetPlaybackState();
                         if (RememberDocumentProgress)
                                 ClearPersistedDocumentState();
@@ -447,7 +480,7 @@ namespace Dissonance.ViewModels
                 {
                         var dialog = new OpenFileDialog
                         {
-                                Filter = "Text documents (*.txt)|*.txt|All files (*.*)|*.*",
+                                Filter = "Documents (*.epub;*.pdf;*.txt)|*.epub;*.pdf;*.txt|EPUB files (*.epub)|*.epub|PDF files (*.pdf)|*.pdf|Text files (*.txt)|*.txt|All files (*.*)|*.*",
                                 CheckFileExists = true,
                                 CheckPathExists = true,
                                 Title = "Open document",
@@ -483,11 +516,60 @@ namespace Dissonance.ViewModels
                         Document = result.Document ?? CreateFlowDocument(result.PlainText);
                         PlainText = result.PlainText;
                         FilePath = result.FilePath;
+                        UpdateSections(result.Sections);
                         LastError = null;
                         ResetPlaybackState();
                         EnsureDocumentMetadata();
                         if (persistImmediately)
                                 PersistDocumentState(force: true);
+                }
+
+                private void UpdateSections(IReadOnlyList<DocumentSection>? sections)
+                {
+                        _suppressSectionNavigation = true;
+                        try
+                        {
+                                _sections.Clear();
+                                if (sections != null)
+                                {
+                                        foreach (var section in sections)
+                                                _sections.Add(section);
+                                }
+
+                                SelectedSection = null;
+                        }
+                        finally
+                        {
+                                _suppressSectionNavigation = false;
+                        }
+                }
+
+                private void OnSectionsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+                {
+                        RaisePropertyChanged(nameof(HasSections));
+                }
+
+                private void NavigateToSection(DocumentSection section)
+                {
+                        if (section == null || PlainText == null)
+                                return;
+
+                        var index = Math.Clamp(section.StartCharacterIndex, 0, PlainText.Length);
+                        var targetTime = EstimateTimeFromCharacterIndex(index);
+
+                        CurrentCharacterIndex = index;
+                        CurrentAudioPosition = targetTime;
+                        SetHighlightRange(index, 1);
+                        SetHighlightRange(index, 0);
+
+                        if (IsPlaying)
+                        {
+                                _pendingSeekCharacterIndex = index;
+                                _pendingSeekAudioPosition = targetTime;
+                                _isStoppingForSeek = true;
+                                IsPlaying = false;
+                                _ttsService.Stop();
+                        }
                 }
 
                 private void UpdateCommandStates()
@@ -760,9 +842,29 @@ namespace Dissonance.ViewModels
                 private static FlowDocument CreateFlowDocument(string content)
                 {
                         var document = new FlowDocument();
-                        var paragraph = new Paragraph();
-                        paragraph.Inlines.Add(new Run(content ?? string.Empty));
-                        document.Blocks.Add(paragraph);
+
+                        if (string.IsNullOrEmpty(content))
+                                return document;
+
+                        var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
+                        var paragraphs = normalized.Split(new[] { "\n\n" }, StringSplitOptions.None);
+
+                        foreach (var paragraphText in paragraphs)
+                        {
+                                var paragraph = new Paragraph();
+                                var lines = paragraphText.Split('\n');
+
+                                for (var i = 0; i < lines.Length; i++)
+                                {
+                                        if (i > 0)
+                                                paragraph.Inlines.Add(new LineBreak());
+
+                                        paragraph.Inlines.Add(new Run(lines[i]));
+                                }
+
+                                document.Blocks.Add(paragraph);
+                        }
+
                         return document;
                 }
 

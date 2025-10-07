@@ -227,8 +227,7 @@ namespace Dissonance.Tests.ViewModels
                         viewModel.PlayPauseCommand.Execute(null);
 
                         Assert.True(viewModel.IsPlaying);
-                        var prompt = Assert.NotNull(ttsService.LastPrompt);
-                        Assert.Equal("brave", prompt.Text);
+                        Assert.Equal("brave", ttsService.LastPromptText);
                         Assert.Equal(6, viewModel.CurrentCharacterIndex);
                 }
 
@@ -375,6 +374,9 @@ namespace Dissonance.Tests.ViewModels
 
                         public Prompt? LastPrompt { get; private set; }
 
+                        private string? _lastPromptText;
+                        public string? LastPromptText => _lastPromptText;
+
                         public void SetTTSParameters(string voice, double rate, int volume)
                         {
                         }
@@ -385,6 +387,7 @@ namespace Dissonance.Tests.ViewModels
                                         return null;
 
                                 LastPrompt = new Prompt(text);
+                                _lastPromptText = text;
                                 return LastPrompt;
                         }
 

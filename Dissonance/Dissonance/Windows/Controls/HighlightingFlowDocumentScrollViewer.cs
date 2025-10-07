@@ -9,9 +9,23 @@ namespace Dissonance.Windows.Controls
 {
         public class HighlightingFlowDocumentScrollViewer : FlowDocumentScrollViewer
         {
+                // Expose a SelectionChanged routed event so XAML can attach handlers.
+                public static readonly RoutedEvent SelectionChangedEvent = EventManager.RegisterRoutedEvent(
+                        nameof(SelectionChanged), RoutingStrategy.Bubble, typeof(RoutedEventHandler), typeof(HighlightingFlowDocumentScrollViewer));
+
+                public event RoutedEventHandler SelectionChanged
+                {
+                        add => AddHandler(SelectionChangedEvent, value);
+                        remove => RemoveHandler(SelectionChangedEvent, value);
+                }
+
                 public HighlightingFlowDocumentScrollViewer()
                 {
-                        SelectionChanged += HandleSelectionChanged;
+                        // FlowDocumentScrollViewer does not expose a SelectionChanged routed event.
+                        // Attach to the TextSelection.Changed event when the control is loaded and
+                        // detach when unloaded to avoid subscribing to a null Selection.
+                        Loaded += OnLoaded;
+                        Unloaded += OnUnloaded;
                 }
 
                 public static readonly DependencyProperty HighlightStartIndexProperty =
@@ -37,6 +51,7 @@ namespace Dissonance.Windows.Controls
                 private int _appliedLength;
                 private Brush? _appliedBrush;
                 private bool _suppressSelectionPublishing;
+                private TextSelection? _attachedSelection;
 
                 public int HighlightStartIndex
                 {
@@ -85,11 +100,25 @@ namespace Dissonance.Windows.Controls
                                 _appliedLength = 0;
                                 _appliedBrush = null;
                                 PublishSelectionRange(0, 0, string.Empty);
+
+                                // Ensure we detach from any previous selection and attach to the new one if present
+                                if (_attachedSelection != null)
+                                {
+                                        try { _attachedSelection.Changed -= HandleSelectionChanged; } catch { }
+                                        _attachedSelection = null;
+                                }
+
                                 UpdateHighlight();
+
+                                if (Selection != null)
+                                {
+                                        try { Selection.Changed += HandleSelectionChanged; } catch { }
+                                        _attachedSelection = Selection;
+                                }
                         }
                 }
 
-                private void HandleSelectionChanged(object sender, RoutedEventArgs args)
+                private void HandleSelectionChanged(object? sender, EventArgs args)
                 {
                         if (_suppressSelectionPublishing)
                                 return;
@@ -100,6 +129,8 @@ namespace Dissonance.Windows.Controls
                         if (document == null || selection == null)
                         {
                                 PublishSelectionRange(0, 0, string.Empty);
+                                // Raise the routed SelectionChanged event so XAML handlers are notified
+                                RaiseEvent(new RoutedEventArgs(SelectionChangedEvent));
                                 return;
                         }
 
@@ -109,6 +140,9 @@ namespace Dissonance.Windows.Controls
                         var text = length > 0 ? new TextRange(selection.Start, selection.End).Text : string.Empty;
 
                         PublishSelectionRange(start, length, text ?? string.Empty);
+
+                        // Raise the routed SelectionChanged event so XAML handlers are notified
+                        RaiseEvent(new RoutedEventArgs(SelectionChangedEvent));
                 }
 
                 private static void OnHighlightChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -277,6 +311,24 @@ namespace Dissonance.Windows.Controls
                         }
 
                         return Math.Max(0, offset);
+                }
+
+                private void OnLoaded(object? sender, RoutedEventArgs e)
+                {
+                        if (Selection != null && _attachedSelection != Selection)
+                        {
+                                try { Selection.Changed += HandleSelectionChanged; } catch { }
+                                _attachedSelection = Selection;
+                        }
+                }
+
+                private void OnUnloaded(object? sender, RoutedEventArgs e)
+                {
+                        if (_attachedSelection != null)
+                        {
+                                try { _attachedSelection.Changed -= HandleSelectionChanged; } catch { }
+                                _attachedSelection = null;
+                        }
                 }
         }
 }

@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 using HtmlAgilityPack;
 
 using UglyToad.PdfPig;
-using UglyToad.PdfPig.Outlines;
+using UglyToad.PdfPig.Outline;
 
 using VersOne.Epub;
 

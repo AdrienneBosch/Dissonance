@@ -503,8 +503,7 @@ namespace Dissonance
                         if ( sender is not HighlightingFlowDocumentScrollViewer viewer )
                                 return;
 
-                        var selectedText = string.IsNullOrEmpty ( viewer.SelectedText ) ? null : viewer.SelectedText;
-                        _documentReaderViewModel.UpdateSelectionRange ( viewer.SelectionStartIndex, viewer.SelectionLength, selectedText );
+                        _documentReaderViewModel.UpdateSelectionRange ( viewer.SelectionStartIndex, viewer.SelectionLength );
                 }
 
                 private void VoiceVolumeSlider_KeyDown ( object sender, KeyEventArgs e )

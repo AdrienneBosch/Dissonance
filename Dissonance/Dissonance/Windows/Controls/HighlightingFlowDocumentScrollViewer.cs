@@ -61,6 +61,8 @@ namespace Dissonance.Windows.Controls
                 public static readonly DependencyProperty SelectedTextProperty =
                         DependencyProperty.Register(nameof(SelectedText), typeof(string), typeof(HighlightingFlowDocumentScrollViewer), new PropertyMetadata(string.Empty));
 
+                private const int SelectionTextPublishThreshold = 2048;
+
                 private TextRange? _currentHighlight;
                 private int _appliedStartIndex = -1;
                 private int _appliedLength;
@@ -162,9 +164,14 @@ namespace Dissonance.Windows.Controls
                         var start = GetOffsetFromPointer(document, selection.Start);
                         var end = GetOffsetFromPointer(document, selection.End);
                         var length = Math.Max(0, end - start);
-                        var text = length > 0 ? new TextRange(selection.Start, selection.End).Text : string.Empty;
+                        string? text = null;
 
-                        PublishSelectionRange(start, length, text ?? string.Empty);
+                        if (length > 0 && length <= SelectionTextPublishThreshold)
+                        {
+                                text = new TextRange(selection.Start, selection.End).Text;
+                        }
+
+                        PublishSelectionRange(start, length, text);
 
                         // Raise the routed SelectionChanged event so XAML handlers are notified
                         RaiseEvent(new RoutedEventArgs(SelectionChangedEvent));
@@ -178,14 +185,14 @@ namespace Dissonance.Windows.Controls
                         }
                 }
 
-                private void PublishSelectionRange(int start, int length, string text)
+                private void PublishSelectionRange(int start, int length, string? text)
                 {
                         _suppressSelectionPublishing = true;
                         try
                         {
                                 SelectionStartIndex = Math.Max(0, start);
                                 SelectionLength = Math.Max(0, length);
-                                SelectedText = length > 0 ? text : string.Empty;
+                                SelectedText = length > 0 && !string.IsNullOrEmpty(text) ? text : string.Empty;
                         }
                         finally
                         {

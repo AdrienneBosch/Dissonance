@@ -308,7 +308,7 @@ namespace Dissonance.Tests.ViewModels
 
                         await viewModel.LoadDocumentAsync(result.FilePath);
 
-                        viewModel.UpdateSelectionRange(6, 5, "brave");
+                        viewModel.UpdateSelectionRange(6, 5);
                         viewModel.PlayPauseCommand.Execute(null);
 
                         Assert.True(viewModel.IsPlaying);
@@ -327,7 +327,7 @@ namespace Dissonance.Tests.ViewModels
 
                         await viewModel.LoadDocumentAsync(result.FilePath);
 
-                        viewModel.UpdateSelectionRange(4, 0, null);
+                        viewModel.UpdateSelectionRange(4, 0);
 
                         Assert.Equal(4, viewModel.CurrentCharacterIndex);
                         Assert.Equal(TimeSpan.FromSeconds(4 / 15d), viewModel.CurrentAudioPosition);

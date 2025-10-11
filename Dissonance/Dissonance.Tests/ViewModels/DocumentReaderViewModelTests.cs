@@ -232,7 +232,44 @@ namespace Dissonance.Tests.ViewModels
                         Assert.True(viewModel.IsPlaying);
                         Assert.True(settings.DocumentReaderHotkey.UsePlayPauseToggle);
                         Assert.Equal(1, settingsService.SaveCalls);
-                        Assert.True(ttsService.StopCalls >= 1);
+                        Assert.Equal(1, ttsService.SpeakCalls);
+                        Assert.Equal(1, ttsService.PauseCalls);
+                        Assert.Equal(1, ttsService.ResumeCalls);
+                        Assert.Equal(0, ttsService.StopCalls);
+                }
+
+                [Fact]
+                public async Task PlayPauseCommand_PauseResumeDoesNotRestartSpeech()
+                {
+                        var result = new DocumentReadResult("sample.txt", "Hello world");
+                        var service = new StubDocumentReaderService(result);
+                        var settings = CreateSettings();
+                        var settingsService = new StubSettingsService(settings);
+                        var ttsService = new StubTtsService(returnPrompt: true);
+                        var viewModel = new DocumentReaderViewModel(service, ttsService, settingsService);
+
+                        await viewModel.LoadDocumentAsync(result.FilePath);
+
+                        viewModel.PlayPauseCommand.Execute(null);
+
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.False(viewModel.IsPaused);
+                        Assert.Equal(1, ttsService.SpeakCalls);
+                        var originalPrompt = ttsService.LastPrompt;
+
+                        viewModel.PlayPauseCommand.Execute(null);
+
+                        Assert.False(viewModel.IsPlaying);
+                        Assert.True(viewModel.IsPaused);
+                        Assert.Equal(1, ttsService.PauseCalls);
+
+                        viewModel.PlayPauseCommand.Execute(null);
+
+                        Assert.True(viewModel.IsPlaying);
+                        Assert.False(viewModel.IsPaused);
+                        Assert.Equal(1, ttsService.ResumeCalls);
+                        Assert.Equal(1, ttsService.SpeakCalls);
+                        Assert.Same(originalPrompt, ttsService.LastPrompt);
                 }
 
                 [Fact]
@@ -420,6 +457,12 @@ namespace Dissonance.Tests.ViewModels
 
                         public int StopCalls { get; private set; }
 
+                        public int PauseCalls { get; private set; }
+
+                        public int ResumeCalls { get; private set; }
+
+                        public int SpeakCalls { get; private set; }
+
                         public Prompt? LastPrompt { get; private set; }
 
                         private string? _lastPromptText;
@@ -431,12 +474,27 @@ namespace Dissonance.Tests.ViewModels
 
                         public Prompt? Speak(string text)
                         {
+                                SpeakCalls++;
+                                _lastPromptText = text;
+
                                 if (!_returnPrompt)
+                                {
+                                        LastPrompt = null;
                                         return null;
+                                }
 
                                 LastPrompt = new Prompt(text);
-                                _lastPromptText = text;
                                 return LastPrompt;
+                        }
+
+                        public void Pause()
+                        {
+                                PauseCalls++;
+                        }
+
+                        public void Resume()
+                        {
+                                ResumeCalls++;
                         }
 
                         public void Stop()

@@ -406,6 +406,14 @@ namespace Dissonance.Tests.ViewModels
                                 return LastPrompt;
                         }
 
+                        public void Pause()
+                        {
+                        }
+
+                        public void Resume()
+                        {
+                        }
+
                         public void Stop()
                         {
                         }

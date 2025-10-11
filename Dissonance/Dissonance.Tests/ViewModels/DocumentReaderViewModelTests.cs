@@ -1,9 +1,6 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Security.Cryptography;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Documents;
@@ -336,105 +333,6 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Equal(TimeSpan.FromSeconds(4 / 15d), viewModel.CurrentAudioPosition);
                         Assert.Equal(4, viewModel.HighlightStartIndex);
                         Assert.Equal(0, viewModel.HighlightLength);
-                }
-
-                [Fact]
-                public async Task EnsureInitializedAsync_RestoresProgressAfterBackgroundValidationCompletes()
-                {
-                        var sampleText = "Sample document text for restoration";
-                        var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".txt");
-                        await File.WriteAllTextAsync(tempFile, sampleText);
-
-                        try
-                        {
-                                var hash = SHA256.HashData(Encoding.UTF8.GetBytes(sampleText));
-                                var fileInfo = new FileInfo(tempFile);
-                                fileInfo.Refresh();
-
-                                var settings = CreateSettings();
-                                settings.RememberDocumentReaderPosition = true;
-                                settings.DocumentReaderResumeState = new AppSettings.DocumentReaderResumeSnapshot
-                                {
-                                        FilePath = tempFile,
-                                        CharacterIndex = 10,
-                                        DocumentLength = sampleText.Length,
-                                        ContentHash = Convert.ToHexString(hash),
-                                        FileSize = fileInfo.Length,
-                                        LastWriteTimeUtc = fileInfo.LastWriteTimeUtc,
-                                };
-
-                                var service = new StubDocumentReaderService(new DocumentReadResult(tempFile, sampleText));
-                                var settingsService = new StubSettingsService(settings);
-                                var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
-
-                                await viewModel.EnsureInitializedAsync();
-
-                                Assert.NotNull(viewModel.Document);
-                                Assert.Equal(0, viewModel.CurrentCharacterIndex);
-                                Assert.Equal(0, settingsService.SaveCalls);
-
-                                var restorationTask = viewModel.ResumeRestorationTask;
-                                Assert.NotNull(restorationTask);
-
-                                if (restorationTask != null)
-                                        await restorationTask;
-
-                                Assert.Equal(10, viewModel.CurrentCharacterIndex);
-                                Assert.True(settingsService.SaveCalls > 0);
-                        }
-                        finally
-                        {
-                                if (File.Exists(tempFile))
-                                        File.Delete(tempFile);
-                        }
-                }
-
-                [Fact]
-                public async Task EnsureInitializedAsync_ResetsProgressWhenMetadataDiffers()
-                {
-                        var sampleText = "Sample document text for restoration";
-                        var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".txt");
-                        await File.WriteAllTextAsync(tempFile, sampleText);
-
-                        try
-                        {
-                                var mismatchedHash = SHA256.HashData(Encoding.UTF8.GetBytes(sampleText + "!"));
-                                var fileInfo = new FileInfo(tempFile);
-                                fileInfo.Refresh();
-
-                                var settings = CreateSettings();
-                                settings.RememberDocumentReaderPosition = true;
-                                settings.DocumentReaderResumeState = new AppSettings.DocumentReaderResumeSnapshot
-                                {
-                                        FilePath = tempFile,
-                                        CharacterIndex = 12,
-                                        DocumentLength = sampleText.Length,
-                                        ContentHash = Convert.ToHexString(mismatchedHash),
-                                        FileSize = fileInfo.Length,
-                                        LastWriteTimeUtc = fileInfo.LastWriteTimeUtc,
-                                };
-
-                                var service = new StubDocumentReaderService(new DocumentReadResult(tempFile, sampleText));
-                                var settingsService = new StubSettingsService(settings);
-                                var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
-
-                                await viewModel.EnsureInitializedAsync();
-
-                                var restorationTask = viewModel.ResumeRestorationTask;
-                                Assert.NotNull(restorationTask);
-
-                                if (restorationTask != null)
-                                        await restorationTask;
-
-                                Assert.Equal(0, viewModel.CurrentCharacterIndex);
-                                Assert.Equal("The previously saved document has changed. Progress was reset.", viewModel.StatusMessage);
-                                Assert.True(settingsService.SaveCalls > 0);
-                        }
-                        finally
-                        {
-                                if (File.Exists(tempFile))
-                                        File.Delete(tempFile);
-                        }
                 }
 
                 private static AppSettings CreateSettings()

@@ -214,8 +214,19 @@ namespace Dissonance.Windows.Controls
                         }
 
                         var highlightLength = HighlightLength;
+                        var previousAppliedStart = _appliedStartIndex;
                         if (highlightLength <= 0)
                         {
+                                if (_cacheValid)
+                                {
+                                        var movedBackward = previousAppliedStart >= 0
+                                                ? HighlightStartIndex < previousAppliedStart
+                                                : HighlightStartIndex < _cachedOffset;
+
+                                        if (movedBackward)
+                                                ResetPointerCache();
+                                }
+
                                 ClearHighlight();
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;

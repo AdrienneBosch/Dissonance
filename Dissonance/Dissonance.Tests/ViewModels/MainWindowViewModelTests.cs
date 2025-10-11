@@ -215,7 +215,29 @@ namespace Dissonance.Tests.ViewModels
                         Assert.Null(viewModel.PendingNavigationSection);
                 }
 
-                private static TestEnvironment? CreateTestEnvironment(bool useDarkTheme)
+                [WindowsFact]
+                public async Task SelectingDocumentReaderSection_TriggersInitialization()
+                {
+                        var testEnvironment = CreateTestEnvironment(
+                                useDarkTheme: false,
+                                (settingsService, ttsService, documentReaderService) => new TrackingDocumentReaderViewModel(documentReaderService, ttsService, settingsService));
+
+                        if (testEnvironment is null)
+                        {
+                                return;
+                        }
+
+                        var tracker = Assert.IsType<TrackingDocumentReaderViewModel>(testEnvironment.DocumentReaderViewModel);
+                        var documentSection = testEnvironment.ViewModel.NavigationSections.Single(section => section.ContentViewModel == tracker);
+
+                        testEnvironment.ViewModel.SelectedSection = documentSection;
+
+                        await tracker.InitializationCompleted.ConfigureAwait(false);
+
+                        Assert.True(tracker.InitializationInvoked);
+                }
+
+                private static TestEnvironment? CreateTestEnvironment(bool useDarkTheme, Func<ISettingsService, ITTSService, IDocumentReaderService, DocumentReaderViewModel>? documentReaderFactory = null)
                 {
                         var synthesizer = new SpeechSynthesizer();
                         var voices = synthesizer.GetInstalledVoices();
@@ -254,7 +276,8 @@ namespace Dissonance.Tests.ViewModels
                         var clipboardService = new TestClipboardService();
                         var statusService = new TestStatusAnnouncementService();
                         var documentReaderService = new TestDocumentReaderService();
-                        var documentReaderViewModel = new DocumentReaderViewModel(documentReaderService, ttsService, settingsService);
+                        var documentReaderViewModel = documentReaderFactory?.Invoke(settingsService, ttsService, documentReaderService)
+                                ?? new DocumentReaderViewModel(documentReaderService, ttsService, settingsService);
                         var clipboardManager = new ClipboardManager(clipboardService, new TestLogger<ClipboardManager>(), statusService);
 
                         var viewModel = new MainWindowViewModel(settingsService, ttsService, hotkeyService, themeService, messageService, clipboardManager, statusService, documentReaderViewModel);
@@ -263,6 +286,34 @@ namespace Dissonance.Tests.ViewModels
                 }
 
                 private sealed record TestEnvironment(MainWindowViewModel ViewModel, TestSettingsService SettingsService, TestTtsService TtsService, TestHotkeyService HotkeyService, TestThemeService ThemeService, ClipboardManager ClipboardManager, TestStatusAnnouncementService StatusAnnouncementService, DocumentReaderViewModel DocumentReaderViewModel);
+
+                private sealed class TrackingDocumentReaderViewModel : DocumentReaderViewModel
+                {
+                        private readonly TaskCompletionSource<bool> _initializationInvoked = new(TaskCreationOptions.RunContinuationsAsynchronously);
+                        private readonly TaskCompletionSource<bool> _initializationCompleted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                        public TrackingDocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService)
+                                : base(documentReaderService, ttsService, settingsService)
+                        {
+                        }
+
+                        public bool InitializationInvoked => _initializationInvoked.Task.IsCompleted;
+
+                        public Task InitializationCompleted => _initializationCompleted.Task;
+
+                        public override async Task InitializeAsync()
+                        {
+                                _initializationInvoked.TrySetResult(true);
+                                try
+                                {
+                                        await base.InitializeAsync().ConfigureAwait(false);
+                                }
+                                finally
+                                {
+                                        _initializationCompleted.TrySetResult(true);
+                                }
+                        }
+                }
 
                 private sealed class TestDocumentReaderService : IDocumentReaderService
                 {

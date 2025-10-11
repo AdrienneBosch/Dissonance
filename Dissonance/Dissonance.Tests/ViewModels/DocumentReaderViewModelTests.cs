@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -154,6 +155,65 @@ namespace Dissonance.Tests.ViewModels
                         await loadTask;
 
                         Assert.True(viewModel.BrowseForDocumentCommand.CanExecute(null));
+                }
+
+                [WindowsFact]
+                public void InitializeAsync_RestoresDocumentWithoutBlocking()
+                {
+                        StaTestRunner.Run(() =>
+                        {
+                                WpfTestHelper.EnsureApplication();
+
+                                const string sampleText = "Hello asynchronous world";
+                                var tempFile = Path.Combine(Path.GetTempPath(), Guid.NewGuid() + ".txt");
+                                File.WriteAllText(tempFile, sampleText);
+
+                                try
+                                {
+                                        var resumeState = new AppSettings.DocumentReaderResumeSnapshot
+                                        {
+                                                FilePath = tempFile,
+                                                CharacterIndex = 5,
+                                                DocumentLength = sampleText.Length,
+                                        };
+
+                                        var settings = CreateSettings();
+                                        settings.RememberDocumentReaderPosition = true;
+                                        settings.DocumentReaderResumeState = resumeState;
+
+                                        var completion = new TaskCompletionSource<DocumentReadResult>();
+                                        var service = new PendingDocumentReaderService(completion);
+                                        var settingsService = new StubSettingsService(settings);
+                                        var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+
+                                        var initializeTask = viewModel.InitializeAsync();
+
+                                        Assert.True(viewModel.RememberDocumentProgress);
+                                        Assert.True(viewModel.IsBusy);
+                                        Assert.False(initializeTask.IsCompleted);
+
+                                        completion.SetResult(new DocumentReadResult(tempFile, sampleText));
+
+                                        initializeTask.GetAwaiter().GetResult();
+
+                                        Assert.True(viewModel.IsDocumentLoaded);
+                                        Assert.Equal(sampleText, viewModel.PlainText);
+                                        Assert.Equal(Math.Clamp(resumeState.CharacterIndex, 0, sampleText.Length), viewModel.CurrentCharacterIndex);
+
+                                        var persisted = settingsService.GetCurrentSettings().DocumentReaderResumeState;
+                                        Assert.NotNull(persisted);
+                                        Assert.Equal(tempFile, persisted!.FilePath);
+                                        Assert.Equal(viewModel.CurrentCharacterIndex, persisted.CharacterIndex);
+                                        Assert.Equal(sampleText.Length, persisted.DocumentLength);
+                                        Assert.False(string.IsNullOrWhiteSpace(persisted.ContentHash));
+                                        Assert.Equal(1, settingsService.SaveCalls);
+                                }
+                                finally
+                                {
+                                        if (File.Exists(tempFile))
+                                                File.Delete(tempFile);
+                                }
+                        });
                 }
 
                 [Fact]

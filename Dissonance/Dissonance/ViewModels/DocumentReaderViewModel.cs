@@ -86,6 +86,7 @@ namespace Dissonance.ViewModels
                 private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
                 private const double DefaultCharactersPerSecond = 15d;
+                private const int MaxProgressSamples = 512;
                 private const string ThemeAccentHighlightId = "ThemeAccent";
 
                 public DocumentReaderViewModel(IDocumentReaderService documentReaderService, ITTSService ttsService, ISettingsService settingsService)
@@ -1184,16 +1185,14 @@ namespace Dissonance.ViewModels
                 {
                         if (_progressHistory.Count > 0)
                         {
-                                for (var i = _progressHistory.Count - 1; i >= 0; i--)
+                                var cps = _charactersPerSecond > 0 ? _charactersPerSecond : DefaultCharactersPerSecond;
+                                var index = BinarySearchProgressHistory(characterIndex);
+                                if (index >= 0)
                                 {
-                                        var entry = _progressHistory[i];
-                                        if (entry.CharacterIndex <= characterIndex)
-                                        {
-                                                var cps = _charactersPerSecond > 0 ? _charactersPerSecond : DefaultCharactersPerSecond;
-                                                var delta = characterIndex - entry.CharacterIndex;
-                                                var additional = cps > 0 ? TimeSpan.FromSeconds(delta / cps) : TimeSpan.Zero;
-                                                return entry.Time + additional;
-                                        }
+                                        var entry = _progressHistory[index];
+                                        var delta = characterIndex - entry.CharacterIndex;
+                                        var additional = cps > 0 ? TimeSpan.FromSeconds(delta / cps) : TimeSpan.Zero;
+                                        return entry.Time + additional;
                                 }
                         }
 
@@ -1201,6 +1200,36 @@ namespace Dissonance.ViewModels
                                 return TimeSpan.FromSeconds(characterIndex / _charactersPerSecond);
 
                         return TimeSpan.FromSeconds(characterIndex / DefaultCharactersPerSecond);
+                }
+
+                private int BinarySearchProgressHistory(int characterIndex)
+                {
+                        var low = 0;
+                        var high = _progressHistory.Count - 1;
+                        var bestMatch = -1;
+
+                        while (low <= high)
+                        {
+                                var mid = low + ((high - low) / 2);
+                                var midEntry = _progressHistory[mid];
+
+                                if (midEntry.CharacterIndex == characterIndex)
+                                {
+                                        return mid;
+                                }
+
+                                if (midEntry.CharacterIndex < characterIndex)
+                                {
+                                        bestMatch = mid;
+                                        low = mid + 1;
+                                }
+                                else
+                                {
+                                        high = mid - 1;
+                                }
+                        }
+
+                        return bestMatch;
                 }
 
                 private void OnSpeechProgress(object? sender, SpeakProgressEventArgs e)
@@ -1226,7 +1255,15 @@ namespace Dissonance.ViewModels
                                 _charactersPerSecond = Math.Max(_charactersPerSecond, CurrentCharacterIndex / updatedTime.TotalSeconds);
 
                         if (_progressHistory.Count == 0 || _progressHistory[^1].CharacterIndex != CurrentCharacterIndex)
+                        {
+                                if (_progressHistory.Count >= MaxProgressSamples)
+                                {
+                                        var removeCount = _progressHistory.Count - MaxProgressSamples + 1;
+                                        _progressHistory.RemoveRange(0, removeCount);
+                                }
+
                                 _progressHistory.Add((CurrentAudioPosition, CurrentCharacterIndex));
+                        }
 
                         var highlightStart = Math.Clamp(_playbackStartCharacterIndex + e.CharacterPosition, 0, PlainText.Length);
                         var playbackLimit = _activePlaybackLength > 0

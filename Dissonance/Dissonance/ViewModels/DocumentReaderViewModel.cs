@@ -874,24 +874,12 @@ namespace Dissonance.ViewModels
                         if (string.IsNullOrEmpty(content))
                                 return document;
 
-                        var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
-                        var paragraphs = normalized.Split(new[] { "\n\n" }, StringSplitOptions.None);
-
-                        foreach (var paragraphText in paragraphs)
-                        {
-                                var paragraph = new Paragraph();
-                                var lines = paragraphText.Split('\n');
-
-                                for (var i = 0; i < lines.Length; i++)
-                                {
-                                        if (i > 0)
-                                                paragraph.Inlines.Add(new LineBreak());
-
-                                        paragraph.Inlines.Add(new Run(lines[i]));
-                                }
-
-                                document.Blocks.Add(paragraph);
-                        }
+                        // Let FlowDocument handle pagination and paragraph creation without eagerly
+                        // allocating thousands of intermediate strings. TextRange.Text understands
+                        // standard newline delimiters and materializes the minimal block structure
+                        // necessary for display, which keeps memory usage low even for large files.
+                        var range = new TextRange(document.ContentStart, document.ContentEnd);
+                        range.Text = content;
 
                         return document;
                 }

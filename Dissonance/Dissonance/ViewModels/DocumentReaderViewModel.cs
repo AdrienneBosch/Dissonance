@@ -52,7 +52,6 @@ namespace Dissonance.ViewModels
                 private TimeSpan _playbackStartAudioPosition;
                 private bool _isPlaying;
                 private bool _isPaused;
-                private bool _isStoppingForPause;
                 private bool _isStoppingForSeek;
                 private int? _pendingSeekCharacterIndex;
                 private TimeSpan _pendingSeekAudioPosition;
@@ -80,6 +79,7 @@ namespace Dissonance.ViewModels
                 private bool _documentMetadataDirty = true;
                 private DocumentMetadata? _currentDocumentMetadata;
                 private DocumentMetadata? _lastPersistedMetadata;
+                private bool _resumeRequiresRestart;
 
                 private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
@@ -493,8 +493,27 @@ namespace Dissonance.ViewModels
                         var normalizedStart = Math.Clamp(startIndex, 0, PlainText.Length);
                         var normalizedLength = Math.Max(0, Math.Min(length, PlainText.Length - normalizedStart));
 
+                        var previousStart = _selectionStartIndex;
+                        var previousLength = _selectionLength;
+
                         _selectionStartIndex = normalizedStart;
                         _selectionLength = normalizedLength;
+
+                        if (IsPaused && _currentPrompt != null)
+                        {
+                                var resumeFromSelection = normalizedLength > 0
+                                        ? normalizedStart == _playbackStartCharacterIndex && normalizedLength == _activePlaybackLength
+                                        : normalizedStart == CurrentCharacterIndex || normalizedStart == _playbackStartCharacterIndex;
+
+                                if (!resumeFromSelection)
+                                {
+                                        _resumeRequiresRestart = true;
+                                }
+                                else if (previousStart != normalizedStart || previousLength != normalizedLength)
+                                {
+                                        _resumeRequiresRestart = false;
+                                }
+                        }
 
                         if (normalizedLength == 0 && !IsPlaying)
                         {
@@ -947,23 +966,52 @@ namespace Dissonance.ViewModels
 
                         if (IsPaused)
                         {
-                                StartPlaybackFromCurrentPosition();
+                                if (CanResumeCurrentPrompt())
+                                {
+                                        ResumePlayback();
+                                }
+                                else
+                                {
+                                        StartPlaybackFromCurrentPosition();
+                                }
                         }
                 }
 
                 private void PausePlayback()
                 {
+                        IsPlaying = false;
+                        IsPaused = true;
+                        _resumeRequiresRestart = false;
+
+                        if (_currentPrompt == null)
+                                return;
+
+                        _ttsService.Pause();
+                }
+
+                private bool CanResumeCurrentPrompt()
+                {
+                        if (_currentPrompt == null)
+                                return false;
+
+                        if (_resumeRequiresRestart)
+                                return false;
+
+                        return true;
+                }
+
+                private void ResumePlayback()
+                {
                         if (_currentPrompt == null)
                         {
-                                IsPlaying = false;
-                                IsPaused = true;
+                                StartPlaybackFromCurrentPosition();
                                 return;
                         }
 
-                        _isStoppingForPause = true;
-                        IsPlaying = false;
-                        IsPaused = true;
-                        _ttsService.Stop();
+                        IsPlaying = true;
+                        IsPaused = false;
+                        _resumeRequiresRestart = false;
+                        _ttsService.Resume();
                 }
 
                 private void StartPlaybackFromCurrentPosition()
@@ -972,6 +1020,7 @@ namespace Dissonance.ViewModels
                                 return;
 
                         _activePlaybackLength = 0;
+                        _resumeRequiresRestart = false;
 
                         if (_selectionStartIndex.HasValue && PlainText.Length > 0)
                         {
@@ -995,7 +1044,6 @@ namespace Dissonance.ViewModels
                                         {
                                                 IsPlaying = true;
                                                 IsPaused = false;
-                                                _isStoppingForPause = false;
                                                 _isStoppingForSeek = false;
                                         }
                                         else
@@ -1044,7 +1092,6 @@ namespace Dissonance.ViewModels
                         {
                                 IsPlaying = true;
                                 IsPaused = false;
-                                _isStoppingForPause = false;
                                 _isStoppingForSeek = false;
                         }
                         else
@@ -1079,6 +1126,11 @@ namespace Dissonance.ViewModels
                         CurrentAudioPosition = targetTime;
                         SetHighlightRange(CurrentCharacterIndex, 0);
 
+                        if (IsPaused && _currentPrompt != null)
+                        {
+                                _resumeRequiresRestart = true;
+                        }
+
                         if (IsPlaying)
                         {
                                 _pendingSeekCharacterIndex = targetIndex;
@@ -1099,13 +1151,13 @@ namespace Dissonance.ViewModels
                         _playbackStartAudioPosition = TimeSpan.Zero;
                         _charactersPerSecond = 0;
                         _progressHistory.Clear();
-                        _isStoppingForPause = false;
                         _isStoppingForSeek = false;
                         _pendingSeekCharacterIndex = null;
                         _pendingSeekAudioPosition = TimeSpan.Zero;
                         _selectionStartIndex = null;
                         _selectionLength = 0;
                         _activePlaybackLength = 0;
+                        _resumeRequiresRestart = false;
                         var previousSuppressed = _suspendProgressPersistence;
                         _suspendProgressPersistence = true;
                         CurrentCharacterIndex = 0;
@@ -1179,15 +1231,7 @@ namespace Dissonance.ViewModels
                                 return;
 
                         _currentPrompt = null;
-
-                        if (_isStoppingForPause)
-                        {
-                                _isStoppingForPause = false;
-                                IsPlaying = false;
-                                IsPaused = true;
-                                _activePlaybackLength = 0;
-                                return;
-                        }
+                        _resumeRequiresRestart = false;
 
                         if (_isStoppingForSeek)
                         {
@@ -1209,6 +1253,7 @@ namespace Dissonance.ViewModels
                         if (e.Cancelled)
                         {
                                 IsPlaying = false;
+                                IsPaused = false;
                                 _activePlaybackLength = 0;
                                 SetHighlightRange(CurrentCharacterIndex, 0);
                                 return;

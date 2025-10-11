@@ -71,6 +71,36 @@ namespace Dissonance.Services.TTSService
                         }
                 }
 
+                public void Pause ( )
+                {
+                        try
+                        {
+                                if ( _synthesizer.State == SynthesizerState.Speaking )
+                                {
+                                        _synthesizer.Pause ( );
+                                }
+                        }
+                        catch ( Exception ex )
+                        {
+                                _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, "Failed to pause speaking text due to an unhandled exception.", ex );
+                        }
+                }
+
+                public void Resume ( )
+                {
+                        try
+                        {
+                                if ( _synthesizer.State == SynthesizerState.Paused )
+                                {
+                                        _synthesizer.Resume ( );
+                                }
+                        }
+                        catch ( Exception ex )
+                        {
+                                _messageService.DissonanceMessageBoxShowError ( MessageBoxTitles.TTSServiceError, "Failed to resume speaking text due to an unhandled exception.", ex );
+                        }
+                }
+
                 public void Stop ( )
                 {
                         try

@@ -9,6 +9,10 @@ namespace Dissonance.Services.TTSService
 
                 Prompt? Speak ( string text );
 
+                void Pause ( );
+
+                void Resume ( );
+
                 void Stop ( );
 
                 event EventHandler<SpeakCompletedEventArgs> SpeechCompleted;

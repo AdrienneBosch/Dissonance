@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.Reflection;
+using System.Windows;
 using System.Windows.Documents;
 using System.Windows.Media;
 
@@ -89,6 +90,53 @@ namespace Dissonance.Tests.Windows.Controls
                                 var resetPointer = (TextPointer?)getPointerMethod.Invoke(viewer, new object[] { newDocument, 0 });
                                 Assert.NotNull(resetPointer);
                                 Assert.Equal(newDocument.ContentStart, resetPointer);
+                        });
+                }
+
+                private sealed class TestHighlightingViewer : HighlightingFlowDocumentScrollViewer
+                {
+                        public Rect NextRect { get; set; } = new Rect(0, 0, 20, 20);
+                        public int ScrollRequests { get; private set; }
+
+                        protected override Rect GetHighlightCharacterRect(TextPointer pointer)
+                        {
+                                return NextRect;
+                        }
+
+                        protected override void ScheduleBringIntoView(Paragraph paragraph)
+                        {
+                                ScrollRequests++;
+                                base.ScheduleBringIntoView(paragraph);
+                        }
+                }
+
+                [WindowsFact]
+                public void SuppressesBringIntoViewWhileUserScrolling()
+                {
+                        StaTestRunner.Run(() =>
+                        {
+                                WpfTestHelper.EnsureApplication();
+
+                                var viewer = new TestHighlightingViewer
+                                {
+                                        HighlightBrush = Brushes.Yellow,
+                                };
+
+                                var document = new FlowDocument();
+                                var paragraph = new Paragraph(new Run(new string('a', 200)));
+                                document.Blocks.Add(paragraph);
+                                viewer.Document = document;
+                                viewer.HighlightStartIndex = 0;
+                                viewer.HighlightLength = 10;
+                                Assert.Equal(1, viewer.ScrollRequests);
+
+                                var isUserScrollingField = typeof(HighlightingFlowDocumentScrollViewer)
+                                        .GetField("_isUserScrolling", BindingFlags.NonPublic | BindingFlags.Instance);
+                                Assert.NotNull(isUserScrollingField);
+                                isUserScrollingField!.SetValue(viewer, true);
+
+                                viewer.HighlightStartIndex = 5;
+                                Assert.Equal(1, viewer.ScrollRequests);
                         });
                 }
         }

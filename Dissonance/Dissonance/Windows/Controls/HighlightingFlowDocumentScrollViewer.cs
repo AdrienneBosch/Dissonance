@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
@@ -19,6 +20,8 @@ namespace Dissonance.Windows.Controls
                         remove => RemoveHandler(SelectionChangedEvent, value);
                 }
 
+                private readonly DispatcherTimer _scrollActivityTimer;
+
                 public HighlightingFlowDocumentScrollViewer()
                 {
                         // FlowDocumentScrollViewer does not expose a SelectionChanged routed event.
@@ -26,6 +29,18 @@ namespace Dissonance.Windows.Controls
                         // detach when unloaded to avoid subscribing to a null Selection.
                         Loaded += OnLoaded;
                         Unloaded += OnUnloaded;
+
+                        AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(OnScrollChanged), true);
+
+                        _scrollActivityTimer = new DispatcherTimer
+                        {
+                                Interval = TimeSpan.FromMilliseconds(250)
+                        };
+                        _scrollActivityTimer.Tick += (_, _) =>
+                        {
+                                _scrollActivityTimer.Stop();
+                                _isUserScrolling = false;
+                        };
                 }
 
                 public static readonly DependencyProperty HighlightStartIndexProperty =
@@ -57,6 +72,10 @@ namespace Dissonance.Windows.Controls
                 private TextPointer? _cachedPointer;
                 private int _cachedOffset;
                 private bool _cacheValid;
+                private ScrollViewer? _scrollViewer;
+                private bool _isUserScrolling;
+                private bool _pendingProgrammaticScroll;
+                private double? _lastHighlightTop;
 
                 public int HighlightStartIndex
                 {
@@ -216,16 +235,88 @@ namespace Dissonance.Windows.Controls
                         _appliedLength = highlightLength;
                         _appliedBrush = brush;
 
-                        Dispatcher.BeginInvoke(new Action(() =>
+                        var paragraph = range.Start.Paragraph;
+                        if (paragraph == null)
                         {
-                                try
+                                _lastHighlightTop = null;
+                                return;
+                        }
+
+                        var highlightRect = Rect.Empty;
+                        try
+                        {
+                                highlightRect = GetHighlightCharacterRect(range.Start);
+                        }
+                        catch
+                        {
+                                highlightRect = Rect.Empty;
+                        }
+
+                        var viewport = Rect.Empty;
+                        var highlightVisible = false;
+                        var largeJump = !_lastHighlightTop.HasValue;
+
+                        if (_scrollViewer != null)
+                        {
+                                viewport = new Rect(
+                                        _scrollViewer.HorizontalOffset,
+                                        _scrollViewer.VerticalOffset,
+                                        _scrollViewer.ViewportWidth > 0 ? _scrollViewer.ViewportWidth : ActualWidth,
+                                        _scrollViewer.ViewportHeight > 0 ? _scrollViewer.ViewportHeight : ActualHeight);
+
+                                if (!highlightRect.IsEmpty)
                                 {
-                                        range.Start.Paragraph?.BringIntoView();
+                                        highlightVisible = viewport.IntersectsWith(highlightRect);
+
+                                        if (_lastHighlightTop.HasValue)
+                                        {
+                                                var delta = Math.Abs(highlightRect.Top - _lastHighlightTop.Value);
+                                                var viewportHeight = viewport.Height > 0 ? viewport.Height : ActualHeight;
+                                                var threshold = viewportHeight > 0 ? viewportHeight * 0.75 : 48.0;
+                                                if (threshold <= 0)
+                                                        threshold = 48.0;
+                                                largeJump = delta >= threshold;
+                                        }
                                 }
-                                catch
+                        }
+
+                        if (!highlightRect.IsEmpty)
+                        {
+                                _lastHighlightTop = highlightRect.Top;
+                        }
+                        else
+                        {
+                                _lastHighlightTop = null;
+                        }
+
+                        var shouldScroll = false;
+                        if (!_isUserScrolling)
+                        {
+                                if (_scrollViewer == null)
                                 {
+                                        shouldScroll = true;
                                 }
-                        }), DispatcherPriority.Background);
+                                else if (!highlightVisible)
+                                {
+                                        shouldScroll = true;
+                                }
+                                else if (largeJump)
+                                {
+                                        shouldScroll = true;
+                                }
+                        }
+
+#if DEBUG
+                        Debug.WriteLine(
+                                $"[HighlightingFlowDocumentScrollViewer] UpdateHighlight: visible={highlightVisible}, " +
+                                $"userScrolling={_isUserScrolling}, largeJump={largeJump}, shouldScroll={shouldScroll}, " +
+                                $"rect={highlightRect}, viewport={viewport}");
+#endif
+
+                        if (shouldScroll)
+                        {
+                                ScheduleBringIntoView(paragraph);
+                        }
                 }
 
                 private void ClearHighlight()
@@ -242,6 +333,8 @@ namespace Dissonance.Windows.Controls
 
                                 _currentHighlight = null;
                         }
+
+                        _lastHighlightTop = null;
                 }
 
                 private TextPointer? GetTextPointerAtOffset(FlowDocument document, int offset)
@@ -456,6 +549,54 @@ namespace Dissonance.Windows.Controls
                                 try { _attachedSelection.Changed -= HandleSelectionChanged; } catch { }
                                 _attachedSelection = null;
                         }
+
+                        _scrollActivityTimer.Stop();
+                }
+
+                private void OnScrollChanged(object sender, ScrollChangedEventArgs e)
+                {
+                        if (e?.OriginalSource is ScrollViewer viewer)
+                        {
+                                _scrollViewer = viewer;
+
+                                if (_pendingProgrammaticScroll)
+                                        return;
+
+                                if (Math.Abs(e.HorizontalChange) > double.Epsilon || Math.Abs(e.VerticalChange) > double.Epsilon)
+                                {
+                                        _isUserScrolling = true;
+                                        _scrollActivityTimer.Stop();
+                                        _scrollActivityTimer.Start();
+                                }
+                        }
+                }
+
+                protected virtual Rect GetHighlightCharacterRect(TextPointer pointer)
+                {
+                        return pointer.GetCharacterRect(LogicalDirection.Forward);
+                }
+
+                protected virtual void ScheduleBringIntoView(Paragraph paragraph)
+                {
+                        if (paragraph == null)
+                                return;
+
+                        _pendingProgrammaticScroll = true;
+
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                                try
+                                {
+                                        paragraph.BringIntoView();
+                                }
+                                catch
+                                {
+                                }
+                                finally
+                                {
+                                        _pendingProgrammaticScroll = false;
+                                }
+                        }), DispatcherPriority.Background);
                 }
         }
 }

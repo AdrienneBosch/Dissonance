@@ -1033,9 +1033,9 @@ namespace Dissonance.ViewModels
                                         CurrentAudioPosition = _playbackStartAudioPosition;
                                         _activePlaybackLength = selectionLength;
                                         SetHighlightRange(selectionStart, 0);
-                                        var textToSpeak = PlainText.Substring(selectionStart, selectionLength);
+                                        var textToSpeakSelection = PlainText.Substring(selectionStart, selectionLength);
 
-                                        _currentPrompt = _ttsService.Speak(textToSpeak);
+                                        _currentPrompt = _ttsService.Speak(textToSpeakSelection);
                                         _pendingSeekCharacterIndex = null;
                                         _pendingSeekAudioPosition = TimeSpan.Zero;
 

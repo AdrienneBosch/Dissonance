@@ -64,7 +64,6 @@ namespace Dissonance.ViewModels
                 private bool _playbackHotkeyTogglesPause;
                 private int? _selectionStartIndex;
                 private int _selectionLength;
-                private string? _selectionTextCache;
                 private int _activePlaybackLength;
                 private readonly IReadOnlyList<HighlightColorOption> _highlightColorOptions;
                 private HighlightColorOption _selectedHighlightColor = null!;
@@ -476,18 +475,16 @@ namespace Dissonance.ViewModels
                         _sections.Clear();
                         SelectedSection = null;
                         ResetPlaybackState();
-                        _selectionTextCache = null;
                         if (RememberDocumentProgress)
                                 ClearPersistedDocumentState();
                 }
 
-                public void UpdateSelectionRange(int startIndex, int length, string? selectedText)
+                public void UpdateSelectionRange(int startIndex, int length)
                 {
                         if (PlainText == null)
                         {
                                 _selectionStartIndex = null;
                                 _selectionLength = 0;
-                                _selectionTextCache = null;
                                 return;
                         }
 
@@ -499,9 +496,6 @@ namespace Dissonance.ViewModels
 
                         _selectionStartIndex = normalizedStart;
                         _selectionLength = normalizedLength;
-                        _selectionTextCache = normalizedLength > 0 && !string.IsNullOrEmpty(selectedText)
-                                ? selectedText
-                                : null;
 
                         if (IsPaused && _currentPrompt != null)
                         {
@@ -1039,14 +1033,9 @@ namespace Dissonance.ViewModels
                                         CurrentAudioPosition = _playbackStartAudioPosition;
                                         _activePlaybackLength = selectionLength;
                                         SetHighlightRange(selectionStart, 0);
-                                        var textToSpeak = _selectionTextCache;
-                                        if (textToSpeak == null || textToSpeak.Length != selectionLength)
-                                        {
-                                                textToSpeak = PlainText.Substring(selectionStart, selectionLength);
-                                                _selectionTextCache = textToSpeak;
-                                        }
+                                        var textToSpeakSelection = PlainText.Substring(selectionStart, selectionLength);
 
-                                        _currentPrompt = _ttsService.Speak(textToSpeak);
+                                        _currentPrompt = _ttsService.Speak(textToSpeakSelection);
                                         _pendingSeekCharacterIndex = null;
                                         _pendingSeekAudioPosition = TimeSpan.Zero;
 
@@ -1166,7 +1155,6 @@ namespace Dissonance.ViewModels
                         _pendingSeekAudioPosition = TimeSpan.Zero;
                         _selectionStartIndex = null;
                         _selectionLength = 0;
-                        _selectionTextCache = null;
                         _activePlaybackLength = 0;
                         _resumeRequiresRestart = false;
                         var previousSuppressed = _suspendProgressPersistence;

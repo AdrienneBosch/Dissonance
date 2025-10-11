@@ -875,23 +875,9 @@ namespace Dissonance.ViewModels
                                 return document;
 
                         var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
-                        var paragraphs = normalized.Split(new[] { "\n\n" }, StringSplitOptions.None);
 
-                        foreach (var paragraphText in paragraphs)
-                        {
-                                var paragraph = new Paragraph();
-                                var lines = paragraphText.Split('\n');
-
-                                for (var i = 0; i < lines.Length; i++)
-                                {
-                                        if (i > 0)
-                                                paragraph.Inlines.Add(new LineBreak());
-
-                                        paragraph.Inlines.Add(new Run(lines[i]));
-                                }
-
-                                document.Blocks.Add(paragraph);
-                        }
+                        var range = new TextRange(document.ContentStart, document.ContentEnd);
+                        range.Text = normalized;
 
                         return document;
                 }

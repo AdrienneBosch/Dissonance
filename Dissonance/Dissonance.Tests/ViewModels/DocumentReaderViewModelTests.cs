@@ -45,14 +45,15 @@ namespace Dissonance.Tests.ViewModels
 
                                 Assert.Equal(sampleText, normalizedRendered);
 
+                                var viewer = new HighlightingFlowDocumentScrollViewer { Document = document };
                                 var getPointer = typeof(HighlightingFlowDocumentScrollViewer)
-                                        .GetMethod("GetTextPointerAtOffset", BindingFlags.NonPublic | BindingFlags.Static);
+                                        .GetMethod("GetTextPointerAtOffset", BindingFlags.NonPublic | BindingFlags.Instance);
                                 Assert.NotNull(getPointer);
 
                                 for (var index = 0; index < sampleText.Length; index++)
                                 {
-                                        var startPointer = (TextPointer?)getPointer!.Invoke(null, new object[] { document, index });
-                                        var endPointer = (TextPointer?)getPointer.Invoke(null, new object[] { document, index + 1 });
+                                        var startPointer = (TextPointer?)getPointer!.Invoke(viewer, new object[] { document, index });
+                                        var endPointer = (TextPointer?)getPointer.Invoke(viewer, new object[] { document, index + 1 });
 
                                         Assert.NotNull(startPointer);
                                         Assert.NotNull(endPointer);

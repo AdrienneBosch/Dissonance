@@ -465,6 +465,24 @@ namespace Dissonance
                         InputBindings.Add ( _documentPlaybackKeyBinding );
                 }
 
+                private async void DocumentReaderView_Loaded ( object sender, RoutedEventArgs e )
+                {
+                        if ( sender is not FrameworkElement element )
+                                return;
+
+                        if ( element.DataContext is DocumentReaderViewModel documentReaderViewModel )
+                        {
+                                try
+                                {
+                                        await documentReaderViewModel.EnsureInitializedAsync ( );
+                                }
+                                catch ( OperationCanceledException )
+                                {
+                                        // Ignore cancellation during initialization.
+                                }
+                        }
+                }
+
                 private static bool IsModifierKey ( Key key )
                 {
                         return ModifierKeySet.Contains ( key );

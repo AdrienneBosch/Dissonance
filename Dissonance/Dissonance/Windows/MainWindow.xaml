@@ -76,7 +76,7 @@
             </Setter>
         </Style>
         <DataTemplate DataType="{x:Type local:DocumentReaderViewModel}">
-            <Grid>
+            <Grid Loaded="DocumentReaderView_Loaded">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>

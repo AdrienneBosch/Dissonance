@@ -81,6 +81,8 @@ namespace Dissonance.ViewModels
                 private DocumentMetadata? _currentDocumentMetadata;
                 private DocumentMetadata? _lastPersistedMetadata;
                 private bool _resumeRequiresRestart;
+                private Task? _initializationTask;
+                private Task? _resumeRestorationTask;
 
                 private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
@@ -107,9 +109,30 @@ namespace Dissonance.ViewModels
                         InitializePlaybackHotkeyFromSettings();
                         _highlightColorOptions = CreateHighlightColorOptions();
                         InitializeHighlightSettings();
-                        InitializeDocumentResumeSettings();
 
                         _sections.CollectionChanged += OnSectionsCollectionChanged;
+                }
+
+                internal Task? ResumeRestorationTask => _resumeRestorationTask;
+
+                public Task EnsureInitializedAsync()
+                {
+                        var existing = _initializationTask;
+                        if (existing != null)
+                                return existing;
+
+                        var task = InitializeAsync();
+                        _initializationTask = task;
+                        return task;
+                }
+
+                private async Task InitializeAsync()
+                {
+                        var resumeState = InitializeDocumentResumeSettings();
+                        if (resumeState != null)
+                        {
+                                await RestoreDocumentFromSettingsAsync(resumeState).ConfigureAwait(true);
+                        }
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -1305,7 +1328,7 @@ namespace Dissonance.ViewModels
                         InitializeHighlightSettings();
                 }
 
-                private void InitializeDocumentResumeSettings()
+                private AppSettings.DocumentReaderResumeSnapshot? InitializeDocumentResumeSettings()
                 {
                         var settings = _settingsService.GetCurrentSettings();
 
@@ -1316,7 +1339,7 @@ namespace Dissonance.ViewModels
                         RaisePropertyChanged(nameof(RememberDocumentProgress));
 
                         if (!RememberDocumentProgress)
-                                return;
+                                return null;
 
                         var resumeState = settings.DocumentReaderResumeState;
                         if (resumeState == null && !string.IsNullOrWhiteSpace(settings.DocumentReaderLastFilePath))
@@ -1330,16 +1353,9 @@ namespace Dissonance.ViewModels
                         }
 
                         if (resumeState == null || string.IsNullOrWhiteSpace(resumeState.FilePath))
-                                return;
+                                return null;
 
-                        if (!File.Exists(resumeState.FilePath))
-                        {
-                                StatusMessage = "The previously saved document could not be found.";
-                                ClearPersistedDocumentState();
-                                return;
-                        }
-
-                        RestoreDocumentFromSettings(resumeState);
+                        return resumeState;
                 }
 
                 private void PersistDocumentState(bool force)
@@ -1423,7 +1439,7 @@ namespace Dissonance.ViewModels
                         _settingsService.SaveCurrentSettings();
                 }
 
-                private async void RestoreDocumentFromSettings(AppSettings.DocumentReaderResumeSnapshot resumeState)
+                private async Task RestoreDocumentFromSettingsAsync(AppSettings.DocumentReaderResumeSnapshot resumeState)
                 {
                         try
                         {
@@ -1440,12 +1456,87 @@ namespace Dissonance.ViewModels
                                         return;
                                 }
 
-                                var loaded = await LoadDocumentAsync(resumeState.FilePath, cancellationToken: default, persistImmediately: false);
+                                var loaded = await LoadDocumentAsync(resumeState.FilePath, cancellationToken: default, persistImmediately: false).ConfigureAwait(true);
                                 if (!loaded || PlainText == null)
                                         return;
 
-                                var metadata = EnsureDocumentMetadata();
+                                if (TryApplyPersistedMetadata(resumeState))
+                                {
+                                        _lastPersistedMetadata = _currentDocumentMetadata;
+                                }
+                                else
+                                {
+                                        _currentDocumentMetadata = new DocumentMetadata
+                                        {
+                                                FilePath = FilePath ?? resumeState.FilePath ?? string.Empty,
+                                                DocumentLength = PlainText.Length,
+                                                ContentHash = string.Empty,
+                                        };
+                                        _documentMetadataDirty = true;
+                                }
+
+                                _resumeRestorationTask = ValidateAndPersistResumeStateAsync(resumeState);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                                return;
+                        }
+                        catch (Exception ex)
+                        {
+                                LastError = ex;
+                                StatusMessage = "Failed to restore the previously opened document.";
+                                ClearPersistedDocumentState();
+                        }
+                }
+
+                private void MarkDocumentMetadataDirty()
+                {
+                        _documentMetadataDirty = true;
+                        _currentDocumentMetadata = null;
+                }
+
+                private bool TryApplyPersistedMetadata(AppSettings.DocumentReaderResumeSnapshot resumeState)
+                {
+                        if (resumeState == null)
+                                return false;
+
+                        var hasMetadata = resumeState.DocumentLength > 0
+                                || !string.IsNullOrEmpty(resumeState.ContentHash)
+                                || resumeState.FileSize.HasValue
+                                || resumeState.LastWriteTimeUtc.HasValue;
+
+                        if (!hasMetadata)
+                                return false;
+
+                        var metadata = new DocumentMetadata
+                        {
+                                FilePath = resumeState.FilePath ?? string.Empty,
+                                DocumentLength = Math.Max(0, resumeState.DocumentLength),
+                                ContentHash = resumeState.ContentHash ?? string.Empty,
+                                FileSize = resumeState.FileSize,
+                                LastWriteTimeUtc = resumeState.LastWriteTimeUtc,
+                        };
+
+                        _currentDocumentMetadata = metadata;
+                        _documentMetadataDirty = false;
+                        return true;
+                }
+
+                private async Task ValidateAndPersistResumeStateAsync(AppSettings.DocumentReaderResumeSnapshot resumeState)
+                {
+                        try
+                        {
+                                var plainTextSnapshot = PlainText;
+                                var filePathSnapshot = FilePath;
+
+                                if (plainTextSnapshot == null || string.IsNullOrWhiteSpace(filePathSnapshot))
+                                        return;
+
+                                var metadata = await Task.Run(() => CreateDocumentMetadataSnapshot(filePathSnapshot, plainTextSnapshot)).ConfigureAwait(true);
                                 if (metadata == null)
+                                        return;
+
+                                if (!string.Equals(FilePath, filePathSnapshot, StringComparison.OrdinalIgnoreCase) || !string.Equals(PlainText, plainTextSnapshot, StringComparison.Ordinal))
                                         return;
 
                                 var isCompatible = IsMetadataCompatible(resumeState, metadata);
@@ -1476,9 +1567,12 @@ namespace Dissonance.ViewModels
                                         _suspendProgressPersistence = previousSuppressed;
                                 }
 
+                                _currentDocumentMetadata = metadata;
+                                _documentMetadataDirty = false;
+                                _lastPersistedMetadata = metadata;
                                 _lastPersistedCharacterIndex = CurrentCharacterIndex;
                                 _lastProgressSaveTime = DateTime.UtcNow;
-                                _lastPersistedMetadata = metadata;
+
                                 PersistDocumentState(force: true);
                         }
                         catch (OperationCanceledException)
@@ -1489,18 +1583,44 @@ namespace Dissonance.ViewModels
                         {
                                 LastError = ex;
                                 StatusMessage = "Failed to restore the previously opened document.";
-                                ClearPersistedDocumentState();
                         }
                 }
 
-                private void MarkDocumentMetadataDirty()
+                private static DocumentMetadata? CreateDocumentMetadataSnapshot(string filePath, string plainText)
                 {
-                        _documentMetadataDirty = true;
-                        _currentDocumentMetadata = null;
+                        if (string.IsNullOrWhiteSpace(filePath) || plainText == null)
+                                return null;
+
+                        var metadata = new DocumentMetadata
+                        {
+                                FilePath = filePath,
+                                DocumentLength = plainText.Length,
+                                ContentHash = ComputeContentHash(plainText),
+                        };
+
+                        try
+                        {
+                                var info = new FileInfo(filePath);
+                                if (info.Exists)
+                                {
+                                        metadata.FileSize = info.Length;
+                                        metadata.LastWriteTimeUtc = info.LastWriteTimeUtc;
+                                }
+                        }
+                        catch (Exception)
+                        {
+                                metadata.FileSize = null;
+                                metadata.LastWriteTimeUtc = null;
+                        }
+
+                        return metadata;
                 }
 
                 private DocumentMetadata? EnsureDocumentMetadata()
                 {
+                        if (_documentMetadataDirty && _resumeRestorationTask != null && !_resumeRestorationTask.IsCompleted && _currentDocumentMetadata != null)
+                                return _currentDocumentMetadata;
+
                         if (!_documentMetadataDirty && _currentDocumentMetadata != null)
                                 return _currentDocumentMetadata;
 

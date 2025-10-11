@@ -875,9 +875,47 @@ namespace Dissonance.ViewModels
                                 return document;
 
                         var normalized = content.Replace("\r\n", "\n").Replace('\r', '\n');
+                        var length = normalized.Length;
+                        var paragraphStart = 0;
 
-                        var range = new TextRange(document.ContentStart, document.ContentEnd);
-                        range.Text = normalized;
+                        while (paragraphStart <= length)
+                        {
+                                var separatorIndex = normalized.IndexOf("\n\n", paragraphStart, StringComparison.Ordinal);
+                                var paragraphEnd = separatorIndex >= 0 ? separatorIndex : length;
+                                var paragraphSpan = normalized.AsSpan(paragraphStart, paragraphEnd - paragraphStart);
+
+                                var paragraph = new Paragraph();
+
+                                var lineStart = 0;
+                                while (lineStart <= paragraphSpan.Length)
+                                {
+                                        var remaining = paragraphSpan.Slice(lineStart);
+                                        var lineBreakIndex = remaining.IndexOf('\n');
+                                        ReadOnlySpan<char> lineSpan;
+                                        if (lineBreakIndex < 0)
+                                        {
+                                                lineSpan = remaining;
+                                                lineStart = paragraphSpan.Length + 1;
+                                        }
+                                        else
+                                        {
+                                                lineSpan = remaining.Slice(0, lineBreakIndex);
+                                                lineStart += lineBreakIndex + 1;
+                                        }
+
+                                        if (paragraph.Inlines.Count > 0)
+                                                paragraph.Inlines.Add(new LineBreak());
+
+                                        paragraph.Inlines.Add(new Run(lineSpan.ToString()));
+                                }
+
+                                document.Blocks.Add(paragraph);
+
+                                if (separatorIndex < 0)
+                                        break;
+
+                                paragraphStart = separatorIndex + 2;
+                        }
 
                         return document;
                 }

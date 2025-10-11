@@ -11,7 +11,9 @@ using Dissonance;
 using Dissonance.Services.DocumentReader;
 using Dissonance.Services.SettingsService;
 using Dissonance.Services.TTSService;
+using Dissonance.Tests.TestInfrastructure;
 using Dissonance.ViewModels;
+using Dissonance.Windows.Controls;
 
 using Xunit;
 
@@ -19,6 +21,51 @@ namespace Dissonance.Tests.ViewModels
 {
         public class DocumentReaderViewModelTests
         {
+                [WindowsFact]
+                public void LoadDocumentAsync_RendersDocumentWithMatchingText()
+                {
+                        const string sampleText = "First paragraph line 1\nFirst paragraph line 2\n\nSecond paragraph line 1\nSecond paragraph line 2\n\nThird paragraph only line\n";
+
+                        StaTestRunner.Run(() =>
+                        {
+                                WpfTestHelper.EnsureApplication();
+
+                                var result = new DocumentReadResult("sample.txt", sampleText);
+                                var service = new StubDocumentReaderService(result);
+                                var settings = CreateSettings();
+                                var settingsService = new StubSettingsService(settings);
+                                var viewModel = new DocumentReaderViewModel(service, new StubTtsService(), settingsService);
+
+                                var loadTask = viewModel.LoadDocumentAsync(result.FilePath);
+                                loadTask.GetAwaiter().GetResult();
+
+                                var document = Assert.IsType<FlowDocument>(viewModel.Document);
+                                var rendered = new TextRange(document.ContentStart, document.ContentEnd).Text;
+                                var normalizedRendered = rendered.Replace("\r\n", "\n").Replace('\r', '\n');
+
+                                Assert.Equal(sampleText, normalizedRendered);
+
+                                var getPointer = typeof(HighlightingFlowDocumentScrollViewer)
+                                        .GetMethod("GetTextPointerAtOffset", BindingFlags.NonPublic | BindingFlags.Static);
+                                Assert.NotNull(getPointer);
+
+                                for (var index = 0; index < sampleText.Length; index++)
+                                {
+                                        var startPointer = (TextPointer?)getPointer!.Invoke(null, new object[] { document, index });
+                                        var endPointer = (TextPointer?)getPointer.Invoke(null, new object[] { document, index + 1 });
+
+                                        Assert.NotNull(startPointer);
+                                        Assert.NotNull(endPointer);
+
+                                        var range = new TextRange(startPointer!, endPointer!);
+                                        var character = range.Text.Replace("\r\n", "\n").Replace('\r', '\n');
+                                        var expected = sampleText[index].ToString();
+
+                                        Assert.Equal(expected, character);
+                                }
+                        });
+                }
+
                 [Fact]
                 public async Task LoadDocumentAsync_PopulatesPropertiesOnSuccess()
                 {

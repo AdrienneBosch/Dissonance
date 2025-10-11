@@ -220,7 +220,6 @@ namespace Dissonance.Windows.Controls
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;
                                 _appliedBrush = HighlightBrush;
-                                ResetPointerCache();
                                 return;
                         }
 
@@ -352,6 +351,12 @@ namespace Dissonance.Windows.Controls
                         EnsurePointerCache(document);
 
                         var targetOffset = Math.Max(0, offset);
+
+                        if (_cacheValid && _cachedPointer != null && targetOffset < _cachedOffset)
+                        {
+                                ResetPointerCache();
+                                EnsurePointerCache(document);
+                        }
                         var (navigator, currentOffset) = GetStartingPointer(document, targetOffset);
                         var pointer = AdvanceToOffset(document, navigator, currentOffset, targetOffset, out var newPointer, out var newOffset);
 
@@ -366,6 +371,12 @@ namespace Dissonance.Windows.Controls
                                 return 0;
 
                         EnsurePointerCache(document);
+
+                        if (_cacheValid && _cachedPointer != null && pointer != null && pointer.CompareTo(_cachedPointer) < 0)
+                        {
+                                ResetPointerCache();
+                                EnsurePointerCache(document);
+                        }
 
                         var (navigator, currentOffset) = GetStartingPointer(document, pointer);
                         var offset = AdvanceToPointer(document, navigator, currentOffset, pointer, out var newPointer, out var newOffset);

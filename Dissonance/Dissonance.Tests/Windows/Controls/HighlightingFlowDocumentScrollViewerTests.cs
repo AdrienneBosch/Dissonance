@@ -72,7 +72,11 @@ namespace Dissonance.Tests.Windows.Controls
                                 var cacheValidField = typeof(HighlightingFlowDocumentScrollViewer)
                                         .GetField("_cacheValid", BindingFlags.NonPublic | BindingFlags.Instance);
                                 Assert.NotNull(cacheValidField);
-                                Assert.False((bool)cacheValidField!.GetValue(viewer)!);
+                                Assert.True((bool)cacheValidField!.GetValue(viewer)!);
+
+                                viewer.HighlightStartIndex = 0;
+
+                                Assert.False((bool)cacheValidField.GetValue(viewer)!);
 
                                 var highlightField = typeof(HighlightingFlowDocumentScrollViewer)
                                         .GetField("_currentHighlight", BindingFlags.NonPublic | BindingFlags.Instance);

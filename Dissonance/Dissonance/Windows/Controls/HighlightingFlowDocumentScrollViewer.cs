@@ -228,16 +228,29 @@ namespace Dissonance.Windows.Controls
                         if (_appliedStartIndex == HighlightStartIndex && _appliedLength == highlightLength && Equals(_appliedBrush, brush))
                                 return;
 
-                        ClearHighlight();
-
                         var startPointer = GetTextPointerAtOffset(document, HighlightStartIndex);
                         var endPointer = GetTextPointerAtOffset(document, HighlightStartIndex + highlightLength);
                         if (startPointer == null || endPointer == null)
                                 return;
 
-                        var range = new TextRange(startPointer, endPointer);
-                        range.ApplyPropertyValue(TextElement.BackgroundProperty, brush);
-                        _currentHighlight = range;
+                        var range = _currentHighlight;
+                        var createdNewRange = false;
+                        if (range == null)
+                        {
+                                range = new TextRange(startPointer, endPointer);
+                                _currentHighlight = range;
+                                createdNewRange = true;
+                        }
+                        else if (_appliedStartIndex != HighlightStartIndex || _appliedLength != highlightLength)
+                        {
+                                range.Select(startPointer, endPointer);
+                        }
+
+                        if (createdNewRange || !Equals(_appliedBrush, brush))
+                        {
+                                range.ApplyPropertyValue(TextElement.BackgroundProperty, brush);
+                        }
+
                         _appliedStartIndex = HighlightStartIndex;
                         _appliedLength = highlightLength;
                         _appliedBrush = brush;

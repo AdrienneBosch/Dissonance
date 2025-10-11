@@ -264,6 +264,10 @@ namespace Dissonance.ViewModels
                                 if ( value != null )
                                 {
                                         IsNavigationMenuOpen = false;
+                                        if ( value.ContentViewModel == _documentReaderViewModel )
+                                        {
+                                                _ = _documentReaderViewModel.InitializeAsync ( );
+                                        }
                                 }
                         }
                 }

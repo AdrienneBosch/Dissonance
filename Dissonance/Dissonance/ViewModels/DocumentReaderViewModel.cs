@@ -39,6 +39,7 @@ namespace Dissonance.ViewModels
                 private readonly ISettingsService _settingsService;
                 private readonly ObservableCollection<DocumentSection> _sections = new();
                 private readonly ReadOnlyObservableCollection<DocumentSection> _readOnlySections;
+                private readonly object _initializationSync = new();
                 private FlowDocument? _document;
                 private string? _plainText;
                 private string? _filePath;
@@ -80,6 +81,7 @@ namespace Dissonance.ViewModels
                 private DocumentMetadata? _currentDocumentMetadata;
                 private DocumentMetadata? _lastPersistedMetadata;
                 private bool _resumeRequiresRestart;
+                private Task? _resumeInitializationTask;
 
                 private static readonly TimeSpan ProgressPersistInterval = TimeSpan.FromSeconds(2);
 
@@ -106,9 +108,20 @@ namespace Dissonance.ViewModels
                         InitializePlaybackHotkeyFromSettings();
                         _highlightColorOptions = CreateHighlightColorOptions();
                         InitializeHighlightSettings();
-                        InitializeDocumentResumeSettings();
-
                         _sections.CollectionChanged += OnSectionsCollectionChanged;
+                }
+
+                public virtual Task InitializeAsync()
+                {
+                        lock (_initializationSync)
+                        {
+                                if (_resumeInitializationTask == null || _resumeInitializationTask.IsFaulted || _resumeInitializationTask.IsCanceled)
+                                {
+                                        _resumeInitializationTask = InitializeDocumentResumeSettingsAsync();
+                                }
+
+                                return _resumeInitializationTask;
+                        }
                 }
 
                 public event PropertyChangedEventHandler? PropertyChanged;
@@ -1293,7 +1306,7 @@ namespace Dissonance.ViewModels
                         InitializeHighlightSettings();
                 }
 
-                private void InitializeDocumentResumeSettings()
+                private async Task InitializeDocumentResumeSettingsAsync()
                 {
                         var settings = _settingsService.GetCurrentSettings();
 
@@ -1327,7 +1340,7 @@ namespace Dissonance.ViewModels
                                 return;
                         }
 
-                        RestoreDocumentFromSettings(resumeState);
+                        await RestoreDocumentFromSettingsAsync(resumeState).ConfigureAwait(true);
                 }
 
                 private void PersistDocumentState(bool force)
@@ -1411,7 +1424,7 @@ namespace Dissonance.ViewModels
                         _settingsService.SaveCurrentSettings();
                 }
 
-                private async void RestoreDocumentFromSettings(AppSettings.DocumentReaderResumeSnapshot resumeState)
+                private async Task RestoreDocumentFromSettingsAsync(AppSettings.DocumentReaderResumeSnapshot resumeState)
                 {
                         try
                         {
@@ -1428,23 +1441,33 @@ namespace Dissonance.ViewModels
                                         return;
                                 }
 
-                                var loaded = await LoadDocumentAsync(resumeState.FilePath, cancellationToken: default, persistImmediately: false);
+                                var loaded = await LoadDocumentAsync(resumeState.FilePath, cancellationToken: default, persistImmediately: false).ConfigureAwait(true);
                                 if (!loaded || PlainText == null)
                                         return;
 
-                                var metadata = EnsureDocumentMetadata();
-                                if (metadata == null)
+                                var plainText = PlainText;
+                                var filePath = FilePath;
+                                if (plainText == null || string.IsNullOrWhiteSpace(filePath))
                                         return;
 
-                                var isCompatible = IsMetadataCompatible(resumeState, metadata);
-                                var clamped = Math.Clamp(resumeState.CharacterIndex, 0, metadata.DocumentLength);
+                                var resumeMetadata = CreateMetadataFromResumeState(resumeState, plainText.Length);
+                                if (resumeMetadata != null)
+                                {
+                                        _currentDocumentMetadata = resumeMetadata;
+                                        _lastPersistedMetadata = resumeMetadata;
+                                        _documentMetadataDirty = false;
+                                }
+
+                                var lengthMatches = resumeState.DocumentLength <= 0 || resumeState.DocumentLength == plainText.Length;
+                                var clamped = Math.Clamp(resumeState.CharacterIndex, 0, plainText.Length);
+                                var progressReset = false;
 
                                 var previousSuppressed = _suspendProgressPersistence;
                                 _suspendProgressPersistence = true;
 
                                 try
                                 {
-                                        if (isCompatible && clamped > 0)
+                                        if (lengthMatches && clamped > 0)
                                         {
                                                 CurrentCharacterIndex = clamped;
                                                 CurrentAudioPosition = EstimateTimeFromCharacterIndex(clamped);
@@ -1453,7 +1476,8 @@ namespace Dissonance.ViewModels
                                         {
                                                 CurrentCharacterIndex = 0;
                                                 CurrentAudioPosition = TimeSpan.Zero;
-                                                if (!isCompatible)
+                                                progressReset = true;
+                                                if (!lengthMatches)
                                                         StatusMessage = "The previously saved document has changed. Progress was reset.";
                                         }
 
@@ -1466,12 +1490,55 @@ namespace Dissonance.ViewModels
 
                                 _lastPersistedCharacterIndex = CurrentCharacterIndex;
                                 _lastProgressSaveTime = DateTime.UtcNow;
-                                _lastPersistedMetadata = metadata;
+
+                                var computedMetadata = await ComputeDocumentMetadataAsync(plainText, filePath).ConfigureAwait(true);
+                                if (computedMetadata == null)
+                                        return;
+
+                                if (!string.Equals(FilePath, filePath, StringComparison.OrdinalIgnoreCase)
+                                        || PlainText == null
+                                        || !string.Equals(PlainText, plainText, StringComparison.Ordinal))
+                                {
+                                        return;
+                                }
+
+                                var metadataChanged = !IsMetadataCompatible(resumeState, computedMetadata);
+
+                                _currentDocumentMetadata = computedMetadata;
+                                _lastPersistedMetadata = computedMetadata;
+                                _documentMetadataDirty = false;
+
+                                if (metadataChanged && !progressReset)
+                                {
+                                        previousSuppressed = _suspendProgressPersistence;
+                                        _suspendProgressPersistence = true;
+
+                                        try
+                                        {
+                                                CurrentCharacterIndex = 0;
+                                                CurrentAudioPosition = TimeSpan.Zero;
+                                                SetHighlightRange(0, 0);
+                                        }
+                                        finally
+                                        {
+                                                _suspendProgressPersistence = previousSuppressed;
+                                        }
+
+                                        progressReset = true;
+                                        StatusMessage = "The previously saved document has changed. Progress was reset.";
+                                }
+
+                                if (progressReset)
+                                {
+                                        _lastPersistedCharacterIndex = CurrentCharacterIndex;
+                                        _lastProgressSaveTime = DateTime.UtcNow;
+                                }
+
                                 PersistDocumentState(force: true);
                         }
                         catch (OperationCanceledException)
                         {
-                                return;
+                                throw;
                         }
                         catch (Exception ex)
                         {
@@ -1499,16 +1566,47 @@ namespace Dissonance.ViewModels
                                 return null;
                         }
 
+                        var metadata = CreateDocumentMetadata(PlainText, FilePath);
+                        _currentDocumentMetadata = metadata;
+                        _documentMetadataDirty = false;
+                        return metadata;
+                }
+
+                private static DocumentMetadata? CreateMetadataFromResumeState(AppSettings.DocumentReaderResumeSnapshot resumeState, int actualDocumentLength)
+                {
+                        if (resumeState == null || string.IsNullOrWhiteSpace(resumeState.FilePath))
+                                return null;
+
+                        return new DocumentMetadata
+                        {
+                                FilePath = resumeState.FilePath,
+                                DocumentLength = actualDocumentLength,
+                                ContentHash = resumeState.ContentHash ?? string.Empty,
+                                FileSize = resumeState.FileSize,
+                                LastWriteTimeUtc = resumeState.LastWriteTimeUtc,
+                        };
+                }
+
+                private Task<DocumentMetadata?> ComputeDocumentMetadataAsync(string? plainText, string? filePath)
+                {
+                        if (plainText == null || string.IsNullOrWhiteSpace(filePath))
+                                return Task.FromResult<DocumentMetadata?>(null);
+
+                        return Task.Run(() => (DocumentMetadata?)CreateDocumentMetadata(plainText, filePath));
+                }
+
+                private DocumentMetadata CreateDocumentMetadata(string plainText, string filePath)
+                {
                         var metadata = new DocumentMetadata
                         {
-                                FilePath = FilePath,
-                                DocumentLength = PlainText.Length,
-                                ContentHash = ComputeContentHash(PlainText),
+                                FilePath = filePath,
+                                DocumentLength = plainText.Length,
+                                ContentHash = ComputeContentHash(plainText),
                         };
 
                         try
                         {
-                                var info = new FileInfo(FilePath);
+                                var info = new FileInfo(filePath);
                                 if (info.Exists)
                                 {
                                         metadata.FileSize = info.Length;
@@ -1521,8 +1619,6 @@ namespace Dissonance.ViewModels
                                 metadata.LastWriteTimeUtc = null;
                         }
 
-                        _currentDocumentMetadata = metadata;
-                        _documentMetadataDirty = false;
                         return metadata;
                 }
 

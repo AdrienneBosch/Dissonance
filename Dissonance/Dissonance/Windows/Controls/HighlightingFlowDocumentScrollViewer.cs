@@ -53,6 +53,11 @@ namespace Dissonance.Windows.Controls
                 private bool _suppressSelectionPublishing;
                 private TextSelection? _attachedSelection;
 
+                private FlowDocument? _cachedDocument;
+                private TextPointer? _cachedPointer;
+                private int _cachedOffset;
+                private bool _cacheValid;
+
                 public int HighlightStartIndex
                 {
                         get => (int)GetValue(HighlightStartIndexProperty);
@@ -99,6 +104,7 @@ namespace Dissonance.Windows.Controls
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;
                                 _appliedBrush = null;
+                                ResetPointerCache();
                                 PublishSelectionRange(0, 0, string.Empty);
 
                                 // Ensure we detach from any previous selection and attach to the new one if present
@@ -177,6 +183,7 @@ namespace Dissonance.Windows.Controls
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;
                                 _appliedBrush = null;
+                                ResetPointerCache();
                                 return;
                         }
 
@@ -187,6 +194,7 @@ namespace Dissonance.Windows.Controls
                                 _appliedStartIndex = -1;
                                 _appliedLength = 0;
                                 _appliedBrush = HighlightBrush;
+                                ResetPointerCache();
                                 return;
                         }
 
@@ -236,81 +244,200 @@ namespace Dissonance.Windows.Controls
                         }
                 }
 
-                private static TextPointer? GetTextPointerAtOffset(FlowDocument document, int offset)
+                private TextPointer? GetTextPointerAtOffset(FlowDocument document, int offset)
                 {
                         if (document == null)
                                 return null;
 
-                        var navigator = document.ContentStart;
-                        var remaining = Math.Max(0, offset);
+                        EnsurePointerCache(document);
 
-                        while (navigator != null && navigator.CompareTo(document.ContentEnd) < 0)
-                        {
-                                if (navigator.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
-                                {
-                                        var textRun = navigator.GetTextInRun(LogicalDirection.Forward);
-                                        if (textRun.Length == 0)
-                                        {
-                                                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
-                                                continue;
-                                        }
+                        var targetOffset = Math.Max(0, offset);
+                        var (navigator, currentOffset) = GetStartingPointer(document, targetOffset);
+                        var pointer = AdvanceToOffset(document, navigator, currentOffset, targetOffset, out var newPointer, out var newOffset);
 
-                                        if (remaining <= textRun.Length)
-                                        {
-                                                return navigator.GetPositionAtOffset(remaining, LogicalDirection.Forward);
-                                        }
+                        UpdatePointerCache(document, newPointer, newOffset);
 
-                                        remaining -= textRun.Length;
-                                        navigator = navigator.GetPositionAtOffset(textRun.Length, LogicalDirection.Forward);
-                                }
-                                else
-                                {
-                                        navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
-                                }
-                        }
-
-                        return document.ContentEnd;
+                        return pointer;
                 }
 
-                private static int GetOffsetFromPointer(FlowDocument document, TextPointer pointer)
+                private int GetOffsetFromPointer(FlowDocument document, TextPointer pointer)
                 {
                         if (document == null || pointer == null)
                                 return 0;
 
-                        var navigator = document.ContentStart;
-                        var offset = 0;
+                        EnsurePointerCache(document);
 
-                        while (navigator != null && navigator.CompareTo(pointer) < 0 && navigator.CompareTo(document.ContentEnd) < 0)
+                        var (navigator, currentOffset) = GetStartingPointer(document, pointer);
+                        var offset = AdvanceToPointer(document, navigator, currentOffset, pointer, out var newPointer, out var newOffset);
+
+                        UpdatePointerCache(document, newPointer, newOffset);
+
+                        return offset;
+                }
+
+                private void EnsurePointerCache(FlowDocument document)
+                {
+                        if (!ReferenceEquals(_cachedDocument, document))
                         {
-                                if (navigator.GetPointerContext(LogicalDirection.Forward) == TextPointerContext.Text)
+                                _cachedDocument = document;
+                                _cachedPointer = document.ContentStart;
+                                _cachedOffset = 0;
+                                _cacheValid = _cachedPointer != null;
+                        }
+                }
+
+                private void ResetPointerCache()
+                {
+                        _cachedDocument = null;
+                        _cachedPointer = null;
+                        _cachedOffset = 0;
+                        _cacheValid = false;
+                }
+
+                private (TextPointer navigator, int offset) GetStartingPointer(FlowDocument document, int targetOffset)
+                {
+                        if (_cacheValid && _cachedPointer != null && targetOffset >= _cachedOffset)
+                                return (_cachedPointer, _cachedOffset);
+
+                        return (document.ContentStart, 0);
+                }
+
+                private (TextPointer navigator, int offset) GetStartingPointer(FlowDocument document, TextPointer targetPointer)
+                {
+                        if (_cacheValid && _cachedPointer != null && targetPointer.CompareTo(_cachedPointer) >= 0)
+                                return (_cachedPointer, _cachedOffset);
+
+                        return (document.ContentStart, 0);
+                }
+
+                private static TextPointer AdvanceToOffset(FlowDocument document, TextPointer? navigator, int offset, int targetOffset, out TextPointer? newPointer, out int newOffset)
+                {
+                        if (navigator == null)
+                        {
+                                newPointer = document.ContentStart;
+                                newOffset = 0;
+                                return document.ContentStart;
+                        }
+
+                        var currentPointer = navigator;
+                        var currentOffset = offset;
+
+                        while (currentPointer != null && currentPointer.CompareTo(document.ContentEnd) < 0)
+                        {
+                                var context = currentPointer.GetPointerContext(LogicalDirection.Forward);
+                                if (context == TextPointerContext.Text)
                                 {
-                                        var textRun = navigator.GetTextInRun(LogicalDirection.Forward);
-                                        if (textRun.Length == 0)
+                                        var textRun = currentPointer.GetTextInRun(LogicalDirection.Forward);
+                                        var runLength = textRun.Length;
+                                        if (runLength == 0)
                                         {
-                                                navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+                                                currentPointer = currentPointer.GetNextContextPosition(LogicalDirection.Forward);
                                                 continue;
                                         }
 
-                                        var runEnd = navigator.GetPositionAtOffset(textRun.Length, LogicalDirection.Forward);
-                                        if (runEnd == null)
-                                                break;
-
-                                        if (pointer.CompareTo(runEnd) <= 0)
+                                        if (targetOffset <= currentOffset + runLength)
                                         {
-                                                offset += navigator.GetOffsetToPosition(pointer);
-                                                return Math.Max(0, offset);
+                                                var advance = targetOffset - currentOffset;
+                                                var position = currentPointer.GetPositionAtOffset(advance, LogicalDirection.Forward);
+                                                newPointer = position ?? document.ContentEnd;
+                                                newOffset = targetOffset;
+                                                return position ?? document.ContentEnd;
                                         }
 
-                                        offset += textRun.Length;
-                                        navigator = runEnd;
+                                        currentOffset += runLength;
+                                        currentPointer = currentPointer.GetPositionAtOffset(runLength, LogicalDirection.Forward);
                                 }
                                 else
                                 {
-                                        navigator = navigator.GetNextContextPosition(LogicalDirection.Forward);
+                                        currentPointer = currentPointer.GetNextContextPosition(LogicalDirection.Forward);
                                 }
                         }
 
-                        return Math.Max(0, offset);
+                        newPointer = document.ContentEnd;
+                        newOffset = currentOffset;
+                        return document.ContentEnd;
+                }
+
+                private static int AdvanceToPointer(FlowDocument document, TextPointer? navigator, int offset, TextPointer targetPointer, out TextPointer? newPointer, out int newOffset)
+                {
+                        if (navigator == null)
+                        {
+                                newPointer = document.ContentStart;
+                                newOffset = 0;
+                                return 0;
+                        }
+
+                        var currentPointer = navigator;
+                        var currentOffset = offset;
+
+                        while (currentPointer != null && currentPointer.CompareTo(document.ContentEnd) < 0)
+                        {
+                                if (targetPointer.CompareTo(currentPointer) == 0)
+                                {
+                                        newPointer = currentPointer;
+                                        newOffset = currentOffset;
+                                        return currentOffset;
+                                }
+
+                                var context = currentPointer.GetPointerContext(LogicalDirection.Forward);
+                                if (context == TextPointerContext.Text)
+                                {
+                                        var textRun = currentPointer.GetTextInRun(LogicalDirection.Forward);
+                                        var runLength = textRun.Length;
+                                        if (runLength == 0)
+                                        {
+                                                currentPointer = currentPointer.GetNextContextPosition(LogicalDirection.Forward);
+                                                continue;
+                                        }
+
+                                        var runEnd = currentPointer.GetPositionAtOffset(runLength, LogicalDirection.Forward);
+                                        if (runEnd == null)
+                                                break;
+
+                                        if (targetPointer.CompareTo(runEnd) <= 0)
+                                        {
+                                                var delta = currentPointer.GetOffsetToPosition(targetPointer);
+                                                if (delta < 0)
+                                                        delta = 0;
+
+                                                var result = currentOffset + delta;
+                                                newPointer = targetPointer;
+                                                newOffset = result;
+                                                return result;
+                                        }
+
+                                        currentOffset += runLength;
+                                        currentPointer = runEnd;
+                                }
+                                else
+                                {
+                                        currentPointer = currentPointer.GetNextContextPosition(LogicalDirection.Forward);
+                                }
+                        }
+
+                        newPointer = document.ContentEnd;
+                        newOffset = currentOffset;
+                        if (targetPointer.CompareTo(document.ContentEnd) >= 0)
+                                return currentOffset;
+
+                        return Math.Max(0, currentOffset);
+                }
+
+                private void UpdatePointerCache(FlowDocument document, TextPointer? pointer, int offset)
+                {
+                        _cachedDocument = document;
+
+                        if (pointer == null)
+                        {
+                                _cachedPointer = document.ContentEnd;
+                                _cachedOffset = Math.Max(0, offset);
+                                _cacheValid = _cachedPointer != null;
+                                return;
+                        }
+
+                        _cachedPointer = pointer;
+                        _cachedOffset = Math.Max(0, offset);
+                        _cacheValid = true;
                 }
 
                 private void OnLoaded(object? sender, RoutedEventArgs e)

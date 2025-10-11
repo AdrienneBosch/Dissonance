@@ -1062,14 +1062,14 @@ namespace Dissonance.ViewModels
                                         CurrentAudioPosition = _playbackStartAudioPosition;
                                         _activePlaybackLength = selectionLength;
                                         SetHighlightRange(selectionStart, 0);
-                                        var textToSpeak = _selectionTextCache;
-                                        if (textToSpeak == null || textToSpeak.Length != selectionLength)
+                                        var textToSpeakLocal = _selectionTextCache;
+                                        if (textToSpeakLocal == null || textToSpeakLocal.Length != selectionLength)
                                         {
-                                                textToSpeak = PlainText.Substring(selectionStart, selectionLength);
-                                                _selectionTextCache = textToSpeak;
+                                                textToSpeakLocal = PlainText.Substring(selectionStart, selectionLength);
+                                                _selectionTextCache = textToSpeakLocal;
                                         }
 
-                                        _currentPrompt = _ttsService.Speak(textToSpeak);
+                                        _currentPrompt = _ttsService.Speak(textToSpeakLocal);
                                         _pendingSeekCharacterIndex = null;
                                         _pendingSeekAudioPosition = TimeSpan.Zero;
 

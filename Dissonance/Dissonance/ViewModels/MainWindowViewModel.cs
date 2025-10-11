@@ -3,6 +3,7 @@ using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Linq;
 using System.Speech.Synthesis;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Threading;
@@ -41,6 +42,7 @@ namespace Dissonance.ViewModels
                 private readonly ReadOnlyObservableCollection<StatusAnnouncement> _statusHistoryView;
                 private readonly DocumentReaderViewModel _documentReaderViewModel;
                 private readonly ReaderSettingsViewModel _readerSettingsViewModel;
+                private Task? _documentReaderInitializationTask;
                 private bool _isDarkTheme;
                 private bool _isNavigationMenuOpen;
                 private string _hotkeyCombination = string.Empty;
@@ -266,7 +268,12 @@ namespace Dissonance.ViewModels
                                         IsNavigationMenuOpen = false;
                                         if ( value.ContentViewModel == _documentReaderViewModel )
                                         {
-                                                _ = _documentReaderViewModel.InitializeAsync ( );
+                                                if ( _documentReaderInitializationTask == null
+                                                        || _documentReaderInitializationTask.IsFaulted
+                                                        || _documentReaderInitializationTask.IsCanceled )
+                                                {
+                                                        _documentReaderInitializationTask = _documentReaderViewModel.InitializeAsync ( );
+                                                }
                                         }
                                 }
                         }

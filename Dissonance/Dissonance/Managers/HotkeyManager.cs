@@ -1,5 +1,6 @@
 using System;
 using System.Speech.Synthesis;
+using System.Threading.Tasks;
 
 using Dissonance.Services.HotkeyService;
 using Dissonance.Services.SettingsService;
@@ -56,7 +57,7 @@ namespace Dissonance.Managers
                         _logger.LogInformation ( "HotkeyManager disposed." );
                 }
 
-                private void OnHotkeyPressed ( )
+                private async void OnHotkeyPressed ( )
                 {
                         if ( _isSpeaking )
                         {
@@ -66,7 +67,7 @@ namespace Dissonance.Managers
                                 return;
                         }
 
-                        SpeakClipboardContents ( );
+                        await SpeakClipboardContentsAsync ( );
                 }
 
                 private void OnClipboardTextReady ( object? sender, string clipboardText )
@@ -86,9 +87,9 @@ namespace Dissonance.Managers
                         _logger.LogInformation ( "TTS playback completed." );
                 }
 
-                private void SpeakClipboardContents ( )
+                private async Task SpeakClipboardContentsAsync ( )
                 {
-                        var clipboardText = _clipboardManager.CopySelectionAndGetValidatedText ( );
+                        var clipboardText = await _clipboardManager.CopySelectionAndGetValidatedTextAsync ( );
                         if ( string.IsNullOrEmpty ( clipboardText ) )
                         {
                                 clipboardText = _clipboardManager.GetValidatedClipboardText ( );

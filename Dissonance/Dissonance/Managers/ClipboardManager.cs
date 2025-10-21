@@ -1,7 +1,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
+using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Interop;
 
@@ -92,7 +92,7 @@ namespace Dissonance.Managers
                         }
                 }
 
-                public string? CopySelectionAndGetValidatedText ( )
+                public async Task<string?> CopySelectionAndGetValidatedTextAsync ( )
                 {
                         var suppressionApplied = false;
                         var copySucceeded = false;
@@ -113,7 +113,7 @@ namespace Dissonance.Managers
 
                                 for ( var attempt = 0; attempt < 10; attempt++ )
                                 {
-                                        Thread.Sleep ( 25 );
+                                        await Task.Delay ( 25 );
 
                                         if ( !_clipboardService.IsTextAvailable ( ) )
                                                 continue;
